@@ -80,3 +80,9 @@ Para Lead Ads, assine o campo `leadgen` da Página usada nos formulários.
 
 ## Observação
 A conexão final depende da conta profissional do Instagram, do aplicativo Meta e das permissões aprovadas/disponíveis para a conta. O código desta versão deixa o site e o CRM preparados; a ativação final é feita no painel da Meta e na Vercel.
+
+
+## V10.1
+- Política de Privacidade pública em `/politica-de-privacidade`
+- Instruções de exclusão de dados em `/exclusao-de-dados`
+- Link de Privacidade no rodapé

@@ -11,6 +11,8 @@ import Imovel from './pages/Imovel';
 import OwnerCapture from './pages/OwnerCapture';
 import LocalProperties from './pages/LocalProperties';
 import NotFound from './pages/NotFound';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import DataDeletion from './pages/DataDeletion';
 
 import Login from './pages/admin/Login';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -44,6 +46,8 @@ export default function App() {
         <Route path="/imoveis-a-venda/:citySlug/:typeSlug" element={<LocalProperties purpose="sale" />} />
         <Route path="/imoveis-para-alugar/:citySlug" element={<LocalProperties purpose="rent" />} />
         <Route path="/imoveis-para-alugar/:citySlug/:typeSlug" element={<LocalProperties purpose="rent" />} />
+        <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+        <Route path="/exclusao-de-dados" element={<DataDeletion />} />
         <Route path="*" element={<NotFound />} />
       </Route>
 

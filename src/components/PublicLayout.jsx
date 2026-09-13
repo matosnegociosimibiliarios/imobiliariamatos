@@ -40,6 +40,7 @@ export default function PublicLayout() {
           <Link to="/alugar">Alugar</Link>
           <Link to="/anuncie-seu-imovel">Anunciar</Link>
           <Link to="/avaliacao-do-imovel">Avaliação</Link>
+          <Link to="/politica-de-privacidade">Privacidade</Link>
         </div>
 
         <p className="footer-note">© 2026 Matos Negócios Imobiliários.</p>
