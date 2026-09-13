@@ -403,3 +403,141 @@ export async function getLostReasons(daysBack = 90) {
     days_back: daysBack,
   });
 }
+
+
+export async function getOwnerCaptures() {
+  return supabase
+    .from('owner_captures')
+    .select(`
+      *,
+      converted_property:properties(
+        id,
+        code,
+        title,
+        slug,
+        status
+      )
+    `)
+    .order('created_at', { ascending: false });
+}
+
+export async function getOwnerCaptureDetails(id) {
+  return supabase
+    .from('owner_captures')
+    .select(`
+      *,
+      converted_property:properties(
+        id,
+        code,
+        title,
+        slug,
+        status
+      )
+    `)
+    .eq('id', id)
+    .maybeSingle();
+}
+
+export async function updateOwnerCapture(id, payload) {
+  return supabase
+    .from('owner_captures')
+    .update(payload)
+    .eq('id', id)
+    .select(`
+      *,
+      converted_property:properties(
+        id,
+        code,
+        title,
+        slug,
+        status
+      )
+    `)
+    .single();
+}
+
+export async function getCaptureNotes(captureId) {
+  return supabase
+    .from('capture_notes')
+    .select('*')
+    .eq('capture_id', captureId)
+    .order('created_at', { ascending: false });
+}
+
+export async function addCaptureNote(captureId, note) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return supabase
+    .from('capture_notes')
+    .insert({
+      capture_id: captureId,
+      note: note.trim(),
+      created_by: user?.id || null,
+    })
+    .select()
+    .single();
+}
+
+export async function getCaptureDocuments(captureId) {
+  return supabase
+    .from('capture_documents')
+    .select('*')
+    .eq('capture_id', captureId)
+    .order('label');
+}
+
+export async function setCaptureDocumentStatus({
+  captureId,
+  documentType,
+  label,
+  status,
+  notes = null,
+}) {
+  return supabase
+    .from('capture_documents')
+    .upsert(
+      {
+        capture_id: captureId,
+        document_type: documentType,
+        label,
+        status,
+        notes,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: 'capture_id,document_type',
+      }
+    )
+    .select()
+    .single();
+}
+
+export async function getCaptureStatusHistory(captureId) {
+  return supabase
+    .from('capture_status_history')
+    .select('*')
+    .eq('capture_id', captureId)
+    .order('created_at', { ascending: false });
+}
+
+export async function getCaptureUpcomingActions() {
+  return supabase
+    .from('owner_captures')
+    .select(`
+      id,
+      owner_name,
+      whatsapp,
+      status,
+      next_action_text,
+      next_action_at,
+      property_type,
+      city_name,
+      neighborhood_name
+    `)
+    .not('next_action_at', 'is', null)
+    .not('status', 'in', '("published","lost")')
+    .order('next_action_at', { ascending: true })
+    .limit(50);
+}

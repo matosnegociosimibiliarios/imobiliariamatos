@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Comprar from './pages/Comprar';
 import Alugar from './pages/Alugar';
 import Imovel from './pages/Imovel';
+import OwnerCapture from './pages/OwnerCapture';
 
 import Login from './pages/admin/Login';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -17,6 +18,8 @@ import AdminLeads from './pages/admin/AdminLeads';
 import AdminAppointments from './pages/admin/AdminAppointments';
 import AdminLeadDetail from './pages/admin/AdminLeadDetail';
 import AdminActions from './pages/admin/AdminActions';
+import AdminCaptures from './pages/admin/AdminCaptures';
+import AdminCaptureDetail from './pages/admin/AdminCaptureDetail';
 
 export default function App() {
   return (
@@ -26,6 +29,14 @@ export default function App() {
         <Route path="/comprar" element={<Comprar />} />
         <Route path="/alugar" element={<Alugar />} />
         <Route path="/imovel/:slug" element={<Imovel />} />
+        <Route
+          path="/anuncie-seu-imovel"
+          element={<OwnerCapture requestType="listing" />}
+        />
+        <Route
+          path="/avaliacao-do-imovel"
+          element={<OwnerCapture requestType="valuation" />}
+        />
       </Route>
 
       <Route path="/login" element={<Login />} />
@@ -38,6 +49,8 @@ export default function App() {
           <Route path="/admin/leads/:id" element={<AdminLeadDetail />} />
           <Route path="/admin/acoes" element={<AdminActions />} />
           <Route path="/admin/agendamentos" element={<AdminAppointments />} />
+          <Route path="/admin/captacoes" element={<AdminCaptures />} />
+          <Route path="/admin/captacoes/:id" element={<AdminCaptureDetail />} />
           <Route path="/admin/imoveis/novo" element={<AdminPropertyForm />} />
           <Route path="/admin/imoveis/:id/editar" element={<AdminPropertyForm />} />
         </Route>

@@ -131,9 +131,9 @@ export default function Home() {
         <div>
           <span className="eyebrow eyebrow-light">Para proprietários</span>
           <h2>Quer vender ou alugar seu imóvel?</h2>
-          <p>Em breve esta área receberá o formulário de captação de proprietários.</p>
+          <p>Envie os dados do imóvel. A solicitação entra diretamente no nosso processo de captação e acompanhamento.</p>
         </div>
-        <a className="button button-light" href="#contato">Quero anunciar meu imóvel</a>
+        <Link className="button button-light" to="/anuncie-seu-imovel">Quero anunciar meu imóvel</Link>
       </section>
 
       <section className="section valuation" id="avaliar">
@@ -142,7 +142,7 @@ export default function Home() {
           <h2>Quer saber quanto seu imóvel pode valer?</h2>
           <p>Solicite uma avaliação antes de vender ou alugar.</p>
         </div>
-        <a className="button" href="#contato">Solicitar avaliação</a>
+        <Link className="button" to="/avaliacao-do-imovel">Solicitar avaliação</Link>
       </section>
 
       <section className="section section-soft" id="sobre">

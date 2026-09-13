@@ -55,6 +55,10 @@ export default function AdminDashboard() {
         ['Lead → venda', `${metrics.lead_to_won_rate}%`],
         ['Valor fechado', formatCurrency(metrics.won_value)],
         ['Comissão', formatCurrency(metrics.commission_value)],
+        ['Captações', metrics.captures],
+        ['Captações novas', metrics.capture_new],
+        ['Autorizados', metrics.capture_authorized],
+        ['Imóveis publicados', metrics.capture_published],
       ]
     : [];
 
@@ -176,6 +180,7 @@ export default function AdminDashboard() {
           <Link to="/admin/leads">Abrir funil</Link>
           <Link to="/admin/acoes">Próximas ações</Link>
           <Link to="/admin/agendamentos">Agendamentos</Link>
+          <Link to="/admin/captacoes">Captações</Link>
           <Link to="/admin/imoveis">Imóveis</Link>
         </div>
       </section>

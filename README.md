@@ -1,68 +1,77 @@
-# Matos Negócios Imobiliários — Versão 8
+# Matos Negócios Imobiliários — Versão 9
 
-## CRM de atendimento
+## Captação de imóveis e proprietários
 
-Esta versão transforma a área de leads em um CRM comercial.
+### Site público
+Novas páginas:
+- `/anuncie-seu-imovel`
+- `/avaliacao-do-imovel`
 
-### Funil visual
-Etapas:
-- Novo
-- Contatado
-- Qualificado
-- Visita
-- Proposta
-- Fechado
+O proprietário pode enviar:
+- nome
+- WhatsApp
+- e-mail
+- objetivo: vender / alugar
+- tipo de imóvel
+- cidade e bairro
+- endereço ou referência
+- valor pretendido
+- descrição
+- autorização para uso dos dados no atendimento
+
+### Painel administrativo
+Nova área:
+- `Captações`
+
+Funil:
+- Novo contato
+- Avaliação
+- Documentação
+- Autorizado
+- Publicado
 - Perdido
 
-É possível mover o cliente de etapa diretamente no funil.
-
-### Ficha do cliente
-Cada lead passa a ter:
-- dados de contato
-- imóvel de interesse
-- mensagem inicial
-- origem
-- histórico das etapas
-- anotações de atendimento
+### Ficha do proprietário
+Permite controlar:
+- valor pretendido
+- valor da avaliação
+- comissão combinada
 - próxima ação
-- data e horário da próxima ação
 - motivo de perda
-- valor do negócio
-- valor da comissão
-- visitas solicitadas
-- botão direto de WhatsApp
-
-### Próximas ações
-Nova tela administrativa para:
-- ações atrasadas
-- próximas ações
-- acesso rápido ao cliente
+- anotações
+- histórico das etapas
+- documentação recebida / pendente
 - WhatsApp
 
-### Indicadores
-O painel passa a mostrar:
-- visitantes
-- leads
-- agendamentos
-- propostas
-- fechados
-- conversão de lead em venda
-- valor total fechado
-- comissão total
-- motivos de perda
-- imóveis que mais geram leads
+### Documentos acompanhados
+- Documento do proprietário
+- Matrícula do imóvel
+- IPTU / cadastro municipal
+- Autorização para intermediação
+
+### Conversão em imóvel
+O botão `Criar imóvel sem redigitar` reaproveita:
+- tipo
+- finalidade
+- cidade
+- bairro
+- descrição
+- valor
+
+O imóvel é criado como RASCUNHO.
+Depois o administrador apenas completa fotos e demais dados e publica.
 
 ## Instalação
 
-ANTES de publicar a Versão 8:
+ANTES de publicar a Versão 9:
 
-1. Abra `SUPABASE_CRM_SETUP.sql`.
+1. Abra `SUPABASE_CAPTACOES_SETUP.sql`.
 2. Copie todo o conteúdo.
 3. Execute no Editor SQL do Supabase.
 4. Confirme que apareceu sucesso.
-5. Depois publique os arquivos da Versão 8 no GitHub/Vercel.
+5. Só depois publique os arquivos no GitHub/Vercel.
 
 ## Segurança
-- Os dados do CRM continuam protegidos por RLS.
-- Apenas administrador autenticado pode ler ou alterar anotações, histórico e dados comerciais.
-- Nenhuma chave secreta é colocada no navegador.
+- O visitante pode enviar uma captação.
+- O visitante não consegue consultar a base de proprietários.
+- Somente administrador autenticado pode visualizar, editar e converter captações.

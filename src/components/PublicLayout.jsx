@@ -18,8 +18,8 @@ export default function PublicLayout() {
         <nav className="nav" aria-label="Navegação principal">
           <NavLink to="/comprar">Comprar</NavLink>
           <NavLink to="/alugar">Alugar</NavLink>
-          <a href="/#anunciar">Anuncie seu imóvel</a>
-          <a href="/#avaliar">Avalie seu imóvel</a>
+          <NavLink to="/anuncie-seu-imovel">Anuncie seu imóvel</NavLink>
+          <NavLink to="/avaliacao-do-imovel">Avalie seu imóvel</NavLink>
           <a href="/#sobre">Sobre</a>
         </nav>
 
@@ -38,8 +38,8 @@ export default function PublicLayout() {
           <Link to="/">Início</Link>
           <Link to="/comprar">Comprar</Link>
           <Link to="/alugar">Alugar</Link>
-          <a href="/#anunciar">Anunciar</a>
-          <a href="/#avaliar">Avaliação</a>
+          <Link to="/anuncie-seu-imovel">Anunciar</Link>
+          <Link to="/avaliacao-do-imovel">Avaliação</Link>
         </div>
 
         <p className="footer-note">© 2026 Matos Negócios Imobiliários.</p>
