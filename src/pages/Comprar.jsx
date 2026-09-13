@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import PropertyFilters from '../components/PropertyFilters';
 import EmptyProperties from '../components/EmptyProperties';
 
@@ -31,6 +32,10 @@ export default function Comprar() {
         </div>
 
         <EmptyProperties tipo="à venda" />
+        <div className="model-preview">
+          <span>Quer visualizar como ficará um anúncio?</span>
+          <Link className="button" to="/imovel/modelo">Ver página modelo do imóvel</Link>
+        </div>
       </section>
     </main>
   );

@@ -1,16 +1,19 @@
-# Matos Negócios Imobiliários
-
-Versão 2 do site.
+# Matos Negócios Imobiliários — Versão 3
 
 ## Já disponível
 - Home
-- Página Comprar
-- Página Alugar
-- Navegação entre as páginas
-- Filtros visuais
+- Comprar
+- Alugar
+- Página individual do imóvel em `/imovel/modelo`
+- Galeria visual
+- Área de características
+- Localização pública
+- Área de contato
+- Barra de contato no celular
 - Estrutura responsiva
 
-## Próximas etapas
-1. Página individual do imóvel
-2. Conexão com Supabase
-3. Área administrativa
+## Importante
+A rota `/imovel/modelo` é apenas uma prévia visual. Não representa um imóvel real.
+
+## Próxima etapa
+Conectar o site ao Supabase para carregar imóveis reais automaticamente.
