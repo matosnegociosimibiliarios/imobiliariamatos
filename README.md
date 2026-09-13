@@ -1,20 +1,23 @@
-# Matos Negócios Imobiliários — Versão 4
+# Matos Negócios Imobiliários — Versão 5
 
 ## Nesta versão
-- Conexão real com Supabase
-- Home consulta imóveis publicados
-- Comprar consulta imóveis à venda
-- Alugar consulta imóveis para locação
-- Página individual consulta o imóvel pelo slug
-- RLS do Supabase continua controlando a leitura pública
-- Estado vazio quando ainda não existem imóveis publicados
+- Fotos reais vindas do Supabase Storage
+- Foto de capa nos cards da Home
+- Foto de capa na página Comprar/Alugar
+- Galeria com até 5 fotos na página individual
+- Galeria ampliada em tela cheia
+- Navegação anterior/próxima
+- Fallback quando imóvel não tem foto
 
-## Variáveis necessárias na Vercel
-- VITE_SUPABASE_URL
-- VITE_SUPABASE_PUBLISHABLE_KEY
+## Bucket esperado
+`imagens de propriedade`
 
-## Próximas etapas
-1. Cadastrar o primeiro imóvel real
-2. Criar armazenamento e upload de fotos
-3. Ativar filtros
-4. Criar painel administrativo próprio
+## Formato dos caminhos
+Exemplo:
+`mat-0001/01.jpg`
+
+## Próximos passos
+1. Painel administrativo para cadastrar imóveis sem SQL
+2. Upload de fotos pelo painel
+3. Filtros funcionando
+4. Captação de leads e agendamentos

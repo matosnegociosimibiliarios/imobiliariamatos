@@ -1,5 +1,7 @@
 import { supabase, supabaseConfigured } from '../lib/supabase';
 
+export const PROPERTY_BUCKET = 'imagens de propriedade';
+
 const cardFields = `
   id,
   code,
@@ -18,8 +20,49 @@ const cardFields = `
   featured,
   created_at,
   city:cities(name,state_code),
-  neighborhood:neighborhoods(name)
+  neighborhood:neighborhoods(name),
+  property_images(
+    id,
+    storage_path,
+    alt_text,
+    display_order,
+    is_cover
+  )
 `;
+
+export function getPublicImageUrl(storagePath) {
+  if (!supabaseConfigured || !storagePath) return null;
+
+  const { data } = supabase
+    .storage
+    .from(PROPERTY_BUCKET)
+    .getPublicUrl(storagePath);
+
+  return data?.publicUrl || null;
+}
+
+export function getCoverImage(property) {
+  const images = [...(property?.property_images || [])]
+    .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+
+  const cover = images.find((image) => image.is_cover) || images[0];
+  if (!cover) return null;
+
+  return {
+    ...cover,
+    publicUrl: getPublicImageUrl(cover.storage_path),
+  };
+}
+
+export function getPropertyImages(property) {
+  return [...(property?.property_images || [])]
+    .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
+    .map((image) => ({
+      ...image,
+      publicUrl: getPublicImageUrl(image.storage_path),
+    }))
+    .filter((image) => image.publicUrl);
+}
 
 export function formatMoney(value) {
   if (value === null || value === undefined || value === '') return null;
@@ -130,7 +173,13 @@ export async function getPropertyBySlug(slug) {
       *,
       city:cities(name,state_code),
       neighborhood:neighborhoods(name),
-      property_images(id,storage_path,alt_text,display_order,is_cover),
+      property_images(
+        id,
+        storage_path,
+        alt_text,
+        display_order,
+        is_cover
+      ),
       property_features(
         feature:features(id,key,label,active)
       )

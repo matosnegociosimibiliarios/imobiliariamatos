@@ -528,3 +528,144 @@ button, input, select { font: inherit; }
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Versão 5 - fotos reais */
+.property-card-image {
+  overflow: hidden;
+}
+
+.property-card-image img {
+  width: 100%;
+  height: 220px;
+  display: block;
+  object-fit: cover;
+  transition: transform .25s ease;
+}
+
+.property-card:hover .property-card-image img {
+  transform: scale(1.025);
+}
+
+.property-gallery-main,
+.property-gallery-thumb {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.property-gallery-main {
+  min-height: 388px;
+}
+
+.property-gallery-main img,
+.property-gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.property-gallery-main img {
+  min-height: 388px;
+  max-height: 520px;
+}
+
+.property-gallery-thumb {
+  min-height: 190px;
+}
+
+.gallery-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 34px 70px;
+  background: rgba(8, 12, 9, .96);
+}
+
+.gallery-modal-image {
+  max-width: 100%;
+  max-height: calc(100vh - 90px);
+  object-fit: contain;
+}
+
+.gallery-close,
+.gallery-nav {
+  position: fixed;
+  z-index: 101;
+  border: 0;
+  background: rgba(255,255,255,.12);
+  color: white;
+  cursor: pointer;
+}
+
+.gallery-close {
+  top: 20px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 30px;
+}
+
+.gallery-nav {
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 64px;
+  border-radius: 12px;
+  font-size: 42px;
+}
+
+.gallery-prev {
+  left: 18px;
+}
+
+.gallery-next {
+  right: 18px;
+}
+
+.gallery-counter {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.12);
+  color: white;
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .property-gallery-main {
+    min-height: 280px;
+  }
+
+  .property-gallery-main img {
+    min-height: 280px;
+    max-height: 380px;
+  }
+
+  .gallery-modal {
+    padding: 60px 18px;
+  }
+
+  .gallery-nav {
+    width: 40px;
+    height: 54px;
+  }
+
+  .gallery-prev {
+    left: 8px;
+  }
+
+  .gallery-next {
+    right: 8px;
+  }
+}
