@@ -1,30 +1,52 @@
-# Matos Negócios Imobiliários — Versão 6
+# Matos Negócios Imobiliários — Versão 7
 
-## Novidades
-- Login administrativo em `/login`
-- Painel em `/admin`
-- Visão geral de imóveis
-- Lista de imóveis
-- Novo imóvel
-- Edição de imóvel
-- Publicar / despublicar
-- Exclusão lógica de imóvel
-- Upload de fotos
-- Definir foto de capa
-- Excluir foto
-- Site público continua funcionando
+## O que entra nesta versão
 
-## Antes de usar o painel
+### Visitantes
+- Registro anônimo de páginas visitadas
+- Sessão anônima salva no navegador
+- Página visitada
+- Imóvel visitado
+- Referência
+- UTM source / medium / campaign
+- Sem IP e sem captura automática de dados pessoais
+
+### Leads
+- Formulário de interesse na página do imóvel
+- Nome
+- WhatsApp
+- E-mail opcional
+- Mensagem
+- Imóvel de origem
+- Sessão de origem
+- Status do atendimento
+
+### Agendamentos
+- Solicitação de visita
+- Data desejada
+- Horário desejado
+- Status do agendamento
+
+### Painel
+- Visitantes únicos
+- Visualizações
+- Leads
+- Agendamentos
+- Fechados
+- Taxa visitante → lead
+- Taxa lead → agendamento
+- Origem dos leads
+- Imóveis que mais geram leads
+- Tela de Leads
+- Tela de Agendamentos
+
+## Antes de publicar
 Execute no Supabase:
-`SUPABASE_ADMIN_SETUP.sql`
+`SUPABASE_LEADS_SETUP.sql`
 
-Depois:
-1. Crie um usuário em Authentication > Users.
-2. Transforme esse usuário em administrador usando o comando SQL no final do arquivo.
-3. Publique esta versão no GitHub/Vercel.
-4. Acesse `/login`.
+Depois publique esta versão no GitHub/Vercel.
 
 ## Segurança
-- Visitantes continuam vendo apenas imóveis publicados.
-- Escrita no banco só é permitida para usuários autenticados com `role = 'admin'`.
-- A chave secreta do Supabase não é usada no navegador.
+- Visitante pode inserir visita, lead e pedido de agendamento.
+- Visitante não pode ler a base de leads.
+- Somente administrador pode ler e editar leads, visitas e agendamentos.

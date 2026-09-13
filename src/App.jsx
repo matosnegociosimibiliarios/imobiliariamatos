@@ -13,6 +13,8 @@ import Login from './pages/admin/Login';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProperties from './pages/admin/AdminProperties';
 import AdminPropertyForm from './pages/admin/AdminPropertyForm';
+import AdminLeads from './pages/admin/AdminLeads';
+import AdminAppointments from './pages/admin/AdminAppointments';
 
 export default function App() {
   return (
@@ -30,6 +32,8 @@ export default function App() {
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/imoveis" element={<AdminProperties />} />
+          <Route path="/admin/leads" element={<AdminLeads />} />
+          <Route path="/admin/agendamentos" element={<AdminAppointments />} />
           <Route path="/admin/imoveis/novo" element={<AdminPropertyForm />} />
           <Route path="/admin/imoveis/:id/editar" element={<AdminPropertyForm />} />
         </Route>

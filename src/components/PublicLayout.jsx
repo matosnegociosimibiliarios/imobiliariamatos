@@ -1,9 +1,11 @@
 import React from 'react';
+import PageTracker from './PageTracker';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 
 export default function PublicLayout() {
   return (
     <div className="site-shell">
+      <PageTracker />
       <header className="header">
         <Link className="brand" to="/">
           <span className="brand-mark">M</span>

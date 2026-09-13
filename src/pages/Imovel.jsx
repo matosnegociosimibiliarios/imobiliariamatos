@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import LeadForm from '../components/LeadForm';
+import { trackPageView } from '../services/tracking';
 import { Link, useParams } from 'react-router-dom';
 import {
   getAgencySettings,
@@ -46,6 +48,12 @@ export default function Imovel() {
         setNotFound(true);
       } else {
         setProperty(propertyResult.data);
+
+        trackPageView({
+          path: window.location.pathname,
+          pageType: 'property_detail',
+          propertyId: propertyResult.data.id,
+        });
       }
 
       setLoading(false);
@@ -267,26 +275,20 @@ export default function Imovel() {
           <h2>Interessado neste imóvel?</h2>
 
           <p>
-            Entre em contato para tirar dúvidas ou solicitar uma visita.
+            Deixe seus dados para receber atendimento ou solicitar uma visita.
           </p>
 
-          {whatsappLink ? (
+          <LeadForm property={property} />
+
+          {whatsappLink && (
             <a
-              className="button full-button"
+              className="share-button"
               href={whatsappLink}
               target="_blank"
               rel="noreferrer"
             >
-              Falar pelo WhatsApp
+              Prefiro falar direto pelo WhatsApp
             </a>
-          ) : (
-            <button
-              className="button full-button"
-              type="button"
-              disabled
-            >
-              WhatsApp ainda não configurado
-            </button>
           )}
         </aside>
       </section>

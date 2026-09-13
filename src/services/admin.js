@@ -247,3 +247,61 @@ export async function deletePropertyImage(image) {
     .delete()
     .eq('id', image.id);
 }
+
+
+export async function getDashboardMetrics(daysBack = 30) {
+  return supabase.rpc('admin_dashboard_metrics', {
+    days_back: daysBack,
+  });
+}
+
+export async function getLeadSources(daysBack = 30) {
+  return supabase.rpc('admin_lead_sources', {
+    days_back: daysBack,
+  });
+}
+
+export async function getTopLeadProperties(daysBack = 30) {
+  return supabase.rpc('admin_top_lead_properties', {
+    days_back: daysBack,
+  });
+}
+
+export async function getLeads() {
+  return supabase
+    .from('leads')
+    .select(`
+      *,
+      property:properties(id,code,title)
+    `)
+    .order('created_at', { ascending: false });
+}
+
+export async function updateLeadStatus(id, status) {
+  return supabase
+    .from('leads')
+    .update({ status })
+    .eq('id', id)
+    .select()
+    .single();
+}
+
+export async function getAppointments() {
+  return supabase
+    .from('appointments')
+    .select(`
+      *,
+      lead:leads(id,name,whatsapp,email,status),
+      property:properties(id,code,title)
+    `)
+    .order('created_at', { ascending: false });
+}
+
+export async function updateAppointment(id, payload) {
+  return supabase
+    .from('appointments')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+}

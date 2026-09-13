@@ -1124,3 +1124,131 @@ button, input, select { font: inherit; }
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =========================================================
+   VERSÃO 7 - LEADS, AGENDAMENTOS E MÉTRICAS
+   ========================================================= */
+
+.lead-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.lead-form label {
+  display: grid;
+  gap: 6px;
+  color: #4a574e;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lead-form input,
+.lead-form textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  color: var(--ink);
+}
+
+.lead-form textarea {
+  resize: vertical;
+}
+
+.lead-checkbox {
+  display: flex !important;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.lead-checkbox input {
+  width: auto;
+}
+
+.lead-appointment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.lead-privacy-note {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.lead-success {
+  padding: 16px;
+  margin-top: 18px;
+  border-radius: 12px;
+  background: #e8f5eb;
+  color: #215f32;
+}
+
+.lead-success p {
+  margin-bottom: 0;
+}
+
+.lead-error {
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #fdeaea;
+  color: #8c2c2c;
+  font-size: 13px;
+}
+
+.admin-stats-wide {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.metric-list {
+  display: grid;
+  gap: 10px;
+}
+
+.metric-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.metric-list span {
+  color: #445147;
+}
+
+.admin-table select {
+  min-width: 150px;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+
+@media (max-width: 1100px) {
+  .admin-stats-wide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 850px) {
+  .admin-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .lead-appointment-grid,
+  .admin-stats-wide {
+    grid-template-columns: 1fr;
+  }
+}
