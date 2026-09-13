@@ -1,6 +1,6 @@
 import { supabase, supabaseConfigured } from '../lib/supabase';
 
-export const PROPERTY_BUCKET = 'imagens de propriedade';
+export const PROPERTY_BUCKET = 'property-images';
 
 const cardFields = `
   id,

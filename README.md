@@ -10,7 +10,7 @@
 - Fallback quando imóvel não tem foto
 
 ## Bucket esperado
-`imagens de propriedade`
+`property-images`
 
 ## Formato dos caminhos
 Exemplo:
