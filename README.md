@@ -102,3 +102,10 @@ A conexão final depende da conta profissional do Instagram, do aplicativo Meta 
 Antes de publicar os arquivos da V10.2, execute `SUPABASE_V10_2_SETUP.sql` no Editor SQL do Supabase.
 
 Não é necessário criar novas variáveis na Vercel. A V10.2 usa as mesmas configurações Meta/Instagram já validadas na V10.1.
+
+## V10.2.1
+Correção do envio de respostas do Instagram pelo CRM:
+- corrige a leitura do token de sessão administrativa no endpoint `/api/instagram-send`;
+- não altera banco de dados;
+- não exige novas variáveis de ambiente;
+- não exige nova configuração na Meta.

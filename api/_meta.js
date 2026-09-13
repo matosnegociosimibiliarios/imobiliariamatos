@@ -70,9 +70,9 @@ export async function graphGet(idOrPath, token, fields=null) {
 
 export async function requireAdmin(req) {
   const authorization = String(req.headers.authorization || '');
-  const match = authorization.match(/^Bearer\\s+(.+)$/i);
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
   if (!match) {
-    const error = new Error('Sessão não informada.');
+    const error = new Error('Sessão administrativa não recebida. Faça login novamente se o problema persistir.');
     error.statusCode = 401;
     throw error;
   }
