@@ -551,11 +551,17 @@ export async function getIntegrationMetrics(daysBack = 30) {
   return supabase.rpc('admin_integration_metrics', { days_back: daysBack });
 }
 
-export async function getLeadSocialMessages(leadId) {
-  return supabase
+export async function getLeadSocialMessages(leadId, platform = null) {
+  let query = supabase
     .from('social_messages')
     .select('*')
-    .eq('lead_id', leadId)
+    .eq('lead_id', leadId);
+
+  if (platform) {
+    query = query.eq('platform', platform);
+  }
+
+  return query
     .order('sent_at', { ascending: true, nullsFirst: false })
     .order('created_at', { ascending: true })
     .limit(200);
@@ -577,6 +583,11 @@ export async function getInstagramConversations() {
       last_outbound_at,
       last_message_at,
       social_unread_count,
+      instagram_unread_count,
+      whatsapp_unread_count,
+      whatsapp,
+      whatsapp_wa_id,
+      whatsapp_phone_number_id,
       created_at
     `)
     .eq('source_platform', 'instagram')
@@ -585,9 +596,37 @@ export async function getInstagramConversations() {
     .order('created_at', { ascending: false });
 }
 
-export async function markLeadSocialRead(leadId) {
-  return supabase.rpc('mark_social_messages_read', {
+export async function getWhatsAppConversations() {
+  return supabase
+    .from('leads')
+    .select(`
+      id,
+      name,
+      status,
+      source_platform,
+      source_channel,
+      whatsapp,
+      whatsapp_wa_id,
+      whatsapp_phone_number_id,
+      last_inbound_message,
+      last_inbound_at,
+      last_outbound_message,
+      last_outbound_at,
+      last_message_at,
+      social_unread_count,
+      instagram_unread_count,
+      whatsapp_unread_count,
+      created_at
+    `)
+    .not('whatsapp_wa_id', 'is', null)
+    .order('last_message_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false });
+}
+
+export async function markLeadSocialRead(leadId, platform = 'instagram') {
+  return supabase.rpc('mark_channel_messages_read', {
     p_lead_id: leadId,
+    p_platform: platform,
   });
 }
 
@@ -621,6 +660,36 @@ export async function sendInstagramMessage(leadId, text) {
 }
 
 
+export async function sendWhatsAppMessage(leadId, text) {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+
+  if (!accessToken) {
+    throw new Error('Sua sessão expirou. Entre novamente no painel.');
+  }
+
+  const response = await fetch('/api/whatsapp-send', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      lead_id: leadId,
+      text,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Não foi possível enviar a mensagem pelo WhatsApp.');
+  }
+
+  return data;
+}
+
+
 export async function getIntegrationEvents() {
   return supabase.from('integration_events').select('*').order('created_at', { ascending: false }).limit(30);
 }
@@ -647,12 +716,21 @@ export async function getResponseTemplates(channel = 'instagram') {
 }
 
 export async function getUnreadInstagramCount() {
-  return supabase.rpc('admin_unread_social_count');
+  return supabase.rpc('admin_unread_social_count_by_platform', {
+    p_platform: 'instagram',
+  });
 }
 
-export async function markLeadSocialUnread(leadId) {
-  return supabase.rpc('mark_social_conversation_unread', {
+export async function getUnreadWhatsAppCount() {
+  return supabase.rpc('admin_unread_social_count_by_platform', {
+    p_platform: 'whatsapp',
+  });
+}
+
+export async function markLeadSocialUnread(leadId, platform = 'instagram') {
+  return supabase.rpc('mark_channel_conversation_unread', {
     p_lead_id: leadId,
+    p_platform: platform,
   });
 }
 

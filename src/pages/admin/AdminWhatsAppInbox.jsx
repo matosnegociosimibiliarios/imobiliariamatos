@@ -1,18 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import InstagramConversation from '../../components/InstagramConversation';
-import { getInstagramConversations } from '../../services/admin';
+import WhatsAppConversation from '../../components/WhatsAppConversation';
+import { getWhatsAppConversations } from '../../services/admin';
 import { STATUS_LABELS, formatDateTime } from '../../services/crm';
 
 function previewText(item) {
   return (
     item.last_inbound_message ||
     item.last_outbound_message ||
-    'Conversa iniciada no Instagram'
+    'Conversa iniciada no WhatsApp'
   );
 }
 
-export default function AdminInstagramInbox() {
+export default function AdminWhatsAppInbox() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
@@ -24,10 +24,10 @@ export default function AdminInstagramInbox() {
   async function load({ quiet = false } = {}) {
     if (!quiet) setLoading(true);
 
-    const result = await getInstagramConversations();
+    const result = await getWhatsAppConversations();
 
     if (result.error) {
-      setError('Não foi possível carregar as conversas do Instagram.');
+      setError('Não foi possível carregar as conversas do WhatsApp.');
     } else {
       const rows = result.data || [];
       setItems(rows);
@@ -56,7 +56,7 @@ export default function AdminInstagramInbox() {
     if (!term) return items;
 
     return items.filter((item) =>
-      [item.name, item.last_inbound_message, item.last_outbound_message]
+      [item.name, item.whatsapp, item.last_inbound_message, item.last_outbound_message]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(term))
     );
@@ -64,7 +64,7 @@ export default function AdminInstagramInbox() {
 
   const active = items.find((item) => item.id === activeId) || null;
   const unreadTotal = items.reduce(
-    (sum, item) => sum + Number(item.instagram_unread_count || 0),
+    (sum, item) => sum + Number(item.whatsapp_unread_count || 0),
     0
   );
 
@@ -77,7 +77,7 @@ export default function AdminInstagramInbox() {
       <div className="admin-page-header">
         <div>
           <span className="eyebrow">Atendimento</span>
-          <h1>Mensagens do Instagram</h1>
+          <h1>Mensagens do WhatsApp</h1>
         </div>
 
         <div className="ig-inbox-summary">
@@ -113,7 +113,7 @@ export default function AdminInstagramInbox() {
                   onClick={() => selectLead(item.id)}
                 >
                   <span className="ig-contact-avatar">
-                    {String(item.name || 'I').slice(0, 1).toUpperCase()}
+                    {String(item.name || 'W').slice(0, 1).toUpperCase()}
                   </span>
 
                   <span className="ig-contact-body">
@@ -128,9 +128,9 @@ export default function AdminInstagramInbox() {
 
                     <span className="ig-contact-row">
                       <span className="ig-contact-preview">{previewText(item)}</span>
-                      {Number(item.instagram_unread_count || 0) > 0 && (
+                      {Number(item.whatsapp_unread_count || 0) > 0 && (
                         <b className="ig-unread-badge">
-                          {item.social_unread_count}
+                          {item.whatsapp_unread_count}
                         </b>
                       )}
                     </span>
@@ -152,7 +152,7 @@ export default function AdminInstagramInbox() {
                 <div>
                   <strong>{active.name}</strong>
                   <span>
-                    {STATUS_LABELS[active.status] || active.status} · Instagram Direct
+                    {STATUS_LABELS[active.status] || active.status} · WhatsApp Business
                   </span>
                 </div>
 
@@ -161,16 +161,17 @@ export default function AdminInstagramInbox() {
                 </Link>
               </div>
 
-              <InstagramConversation
+              <WhatsAppConversation
                 leadId={active.id}
                 leadName={active.name}
+                whatsapp={active.whatsapp}
                 onActivity={() => load({ quiet: true })}
               />
             </>
           ) : (
             <div className="ig-inbox-empty">
               <h2>Selecione uma conversa</h2>
-              <p>As mensagens recebidas no Instagram aparecerão aqui.</p>
+              <p>As mensagens recebidas no WhatsApp aparecerão aqui.</p>
             </div>
           )}
         </section>

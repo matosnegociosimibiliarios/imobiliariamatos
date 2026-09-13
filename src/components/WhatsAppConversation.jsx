@@ -4,25 +4,14 @@ import {
   getResponseTemplates,
   markLeadSocialRead,
   markLeadSocialUnread,
-  sendInstagramMessage,
+  sendWhatsAppMessage,
 } from '../services/admin';
 import { formatDateTime } from '../services/crm';
 
-function attachmentUrl(message) {
-  const attachments = message?.metadata?.attachments;
-  if (!Array.isArray(attachments)) return null;
-
-  for (const item of attachments) {
-    const url = item?.payload?.url || item?.url;
-    if (url) return url;
-  }
-
-  return null;
-}
-
-export default function InstagramConversation({
+export default function WhatsAppConversation({
   leadId,
-  leadName = 'Contato do Instagram',
+  leadName = 'Contato do WhatsApp',
+  whatsapp = null,
   compact = false,
   onActivity,
 }) {
@@ -38,16 +27,16 @@ export default function InstagramConversation({
     if (!leadId) return;
     if (!quiet) setLoading(true);
 
-    const result = await getLeadSocialMessages(leadId, 'instagram');
+    const result = await getLeadSocialMessages(leadId, 'whatsapp');
 
     if (result.error) {
-      setError('Não foi possível carregar a conversa.');
+      setError('Não foi possível carregar a conversa do WhatsApp.');
     } else {
       setMessages(result.data || []);
       setError('');
 
       if (markRead) {
-        await markLeadSocialRead(leadId, 'instagram');
+        await markLeadSocialRead(leadId, 'whatsapp');
         onActivity?.();
       }
     }
@@ -59,11 +48,13 @@ export default function InstagramConversation({
     let active = true;
 
     (async () => {
-      const result = await getResponseTemplates('instagram');
+      const result = await getResponseTemplates('whatsapp');
       if (active && !result.error) setTemplates(result.data || []);
     })();
 
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -93,19 +84,19 @@ export default function InstagramConversation({
     setError('');
 
     try {
-      await sendInstagramMessage(leadId, clean);
+      await sendWhatsAppMessage(leadId, clean);
       setText('');
       await load({ markRead: true, quiet: true });
       onActivity?.();
     } catch (sendError) {
-      setError(sendError.message || 'Não foi possível enviar a mensagem.');
+      setError(sendError.message || 'Não foi possível enviar a mensagem pelo WhatsApp.');
     } finally {
       setSending(false);
     }
   }
 
   async function markUnread() {
-    const result = await markLeadSocialUnread(leadId, 'instagram');
+    const result = await markLeadSocialUnread(leadId, 'whatsapp');
     if (result.error) {
       setError('Não foi possível marcar como não lida.');
       return;
@@ -113,11 +104,14 @@ export default function InstagramConversation({
     onActivity?.();
   }
 
+  const digits = String(whatsapp || '').replace(/\D/g, '');
+  const whatsappUrl = digits ? `https://wa.me/${digits}` : 'https://web.whatsapp.com/';
+
   return (
     <div className={`ig-conversation ${compact ? 'compact' : ''}`}>
       <div className="ig-conversation-head">
         <div>
-          <span className="ig-channel-label">Instagram Direct</span>
+          <span className="ig-channel-label">WhatsApp Business</span>
           <strong>{leadName}</strong>
         </div>
 
@@ -125,12 +119,8 @@ export default function InstagramConversation({
           <button type="button" onClick={markUnread}>
             Marcar como não lida
           </button>
-          <a
-            href="https://www.instagram.com/direct/inbox/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Abrir Instagram
+          <a href={whatsappUrl} target="_blank" rel="noreferrer">
+            Abrir WhatsApp
           </a>
         </div>
       </div>
@@ -142,8 +132,18 @@ export default function InstagramConversation({
           <div className="ig-thread-empty">Nenhuma mensagem registrada.</div>
         ) : (
           messages.map((item) => {
-            const mediaUrl = attachmentUrl(item);
             const outbound = item.direction === 'outbound';
+            const status = item.delivery_status;
+            const statusLabel =
+              status === 'read'
+                ? 'lida'
+                : status === 'delivered'
+                  ? 'entregue'
+                  : status === 'sent'
+                    ? 'enviada'
+                    : status === 'failed'
+                      ? 'falhou'
+                      : '';
 
             return (
               <article
@@ -152,19 +152,13 @@ export default function InstagramConversation({
               >
                 <div className="ig-message-bubble">
                   <p>{item.message_text || 'Mensagem sem texto'}</p>
-
-                  {mediaUrl && (
-                    <a href={mediaUrl} target="_blank" rel="noreferrer">
-                      Abrir mídia recebida
-                    </a>
-                  )}
-
                   <small>
                     {formatDateTime(item.sent_at || item.created_at)}
-                    {outbound && item.delivery_status === 'sent'
-                      ? ' · enviada'
-                      : ''}
+                    {outbound && statusLabel ? ` · ${statusLabel}` : ''}
                   </small>
+                  {item.error_message && (
+                    <small className="ig-message-error">{item.error_message}</small>
+                  )}
                 </div>
               </article>
             );
@@ -199,17 +193,16 @@ export default function InstagramConversation({
           value={text}
           onChange={(event) => setText(event.target.value)}
           placeholder="Digite sua resposta..."
-          maxLength={1000}
+          maxLength={4096}
         />
 
         <div className="ig-compose-footer">
           <small>
-            A conversa precisa ter sido iniciada pelo cliente. A Meta pode limitar
-            respostas fora da janela permitida.
+            Respostas livres são permitidas dentro da janela de atendimento de 24 horas após a mensagem do cliente.
           </small>
 
           <button className="button" disabled={sending || !text.trim()}>
-            {sending ? 'Enviando...' : 'Enviar pelo Instagram'}
+            {sending ? 'Enviando...' : 'Enviar pelo WhatsApp'}
           </button>
         </div>
       </form>

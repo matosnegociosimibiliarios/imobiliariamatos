@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { signOut } from '../services/auth';
-import { getUnreadInstagramCount } from '../services/admin';
+import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/admin';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const [unreadInstagram, setUnreadInstagram] = useState(0);
+  const [unreadWhatsApp, setUnreadWhatsApp] = useState(0);
 
   async function loadUnread() {
-    const { data } = await getUnreadInstagramCount();
-    setUnreadInstagram(Number(data || 0));
+    const [instagramResult, whatsappResult] = await Promise.all([
+      getUnreadInstagramCount(),
+      getUnreadWhatsAppCount(),
+    ]);
+    setUnreadInstagram(Number(instagramResult.data || 0));
+    setUnreadWhatsApp(Number(whatsappResult.data || 0));
   }
 
   useEffect(() => {
@@ -41,6 +46,12 @@ export default function AdminLayout() {
             <span>Mensagens Instagram</span>
             {unreadInstagram > 0 && (
               <b>{unreadInstagram > 99 ? '99+' : unreadInstagram}</b>
+            )}
+          </NavLink>
+          <NavLink to="/admin/whatsapp" className="admin-nav-with-badge">
+            <span>Mensagens WhatsApp</span>
+            {unreadWhatsApp > 0 && (
+              <b>{unreadWhatsApp > 99 ? '99+' : unreadWhatsApp}</b>
             )}
           </NavLink>
           <NavLink to="/admin/leads">Funil de clientes</NavLink>

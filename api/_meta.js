@@ -11,6 +11,9 @@ export function envStatus(req) {
     instagram_access_token: Boolean(process.env.META_INSTAGRAM_ACCESS_TOKEN),
     lead_ads_access_token: Boolean(process.env.META_LEAD_ADS_ACCESS_TOKEN),
     instagram_user_id: Boolean(process.env.META_INSTAGRAM_USER_ID),
+    whatsapp_access_token: Boolean(process.env.META_WHATSAPP_ACCESS_TOKEN),
+    whatsapp_phone_number_id: Boolean(process.env.META_WHATSAPP_PHONE_NUMBER_ID),
+    whatsapp_business_account_id: Boolean(process.env.META_WHATSAPP_BUSINESS_ACCOUNT_ID),
     webhook_url: `https://${host}/api/meta-webhook`,
     graph_version: GRAPH_VERSION,
   };
@@ -233,4 +236,216 @@ export async function createLeadFromLeadAd({ leadgenId, pageId=null, formId=null
   const platform = String(leadData.platform || '').toLowerCase() === 'instagram' ? 'instagram' : 'meta';
   const rows = await db('leads', { method:'POST', body:{ name:fullName, whatsapp:phone, email, message:'Lead recebido por formulário de anúncio da Meta.', source:platform === 'instagram' ? 'instagram' : 'meta', source_detail:platform === 'instagram' ? 'Lead Ads - Instagram' : 'Lead Ads - Meta', source_platform:platform, source_channel:'lead_ads', initial_source_platform:platform, initial_source_channel:'lead_ads', initial_source_detail:platform === 'instagram' ? 'Lead Ads - Instagram' : 'Lead Ads - Meta', last_source_platform:platform, last_source_channel:'lead_ads', last_source_detail:platform === 'instagram' ? 'Lead Ads - Instagram' : 'Lead Ads - Meta', last_source_at:new Date().toISOString(), external_lead_id:String(leadgenId), campaign_id:adData?.campaign?.id || null, campaign_name:adData?.campaign?.name || null, adset_id:adData?.adset?.id || null, adset_name:adData?.adset?.name || null, ad_id:finalAdId ? String(finalAdId) : null, ad_name:adData?.name || null, form_id:String(leadData.form_id || formId || '' ) || null, status:'new', external_metadata:{ page_id:pageId, field_data:fields, platform:leadData.platform || null } }, prefer:'return=representation' });
   return rows?.[0];
+}
+
+
+export function normalizePhoneDigits(value) {
+  return String(value || '').replace(/\D/g, '');
+}
+
+export async function sendWhatsAppText(recipientWaId, text, phoneNumberId = null) {
+  const token = process.env.META_WHATSAPP_ACCESS_TOKEN;
+  const senderPhoneNumberId = phoneNumberId || process.env.META_WHATSAPP_PHONE_NUMBER_ID;
+
+  if (!token || !senderPhoneNumberId) {
+    throw new Error('WhatsApp não configurado no servidor.');
+  }
+
+  const response = await fetch(
+    `https://graph.facebook.com/${GRAPH_VERSION}/${encodeURIComponent(senderPhoneNumberId)}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: String(recipientWaId),
+        type: 'text',
+        text: {
+          preview_url: false,
+          body: String(text),
+        },
+      }),
+    }
+  );
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || data.error) {
+    const error = new Error(
+      data.error?.message || `WhatsApp API ${response.status}`
+    );
+    error.statusCode = 400;
+    error.metaError = data.error || null;
+    throw error;
+  }
+
+  return data;
+}
+
+async function findLeadByWhatsApp(waId) {
+  const byWaId = await db(
+    `leads?select=id,name,status,whatsapp,whatsapp_wa_id,whatsapp_phone_number_id,external_metadata,source_platform,source_channel&whatsapp_wa_id=eq.${encodeURIComponent(waId)}&limit=1`
+  );
+  if (byWaId?.length) return byWaId[0];
+
+  const candidates = await db(
+    'leads?select=id,name,status,whatsapp,whatsapp_wa_id,whatsapp_phone_number_id,external_metadata,source_platform,source_channel&whatsapp=not.is.null&limit=1000'
+  );
+  return (candidates || []).find(
+    (item) => normalizePhoneDigits(item.whatsapp) === normalizePhoneDigits(waId)
+  ) || null;
+}
+
+export async function upsertWhatsAppInboundMessage({
+  senderWaId,
+  profileName,
+  messageId,
+  text,
+  timestamp,
+  phoneNumberId,
+  displayPhoneNumber,
+  messageType = 'text',
+  metadata = {},
+}) {
+  const when = timestamp
+    ? new Date(Number(timestamp) * 1000).toISOString()
+    : new Date().toISOString();
+
+  const existing = await findLeadByWhatsApp(senderWaId);
+  const safeName = normalizeString(profileName);
+  let lead;
+
+  if (existing?.id) {
+    const shouldReplaceName =
+      safeName &&
+      (!existing.name ||
+        existing.name.startsWith('Contato WhatsApp ') ||
+        existing.name.startsWith('Contato Instagram '));
+
+    const rows = await db(`leads?id=eq.${encodeURIComponent(existing.id)}`, {
+      method: 'PATCH',
+      body: {
+        name: shouldReplaceName ? safeName : existing.name,
+        whatsapp: existing.whatsapp || `+${normalizePhoneDigits(senderWaId)}`,
+        whatsapp_wa_id: String(senderWaId),
+        whatsapp_phone_number_id: phoneNumberId ? String(phoneNumberId) : existing.whatsapp_phone_number_id,
+        last_source_platform: 'whatsapp',
+        last_source_channel: 'whatsapp',
+        last_source_detail: 'WhatsApp Business',
+        last_source_at: when,
+        updated_at: new Date().toISOString(),
+        external_metadata: {
+          ...(existing.external_metadata || {}),
+          whatsapp: {
+            wa_id: String(senderWaId),
+            profile_name: safeName,
+            phone_number_id: phoneNumberId || null,
+            display_phone_number: displayPhoneNumber || null,
+          },
+        },
+      },
+      prefer: 'return=representation',
+    });
+    lead = rows?.[0] || existing;
+  } else {
+    const rows = await db('leads', {
+      method: 'POST',
+      body: {
+        name: safeName || `Contato WhatsApp ${String(senderWaId).slice(-6)}`,
+        whatsapp: `+${normalizePhoneDigits(senderWaId)}`,
+        email: null,
+        message: text,
+        source: 'whatsapp',
+        source_detail: 'WhatsApp Business',
+        source_platform: 'whatsapp',
+        source_channel: 'whatsapp',
+        initial_source_platform: 'whatsapp',
+        initial_source_channel: 'whatsapp',
+        initial_source_detail: 'WhatsApp Business',
+        last_source_platform: 'whatsapp',
+        last_source_channel: 'whatsapp',
+        last_source_detail: 'WhatsApp Business',
+        last_source_at: when,
+        whatsapp_wa_id: String(senderWaId),
+        whatsapp_phone_number_id: phoneNumberId ? String(phoneNumberId) : null,
+        status: 'new',
+        external_metadata: {
+          whatsapp: {
+            wa_id: String(senderWaId),
+            profile_name: safeName,
+            phone_number_id: phoneNumberId || null,
+            display_phone_number: displayPhoneNumber || null,
+          },
+        },
+      },
+      prefer: 'return=representation',
+    });
+    lead = rows?.[0];
+  }
+
+  if (lead?.id) {
+    await db('social_messages?on_conflict=platform,external_message_id', {
+      method: 'POST',
+      body: {
+        lead_id: lead.id,
+        platform: 'whatsapp',
+        channel: 'whatsapp',
+        external_message_id: messageId || null,
+        external_sender_id: String(senderWaId),
+        external_recipient_id: phoneNumberId ? String(phoneNumberId) : null,
+        direction: 'inbound',
+        message_text: text,
+        sent_at: when,
+        delivery_status: 'received',
+        metadata: {
+          ...metadata,
+          message_type: messageType,
+          profile_name: safeName,
+          display_phone_number: displayPhoneNumber || null,
+          phone_number_id: phoneNumberId || null,
+        },
+      },
+      prefer: 'resolution=ignore-duplicates,return=minimal',
+    });
+  }
+
+  return lead;
+}
+
+export async function updateWhatsAppDeliveryStatus({
+  messageId,
+  status,
+  timestamp,
+  recipientId,
+  errors = [],
+  metadata = {},
+}) {
+  if (!messageId) return null;
+
+  const supportedStatus = ['sent', 'delivered', 'read', 'failed'].includes(status)
+    ? status
+    : 'sent';
+  const errorMessage = errors?.length
+    ? errors.map((item) => item?.message || item?.title || item?.code).filter(Boolean).join(' | ')
+    : null;
+
+  const body = {
+    delivery_status: supportedStatus,
+    error_message: errorMessage,
+    metadata: {
+      ...metadata,
+      recipient_id: recipientId || null,
+      status_timestamp: timestamp || null,
+      errors: errors || [],
+    },
+  };
+
+  return db(
+    `social_messages?platform=eq.whatsapp&external_message_id=eq.${encodeURIComponent(messageId)}`,
+    { method: 'PATCH', body, prefer: 'return=minimal' }
+  );
 }

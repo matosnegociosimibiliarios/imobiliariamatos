@@ -26,6 +26,7 @@ import AdminCaptures from './pages/admin/AdminCaptures';
 import AdminCaptureDetail from './pages/admin/AdminCaptureDetail';
 import AdminIntegrations from './pages/admin/AdminIntegrations';
 import AdminInstagramInbox from './pages/admin/AdminInstagramInbox';
+import AdminWhatsAppInbox from './pages/admin/AdminWhatsAppInbox';
 
 export default function App() {
   return (
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/admin/captacoes/:id" element={<AdminCaptureDetail />} />
           <Route path="/admin/integracoes" element={<AdminIntegrations />} />
           <Route path="/admin/mensagens" element={<AdminInstagramInbox />} />
+          <Route path="/admin/whatsapp" element={<AdminWhatsAppInbox />} />
           <Route path="/admin/imoveis/novo" element={<AdminPropertyForm />} />
           <Route path="/admin/imoveis/:id/editar" element={<AdminPropertyForm />} />
         </Route>

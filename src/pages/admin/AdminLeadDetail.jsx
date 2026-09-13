@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import InstagramConversation from '../../components/InstagramConversation';
+import WhatsAppConversation from '../../components/WhatsAppConversation';
 import {
   addLeadNote,
   getLeadDetails,
@@ -305,6 +306,22 @@ export default function AdminLeadDetail() {
               <InstagramConversation
                 leadId={lead.id}
                 leadName={lead.name}
+                compact
+              />
+            </section>
+          )}
+
+          {lead.whatsapp_wa_id && (
+            <section className="admin-panel">
+              <div className="panel-title-row">
+                <h2>Conversa no WhatsApp</h2>
+                <Link to={`/admin/whatsapp?lead=${lead.id}`}>Abrir caixa de mensagens</Link>
+              </div>
+
+              <WhatsAppConversation
+                leadId={lead.id}
+                leadName={lead.name}
+                whatsapp={lead.whatsapp}
                 compact
               />
             </section>

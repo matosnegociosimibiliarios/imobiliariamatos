@@ -134,3 +134,53 @@ Antes de publicar os arquivos da 10.3, execute no Supabase:
 Depois publique normalmente no GitHub/Vercel.
 
 Nenhuma variável nova de ambiente é necessária para esta versão.
+
+## Versão 10.4 — WhatsApp Business no CRM
+
+Esta versão prepara o CRM para centralizar o WhatsApp Business junto com Site e Instagram.
+
+### O que foi adicionado
+
+- webhook único da Meta reconhece Instagram e WhatsApp;
+- mensagens recebidas pelo WhatsApp criam ou atualizam o lead;
+- se o telefone já existir no CRM, a conversa do WhatsApp é vinculada ao mesmo cliente;
+- origem inicial é preservada e a última origem passa a registrar WhatsApp quando houver novo contato;
+- nova tela **Mensagens WhatsApp** no painel administrativo;
+- resposta pelo CRM durante a janela de atendimento permitida pela Meta;
+- status de mensagem enviada, entregue, lida ou com falha;
+- contadores separados de mensagens não lidas do Instagram e WhatsApp;
+- métricas separadas por canal na tela Integrações.
+
+### Antes de publicar
+
+Execute no Supabase:
+
+`SUPABASE_V10_4_SETUP.sql`
+
+### Variáveis da Vercel para ativar o número real
+
+Depois que o número oficial for conectado à Plataforma do WhatsApp Business, configure em **Produção**:
+
+- `META_WHATSAPP_ACCESS_TOKEN` — token da API do WhatsApp. Nunca expor no navegador.
+- `META_WHATSAPP_PHONE_NUMBER_ID` — ID do número de telefone fornecido pela Meta.
+- `META_WHATSAPP_BUSINESS_ACCOUNT_ID` — ID da conta do WhatsApp Business (recomendado para diagnóstico e futuras funções).
+
+As variáveis existentes continuam sendo usadas:
+
+- `META_WEBHOOK_VERIFY_TOKEN`
+- `META_APP_SECRET`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+### Webhook
+
+Use o mesmo callback já validado:
+
+`https://imobiliariamatos.vercel.app/api/meta-webhook`
+
+No WhatsApp, o campo de webhook **messages** precisa estar assinado para receber mensagens e atualizações de status.
+
+### Segurança
+
+Tokens do WhatsApp, segredo do app e chave service role ficam somente na Vercel. Nenhum deles deve usar prefixo `VITE_`.
