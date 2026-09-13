@@ -1,18 +1,16 @@
 # Matos Negócios Imobiliários
 
-Primeira versão pública da Home.
+Versão 2 do site.
 
-## Objetivo desta etapa
-- Home visível e responsiva
-- Estrutura visual imobiliária
-- Busca visual
-- Imóveis em destaque com estado vazio
-- Tipos de imóveis
-- Chamada para anunciar
-- Chamada para avaliação
+## Já disponível
+- Home
+- Página Comprar
+- Página Alugar
+- Navegação entre as páginas
+- Filtros visuais
+- Estrutura responsiva
 
 ## Próximas etapas
-1. Criar páginas Comprar e Alugar
-2. Criar página individual do imóvel
-3. Conectar ao Supabase
-4. Publicar em domínio próprio
+1. Página individual do imóvel
+2. Conexão com Supabase
+3. Área administrativa
