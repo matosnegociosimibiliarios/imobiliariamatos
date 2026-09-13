@@ -1,23 +1,30 @@
-# Matos Negócios Imobiliários — Versão 5
+# Matos Negócios Imobiliários — Versão 6
 
-## Nesta versão
-- Fotos reais vindas do Supabase Storage
-- Foto de capa nos cards da Home
-- Foto de capa na página Comprar/Alugar
-- Galeria com até 5 fotos na página individual
-- Galeria ampliada em tela cheia
-- Navegação anterior/próxima
-- Fallback quando imóvel não tem foto
+## Novidades
+- Login administrativo em `/login`
+- Painel em `/admin`
+- Visão geral de imóveis
+- Lista de imóveis
+- Novo imóvel
+- Edição de imóvel
+- Publicar / despublicar
+- Exclusão lógica de imóvel
+- Upload de fotos
+- Definir foto de capa
+- Excluir foto
+- Site público continua funcionando
 
-## Bucket esperado
-`property-images`
+## Antes de usar o painel
+Execute no Supabase:
+`SUPABASE_ADMIN_SETUP.sql`
 
-## Formato dos caminhos
-Exemplo:
-`mat-0001/01.jpg`
+Depois:
+1. Crie um usuário em Authentication > Users.
+2. Transforme esse usuário em administrador usando o comando SQL no final do arquivo.
+3. Publique esta versão no GitHub/Vercel.
+4. Acesse `/login`.
 
-## Próximos passos
-1. Painel administrativo para cadastrar imóveis sem SQL
-2. Upload de fotos pelo painel
-3. Filtros funcionando
-4. Captação de leads e agendamentos
+## Segurança
+- Visitantes continuam vendo apenas imóveis publicados.
+- Escrita no banco só é permitida para usuários autenticados com `role = 'admin'`.
+- A chave secreta do Supabase não é usada no navegador.
