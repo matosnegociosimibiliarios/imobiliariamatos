@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import LeadForm from '../components/LeadForm';
-import { trackPageView } from '../services/tracking';
+import SeoHead from '../components/SeoHead';
+import { trackEvent, trackPageView } from '../services/tracking';
 import { Link, useParams } from 'react-router-dom';
 import {
   getAgencySettings,
@@ -136,8 +137,31 @@ export default function Imovel() {
     );
   }
 
+
+  async function shareProperty() {
+    const url = window.location.href;
+    const text = `${property.title} - ${propertyLocation(property)}`;
+    trackEvent('share_click', { propertyId: property.id, metadata: { property_code: property.code } });
+    if (navigator.share) {
+      try { await navigator.share({ title: property.title, text, url }); return; }
+      catch (error) { if (error?.name === 'AbortError') return; }
+    }
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`, '_blank', 'noopener,noreferrer');
+  }
+
+  const seoDescription = property.description?.slice(0, 155) || `${property.property_type} em ${propertyLocation(property)}. Veja preço, fotos e características.`;
+  const propertyJsonLd = {
+    '@context':'https://schema.org',
+    '@type': property.property_type === 'Apartamento' ? 'Apartment' : property.property_type === 'Casa' ? 'House' : 'Place',
+    name: property.title,
+    description: seoDescription,
+    url: window.location.href.split('?')[0],
+    image: images.map((image) => image.publicUrl),
+  };
+
   return (
     <main className="property-page">
+      <SeoHead title={property.title} description={seoDescription} canonicalPath={`/imovel/${property.slug}`} image={mainImage?.publicUrl || null} type="article" jsonLd={propertyJsonLd} />
       <section className="property-top">
         <div>
           <Link className="back-link" to="/comprar">
@@ -153,10 +177,7 @@ export default function Imovel() {
           </p>
         </div>
 
-        <div className="property-code-box">
-          <small>Código</small>
-          <strong>{property.code}</strong>
-        </div>
+        <div className="property-top-actions"><button className="admin-link-button property-share-button" type="button" onClick={shareProperty}>Compartilhar</button><div className="property-code-box"><small>Código</small><strong>{property.code}</strong></div></div>
       </section>
 
       <section className="property-gallery">
@@ -286,6 +307,7 @@ export default function Imovel() {
               href={whatsappLink}
               target="_blank"
               rel="noreferrer"
+              onClick={() => trackEvent('whatsapp_click', { propertyId: property.id, metadata: { property_code: property.code, source: 'property_page' } })}
             >
               Prefiro falar direto pelo WhatsApp
             </a>

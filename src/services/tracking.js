@@ -107,3 +107,18 @@ export async function submitAppointment({
     .select('id')
     .single();
 }
+
+
+export async function trackEvent(eventType, { propertyId = null, path = null, metadata = {} } = {}) {
+  if (!supabaseConfigured || !supabase) return;
+
+  const { error } = await supabase.from('site_events').insert({
+    session_id: getSessionId(),
+    event_type: eventType,
+    property_id: propertyId,
+    path: path || window.location.pathname,
+    metadata,
+  });
+
+  if (error) console.warn('Falha ao registrar evento:', error.message);
+}

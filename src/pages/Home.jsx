@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import SeoHead from '../components/SeoHead';
+import { trackEvent } from '../services/tracking';
 import PropertyGrid from '../components/PropertyGrid';
 import { getHomeProperties } from '../services/properties';
 
@@ -12,6 +14,8 @@ const propertyTypes = [
 ];
 
 export default function Home() {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState({ purpose: 'sale', location: '', propertyType: '' });
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -31,8 +35,12 @@ export default function Home() {
     return () => { active = false; };
   }, []);
 
+
+  function updateSearch(event) { const { name, value } = event.target; setSearch((current) => ({ ...current, [name]: value })); }
+  function submitSearch(event) { event.preventDefault(); const params = new URLSearchParams(); if (search.location) params.set('local', search.location); if (search.propertyType) params.set('tipo', search.propertyType); trackEvent('search_click', { metadata: { source:'home', ...search } }); const route = search.purpose === 'rent' ? '/alugar' : '/comprar'; navigate(`${route}${params.toString() ? `?${params.toString()}` : ''}`); }
   return (
     <main id="inicio">
+      <SeoHead title="Imóveis em Ressaquinha e região" description="Imóveis para comprar, alugar, anunciar e avaliar em Ressaquinha e região." canonicalPath="/" jsonLd={{ '@context':'https://schema.org', '@type':'RealEstateAgent', name:'Matos Negócios Imobiliários', url:window.location.origin }} />
       <section className="hero">
         <div className="hero-copy">
           <span className="eyebrow">Matos Negócios Imobiliários</span>
@@ -42,35 +50,17 @@ export default function Home() {
             alugar ou investir.
           </p>
 
-          <div className="search-panel">
+          <form className="search-panel" onSubmit={submitSearch}>
             <div className="search-tabs">
-              <Link className="tab active" to="/comprar">Comprar</Link>
-              <Link className="tab" to="/alugar">Alugar</Link>
+              <button className={`tab ${search.purpose === 'sale' ? 'active' : ''}`} type="button" onClick={() => setSearch((c) => ({ ...c, purpose:'sale' }))}>Comprar</button>
+              <button className={`tab ${search.purpose === 'rent' ? 'active' : ''}`} type="button" onClick={() => setSearch((c) => ({ ...c, purpose:'rent' }))}>Alugar</button>
             </div>
-
             <div className="search-grid">
-              <label>
-                Localização
-                <input placeholder="Cidade ou bairro" disabled title="Filtro será conectado na próxima etapa" />
-              </label>
-
-              <label>
-                Tipo de imóvel
-                <select defaultValue="" disabled>
-                  <option value="">Todos os tipos</option>
-                </select>
-              </label>
-
-              <label>
-                Faixa de preço
-                <select defaultValue="" disabled>
-                  <option value="">Qualquer valor</option>
-                </select>
-              </label>
-
-              <Link className="button search-button" to="/comprar">Buscar imóveis</Link>
+              <label>Localização<input name="location" value={search.location} onChange={updateSearch} placeholder="Cidade ou bairro" /></label>
+              <label>Tipo de imóvel<select name="propertyType" value={search.propertyType} onChange={updateSearch}><option value="">Todos os tipos</option><option>Casa</option><option>Apartamento</option><option>Terreno</option><option>Sítio</option><option>Comercial</option></select></label>
+              <button className="button search-button" type="submit">Buscar imóveis</button>
             </div>
-          </div>
+          </form>
         </div>
 
         <div className="hero-visual" aria-hidden="true">

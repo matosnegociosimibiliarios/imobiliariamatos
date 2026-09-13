@@ -19,7 +19,7 @@ const cardFields = `
   parking_spaces,
   featured,
   created_at,
-  city:cities(name,state_code),
+  city:cities(id,name,state_code,slug),
   neighborhood:neighborhoods(name),
   property_images(
     id,
@@ -119,6 +119,7 @@ export async function getProperties({
   featuredOnly = false,
   limit = 24,
   propertyType,
+  cityId,
   minPrice,
   maxPrice,
   minBedrooms,
@@ -139,6 +140,7 @@ export async function getProperties({
 
   if (featuredOnly) query = query.eq('featured', true);
   if (propertyType) query = query.eq('property_type', propertyType);
+  if (cityId) query = query.eq('city_id', cityId);
   if (minBedrooms) query = query.gte('bedrooms', Number(minBedrooms));
 
   if (purpose === 'rent') {
@@ -171,7 +173,7 @@ export async function getPropertyBySlug(slug) {
     .from('properties')
     .select(`
       *,
-      city:cities(name,state_code),
+      city:cities(id,name,state_code,slug),
       neighborhood:neighborhoods(name),
       property_images(
         id,
@@ -200,4 +202,22 @@ export async function getAgencySettings() {
     .select('*')
     .eq('id', 1)
     .maybeSingle();
+}
+
+
+export const PROPERTY_TYPE_SLUGS = {
+  Casa: 'casas',
+  Apartamento: 'apartamentos',
+  Terreno: 'terrenos',
+  Sítio: 'sitios',
+  Comercial: 'imoveis-comerciais',
+};
+
+export const SLUG_PROPERTY_TYPES = Object.fromEntries(
+  Object.entries(PROPERTY_TYPE_SLUGS).map(([name, slug]) => [slug, name])
+);
+
+export async function getCityBySlug(slug) {
+  if (!supabaseConfigured) return { data: null, error: new Error('Supabase não configurado.') };
+  return supabase.from('cities').select('id,name,state,state_code,slug,active').eq('slug', slug).eq('active', true).maybeSingle();
 }

@@ -541,3 +541,20 @@ export async function getCaptureUpcomingActions() {
     .order('next_action_at', { ascending: true })
     .limit(50);
 }
+
+
+export async function getAcquisitionMetrics(daysBack = 30) {
+  return supabase.rpc('admin_acquisition_metrics', { days_back: daysBack });
+}
+
+export async function getIntegrationMetrics(daysBack = 30) {
+  return supabase.rpc('admin_integration_metrics', { days_back: daysBack });
+}
+
+export async function getLeadSocialMessages(leadId) {
+  return supabase.from('social_messages').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }).limit(50);
+}
+
+export async function getIntegrationEvents() {
+  return supabase.from('integration_events').select('*').order('created_at', { ascending: false }).limit(30);
+}

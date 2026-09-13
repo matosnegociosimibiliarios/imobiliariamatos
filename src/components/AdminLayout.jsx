@@ -28,6 +28,7 @@ export default function AdminLayout() {
           <NavLink to="/admin/acoes">Próximas ações</NavLink>
           <NavLink to="/admin/agendamentos">Agendamentos</NavLink>
           <NavLink to="/admin/captacoes">Captações</NavLink>
+          <NavLink to="/admin/integracoes">Integrações</NavLink>
           <NavLink to="/admin/imoveis/novo">Novo imóvel</NavLink>
         </nav>
 

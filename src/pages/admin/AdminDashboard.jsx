@@ -6,6 +6,7 @@ import {
   getLostReasons,
   getTopLeadProperties,
   getUpcomingActions,
+  getAcquisitionMetrics,
 } from '../../services/admin';
 import {
   formatCurrency,
@@ -18,6 +19,7 @@ export default function AdminDashboard() {
   const [lostReasons, setLostReasons] = useState([]);
   const [topProperties, setTopProperties] = useState([]);
   const [actions, setActions] = useState([]);
+  const [acquisition, setAcquisition] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,12 +30,14 @@ export default function AdminDashboard() {
         lostResult,
         topResult,
         actionsResult,
+        acquisitionResult,
       ] = await Promise.all([
         getDashboardMetrics(30),
         getLeadSources(30),
         getLostReasons(90),
         getTopLeadProperties(30),
         getUpcomingActions(),
+        getAcquisitionMetrics(30),
       ]);
 
       setMetrics(metricsResult.data || null);
@@ -41,6 +45,7 @@ export default function AdminDashboard() {
       setLostReasons(lostResult.data || []);
       setTopProperties(topResult.data || []);
       setActions((actionsResult.data || []).slice(0, 5));
+      setAcquisition(acquisitionResult.data || null);
       setLoading(false);
     })();
   }, []);
@@ -173,6 +178,18 @@ export default function AdminDashboard() {
         </>
       )}
 
+
+      <section className="admin-panel">
+        <div className="panel-title-row"><div><span className="eyebrow">Aquisição</span><h2>Interações nos últimos 30 dias</h2></div><Link to="/admin/integracoes">Instagram / Meta</Link></div>
+        <div className="acquisition-grid">
+          <div><span>Buscas no site</span><strong>{acquisition?.search_clicks || 0}</strong></div>
+          <div><span>Cliques no WhatsApp</span><strong>{acquisition?.whatsapp_clicks || 0}</strong></div>
+          <div><span>Leads do site</span><strong>{acquisition?.lead_submits || 0}</strong></div>
+          <div><span>Pedidos de visita</span><strong>{acquisition?.appointment_submits || 0}</strong></div>
+          <div><span>Instagram Direct</span><strong>{acquisition?.instagram_direct_leads || 0}</strong></div>
+          <div><span>Meta Lead Ads</span><strong>{acquisition?.meta_lead_ads || 0}</strong></div>
+        </div>
+      </section>
       <section className="admin-panel">
         <h2>Ações rápidas</h2>
 

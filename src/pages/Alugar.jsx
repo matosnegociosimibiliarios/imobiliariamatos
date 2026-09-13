@@ -1,65 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import PropertyFilters from '../components/PropertyFilters';
 import PropertyGrid from '../components/PropertyGrid';
 import EmptyProperties from '../components/EmptyProperties';
+import SeoHead from '../components/SeoHead';
 import { getProperties } from '../services/properties';
+import { trackEvent } from '../services/tracking';
 
 export default function Alugar() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [filters, setFilters] = useState({ location: searchParams.get('local') || '', propertyType: searchParams.get('tipo') || '', bedrooms: searchParams.get('quartos') || '' });
 
-  useEffect(() => {
-    let active = true;
+  useEffect(() => { let active = true; (async () => { const { data, error } = await getProperties({ purpose: 'rent', limit: 100 }); if (!active) return; setProperties(data || []); setLoadError(Boolean(error)); setLoading(false); })(); return () => { active = false; }; }, []);
+  useEffect(() => setFilters({ location: searchParams.get('local') || '', propertyType: searchParams.get('tipo') || '', bedrooms: searchParams.get('quartos') || '' }), [searchParams]);
 
-    (async () => {
-      const { data, error } = await getProperties({
-        purpose: 'rent',
-        limit: 48,
-      });
+  const filtered = useMemo(() => properties.filter((p) => { const term = filters.location.trim().toLowerCase(); const where = [p.public_location_text, p.city?.name, p.neighborhood?.name].filter(Boolean).join(' ').toLowerCase(); return (!term || where.includes(term)) && (!filters.propertyType || p.property_type === filters.propertyType) && (!filters.bedrooms || Number(p.bedrooms || 0) >= Number(filters.bedrooms)); }), [properties, filters]);
 
-      if (!active) return;
-      setProperties(data || []);
-      setLoadError(Boolean(error));
-      setLoading(false);
-    })();
+  function change(e) { const { name, value } = e.target; setFilters((c) => ({ ...c, [name]: value })); }
+  function apply(e) { e.preventDefault(); const q = new URLSearchParams(); if (filters.location) q.set('local', filters.location); if (filters.propertyType) q.set('tipo', filters.propertyType); if (filters.bedrooms) q.set('quartos', filters.bedrooms); setSearchParams(q); trackEvent('search_click', { metadata: { purpose: 'rent', ...filters } }); }
+  function clear() { setFilters({ location:'', propertyType:'', bedrooms:'' }); setSearchParams({}); }
 
-    return () => { active = false; };
-  }, []);
-
-  return (
-    <main className="listing-page">
-      <section className="listing-hero">
-        <span className="eyebrow">Alugar</span>
-        <h1>Imóveis para alugar</h1>
-        <p>Pesquise opções de locação de forma simples e organizada.</p>
-      </section>
-
-      <PropertyFilters finalidade="aluguel" />
-
-      <section className="section listing-content">
-        <div className="listing-toolbar">
-          <div>
-            <strong>{loading ? 'Carregando...' : `${properties.length} imóvel${properties.length === 1 ? '' : 'is'} encontrado${properties.length === 1 ? '' : 's'}`}</strong>
-            <span>Somente imóveis publicados são exibidos.</span>
-          </div>
-        </div>
-
-        {!loading && loadError && (
-          <div className="empty-state">
-            <h3>Não foi possível carregar os imóveis</h3>
-            <p>Confira a conexão com o banco e tente novamente.</p>
-          </div>
-        )}
-
-        {!loading && !loadError && properties.length > 0 && (
-          <PropertyGrid properties={properties} purpose="rent" />
-        )}
-
-        {!loading && !loadError && properties.length === 0 && (
-          <EmptyProperties tipo="para alugar" />
-        )}
-      </section>
-    </main>
-  );
+  return <main className="listing-page"><SeoHead title="Imóveis para alugar" description="Imóveis para alugar com fotos, preços e informações organizadas." canonicalPath="/alugar" />
+    <section className="listing-hero"><span className="eyebrow">Alugar</span><h1>Imóveis para alugar</h1><p>Pesquise opções de locação de forma simples.</p></section>
+    <PropertyFilters finalidade="aluguel" values={filters} onChange={change} onSubmit={apply} onClear={clear} />
+    <section className="section listing-content"><div className="listing-toolbar"><div><strong>{loading ? 'Carregando...' : `${filtered.length} imóvel${filtered.length === 1 ? '' : 'is'} encontrado${filtered.length === 1 ? '' : 's'}`}</strong><span>Somente imóveis publicados.</span></div></div>
+      {!loading && loadError && <div className="empty-state"><h3>Não foi possível carregar os imóveis</h3></div>}
+      {!loading && !loadError && filtered.length > 0 && <PropertyGrid properties={filtered} purpose="rent" />}
+      {!loading && !loadError && filtered.length === 0 && <EmptyProperties tipo="para alugar" />}
+    </section>
+  </main>;
 }

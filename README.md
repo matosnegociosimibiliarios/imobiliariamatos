@@ -1,77 +1,82 @@
-# Matos Negócios Imobiliários — Versão 9
+# Matos Negócios Imobiliários — Versão 10
 
-## Captação de imóveis e proprietários
+## O que entra nesta versão
 
-### Site público
-Novas páginas:
-- `/anuncie-seu-imovel`
-- `/avaliacao-do-imovel`
+### SEO e aquisição
+- títulos e descrições por página
+- canonical
+- dados estruturados básicos
+- páginas locais por cidade e tipo de imóvel
+- sitemap dinâmico em `/sitemap.xml`
+- robots em `/robots.txt`
+- filtros de Comprar e Alugar funcionando
+- busca da Home funcionando
+- compartilhamento de imóvel
+- rastreamento de busca, WhatsApp, formulários, agendamentos e compartilhamentos
 
-O proprietário pode enviar:
-- nome
-- WhatsApp
-- e-mail
-- objetivo: vender / alugar
-- tipo de imóvel
-- cidade e bairro
-- endereço ou referência
-- valor pretendido
-- descrição
-- autorização para uso dos dados no atendimento
+### Instagram / Meta → CRM
+A estrutura fica pronta para duas entradas automáticas:
 
-### Painel administrativo
-Nova área:
-- `Captações`
+1. **Instagram Direct**
+   - nova mensagem recebida cria um lead no CRM
+   - mensagens seguintes atualizam o mesmo lead
+   - origem fica `Instagram / Direct`
+   - última mensagem aparece na ficha do cliente
 
-Funil:
-- Novo contato
-- Avaliação
-- Documentação
-- Autorizado
-- Publicado
-- Perdido
+2. **Formulários de anúncios da Meta (Facebook/Instagram Lead Ads)**
+   - webhook recebe `leadgen_id`
+   - servidor consulta a Graph API
+   - nome, telefone/e-mail e dados disponíveis do anúncio entram no CRM
+   - origem fica identificada como Lead Ads
 
-### Ficha do proprietário
-Permite controlar:
-- valor pretendido
-- valor da avaliação
-- comissão combinada
-- próxima ação
-- motivo de perda
-- anotações
-- histórico das etapas
-- documentação recebida / pendente
-- WhatsApp
+### Painel
+Nova página: `/admin/integracoes`
 
-### Documentos acompanhados
-- Documento do proprietário
-- Matrícula do imóvel
-- IPTU / cadastro municipal
-- Autorização para intermediação
+Ela mostra:
+- status das variáveis de conexão
+- URL do webhook
+- quantidade de leads do Direct
+- quantidade de leads de formulários Meta
+- mensagens recebidas
+- últimos eventos da integração
 
-### Conversão em imóvel
-O botão `Criar imóvel sem redigitar` reaproveita:
-- tipo
-- finalidade
-- cidade
-- bairro
-- descrição
-- valor
+## ETAPA 1 — Antes de publicar a Versão 10
+Execute no Supabase:
 
-O imóvel é criado como RASCUNHO.
-Depois o administrador apenas completa fotos e demais dados e publica.
+`SUPABASE_V10_SETUP.sql`
 
-## Instalação
+## ETAPA 2 — Publicar no GitHub/Vercel
+Publique normalmente esta versão.
 
-ANTES de publicar a Versão 9:
+## ETAPA 3 — Variáveis de ambiente da Vercel
+As integrações externas só ficam ativas depois da configuração da Meta.
+Crie na Vercel, como variáveis de servidor:
 
-1. Abra `SUPABASE_CAPTACOES_SETUP.sql`.
-2. Copie todo o conteúdo.
-3. Execute no Editor SQL do Supabase.
-4. Confirme que apareceu sucesso.
-5. Só depois publique os arquivos no GitHub/Vercel.
+- `SUPABASE_SERVICE_ROLE_KEY` — chave service_role do Supabase. **Nunca use prefixo VITE_.**
+- `META_WEBHOOK_VERIFY_TOKEN` — uma senha/token que você mesmo cria para validar o webhook.
+- `META_APP_SECRET` — segredo do aplicativo Meta.
+- `META_INSTAGRAM_ACCESS_TOKEN` — token do Instagram profissional para mensagens.
+- `META_INSTAGRAM_USER_ID` — ID da conta profissional do Instagram.
+- `META_LEAD_ADS_ACCESS_TOKEN` — token com acesso de recuperação de leads dos formulários.
+- `META_GRAPH_API_VERSION` — use `v26.0` nesta versão, salvo mudança futura da Meta.
+
+Depois de alterar variáveis da Vercel, faça uma nova implantação.
+
+## ETAPA 4 — Meta for Developers
+No aplicativo Meta, configure o callback de Webhooks para:
+
+`https://imobiliariamatos.vercel.app/api/meta-webhook`
+
+O Verify Token deve ser exatamente o mesmo valor colocado em `META_WEBHOOK_VERIFY_TOKEN`.
+
+Para mensagens do Instagram, habilite os eventos de mensagens compatíveis com sua configuração do Instagram Professional.
+Para Lead Ads, assine o campo `leadgen` da Página usada nos formulários.
 
 ## Segurança
-- O visitante pode enviar uma captação.
-- O visitante não consegue consultar a base de proprietários.
-- Somente administrador autenticado pode visualizar, editar e converter captações.
+- Tokens e service_role ficam somente na Vercel.
+- Nenhum token secreto é enviado ao navegador.
+- O painel exibe apenas se uma variável está configurada, nunca o valor do token.
+- Se `META_APP_SECRET` estiver configurado, o webhook valida `x-hub-signature-256`.
+
+## Observação
+A conexão final depende da conta profissional do Instagram, do aplicativo Meta e das permissões aprovadas/disponíveis para a conta. O código desta versão deixa o site e o CRM preparados; a ativação final é feita no painel da Meta e na Vercel.

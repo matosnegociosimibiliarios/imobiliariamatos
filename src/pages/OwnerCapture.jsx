@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { submitOwnerCapture } from '../services/captures';
+import SeoHead from '../components/SeoHead';
+import { trackEvent } from '../services/tracking';
 
 const PROPERTY_TYPES = [
   'Casa',
@@ -76,6 +78,8 @@ export default function OwnerCapture({ requestType = 'listing' }) {
       return;
     }
 
+    trackEvent('capture_submit', { metadata: { request_type: requestType, purpose: form.purpose, property_type: form.property_type, city: form.city_name } });
+
     setState({
       submitting: false,
       success: true,
@@ -86,6 +90,7 @@ export default function OwnerCapture({ requestType = 'listing' }) {
   if (state.success) {
     return (
       <main className="owner-capture-page">
+        <SeoHead title={isValuation ? 'Solicitar avaliação de imóvel' : 'Anuncie seu imóvel'} description={isValuation ? 'Solicite uma avaliação do seu imóvel.' : 'Cadastre seu imóvel para venda ou aluguel.'} canonicalPath={isValuation ? '/avaliacao-do-imovel' : '/anuncie-seu-imovel'} />
         <section className="owner-capture-success">
           <span className="eyebrow">Dados recebidos</span>
           <h1>
@@ -108,6 +113,7 @@ export default function OwnerCapture({ requestType = 'listing' }) {
 
   return (
     <main className="owner-capture-page">
+      <SeoHead title={isValuation ? 'Avaliação de imóvel' : 'Anuncie seu imóvel'} description={isValuation ? 'Solicite uma avaliação do seu imóvel.' : 'Envie os dados do seu imóvel para venda ou aluguel.'} canonicalPath={isValuation ? '/avaliacao-do-imovel' : '/anuncie-seu-imovel'} />
       <section className="owner-capture-hero">
         <div>
           <span className="eyebrow eyebrow-light">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { submitAppointment, submitLead } from '../services/tracking';
+import { submitAppointment, submitLead, trackEvent } from '../services/tracking';
 
 export default function LeadForm({
   property = null,
@@ -59,6 +59,8 @@ export default function LeadForm({
       return;
     }
 
+    trackEvent('lead_submit', { propertyId: property?.id || null, metadata: { property_code: property?.code || null } });
+
     if (form.wantsAppointment) {
       const { error: appointmentError } = await submitAppointment({
         leadId: data.id,
@@ -76,6 +78,8 @@ export default function LeadForm({
         });
         return;
       }
+
+      trackEvent('appointment_submit', { propertyId: property?.id || null, metadata: { property_code: property?.code || null, requested_date: form.requestedDate, requested_time: form.requestedTime } });
     }
 
     setState({

@@ -129,7 +129,9 @@ export default function AdminLeads() {
                           >
                             <strong>{lead.name}</strong>
 
-                            <span>{lead.whatsapp}</span>
+                            <span>{lead.whatsapp || (lead.source_platform === 'instagram' ? 'Instagram Direct' : 'Sem telefone')}</span>
+
+                            {lead.last_inbound_message && <small className="crm-instagram-preview">{lead.last_inbound_message}</small>}
 
                             {lead.property && (
                               <small>

@@ -5,6 +5,7 @@ import {
   getLeadDetails,
   getLeadNotes,
   getLeadStatusHistory,
+  getLeadSocialMessages,
   updateLead,
 } from '../../services/admin';
 import {
@@ -22,6 +23,7 @@ export default function AdminLeadDetail() {
   const [lead, setLead] = useState(null);
   const [notes, setNotes] = useState([]);
   const [history, setHistory] = useState([]);
+  const [socialMessages, setSocialMessages] = useState([]);
   const [noteText, setNoteText] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -39,10 +41,11 @@ export default function AdminLeadDetail() {
   async function load() {
     setLoading(true);
 
-    const [leadResult, notesResult, historyResult] = await Promise.all([
+    const [leadResult, notesResult, historyResult, socialResult] = await Promise.all([
       getLeadDetails(id),
       getLeadNotes(id),
       getLeadStatusHistory(id),
+      getLeadSocialMessages(id),
     ]);
 
     if (leadResult.error || !leadResult.data) {
@@ -56,6 +59,7 @@ export default function AdminLeadDetail() {
     setLead(data);
     setNotes(notesResult.data || []);
     setHistory(historyResult.data || []);
+    setSocialMessages(socialResult.data || []);
 
     setForm({
       status: data.status || 'new',
@@ -173,7 +177,7 @@ export default function AdminLeadDetail() {
             <div className="lead-profile-header">
               <div>
                 <h2>Contato</h2>
-                <p>{lead.whatsapp}</p>
+                <p>{lead.whatsapp || (lead.source_platform === 'instagram' ? 'Contato pelo Instagram Direct' : 'Telefone não informado')}</p>
                 {lead.email && <p>{lead.email}</p>}
               </div>
 
@@ -237,6 +241,23 @@ export default function AdminLeadDetail() {
             </section>
           )}
 
+
+          {(lead.source_platform || lead.source_channel) && (
+            <section className="admin-panel">
+              <h2>Origem digital</h2>
+              <div className="lead-meta-grid">
+                <div><span>Plataforma</span><strong>{lead.source_platform || lead.source}</strong></div>
+                <div><span>Canal</span><strong>{lead.source_channel === 'direct' ? 'Direct' : lead.source_channel === 'lead_ads' ? 'Formulário de anúncio' : lead.source_channel || 'Site'}</strong></div>
+                <div><span>Campanha</span><strong>{lead.campaign_name || lead.ad_name || 'Não informada'}</strong></div>
+              </div>
+              {lead.last_inbound_message && <div className="lead-original-message"><strong>Última mensagem recebida</strong><p>{lead.last_inbound_message}</p></div>}
+              {lead.source_platform === 'instagram' && <a className="admin-link-button" href="https://www.instagram.com/direct/inbox/" target="_blank" rel="noreferrer">Abrir caixa de entrada do Instagram</a>}
+            </section>
+          )}
+
+          {socialMessages.length > 0 && (
+            <section className="admin-panel"><h2>Mensagens do Instagram</h2><div className="social-message-list">{socialMessages.map((item) => <article key={item.id}><p>{item.message_text || 'Mensagem sem texto'}</p><small>{formatDateTime(item.sent_at || item.created_at)}</small></article>)}</div></section>
+          )}
           <section className="admin-panel">
             <h2>Anotações do atendimento</h2>
 
