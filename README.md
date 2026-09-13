@@ -109,3 +109,28 @@ Correção do envio de respostas do Instagram pelo CRM:
 - não altera banco de dados;
 - não exige novas variáveis de ambiente;
 - não exige nova configuração na Meta.
+
+
+## Versão 10.3 — origem e operação multicanal
+
+### Novidades
+- origem inicial do lead e última origem registrada separadamente;
+- histórico de canais do cliente;
+- prevenção de duplicados nos formulários do site por WhatsApp/e-mail;
+- Instagram continua deduplicando pelo identificador da própria conta;
+- filtro do funil por origem: Site, Instagram, WhatsApp, Facebook, Meta e Manual;
+- selo de origem visível nos cards do funil;
+- contador de mensagens não lidas no menu administrativo;
+- abertura da conversa marca mensagens como lidas;
+- opção para marcar uma conversa novamente como não lida;
+- respostas rápidas no atendimento do Instagram;
+- painel com leads, visitas, fechamentos, valor vendido e comissão por canal;
+- estrutura já preparada para futuras integrações com WhatsApp e Facebook.
+
+### Instalação
+Antes de publicar os arquivos da 10.3, execute no Supabase:
+`SUPABASE_V10_3_SETUP.sql`
+
+Depois publique normalmente no GitHub/Vercel.
+
+Nenhuma variável nova de ambiente é necessária para esta versão.

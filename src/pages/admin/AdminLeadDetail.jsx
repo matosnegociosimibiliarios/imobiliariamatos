@@ -6,6 +6,7 @@ import {
   getLeadDetails,
   getLeadNotes,
   getLeadStatusHistory,
+  getLeadSourceHistory,
   updateLead,
 } from '../../services/admin';
 import {
@@ -15,6 +16,7 @@ import {
   formatDateTime,
   makeWhatsAppUrl,
   toDateTimeLocal,
+  originLabel,
 } from '../../services/crm';
 
 export default function AdminLeadDetail() {
@@ -23,6 +25,7 @@ export default function AdminLeadDetail() {
   const [lead, setLead] = useState(null);
   const [notes, setNotes] = useState([]);
   const [history, setHistory] = useState([]);
+  const [sourceHistory, setSourceHistory] = useState([]);
   const [noteText, setNoteText] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -40,10 +43,11 @@ export default function AdminLeadDetail() {
   async function load() {
     setLoading(true);
 
-    const [leadResult, notesResult, historyResult] = await Promise.all([
+    const [leadResult, notesResult, historyResult, sourceHistoryResult] = await Promise.all([
       getLeadDetails(id),
       getLeadNotes(id),
       getLeadStatusHistory(id),
+      getLeadSourceHistory(id),
     ]);
 
     if (leadResult.error || !leadResult.data) {
@@ -57,6 +61,7 @@ export default function AdminLeadDetail() {
     setLead(data);
     setNotes(notesResult.data || []);
     setHistory(historyResult.data || []);
+    setSourceHistory(sourceHistoryResult.data || []);
 
     setForm({
       status: data.status || 'new',
@@ -238,19 +243,57 @@ export default function AdminLeadDetail() {
             </section>
           )}
 
+          <section className="admin-panel">
+            <h2>Origem do cliente</h2>
 
-          {(lead.source_platform || lead.source_channel) && (
-            <section className="admin-panel">
-              <h2>Origem digital</h2>
-              <div className="lead-meta-grid">
-                <div><span>Plataforma</span><strong>{lead.source_platform || lead.source}</strong></div>
-                <div><span>Canal</span><strong>{lead.source_channel === 'direct' ? 'Direct' : lead.source_channel === 'lead_ads' ? 'Formulário de anúncio' : lead.source_channel || 'Site'}</strong></div>
-                <div><span>Campanha</span><strong>{lead.campaign_name || lead.ad_name || 'Não informada'}</strong></div>
+            <div className="lead-meta-grid">
+              <div>
+                <span>Origem inicial</span>
+                <strong>
+                  {originLabel(
+                    lead.initial_source_platform || lead.source_platform || 'site',
+                    lead.initial_source_channel || lead.source_channel || 'form',
+                    lead.initial_source_detail || lead.source_detail
+                  )}
+                </strong>
               </div>
-              {lead.last_inbound_message && <div className="lead-original-message"><strong>Última mensagem recebida</strong><p>{lead.last_inbound_message}</p></div>}
-              {lead.source_platform === 'instagram' && <a className="admin-link-button" href="https://www.instagram.com/direct/inbox/" target="_blank" rel="noreferrer">Abrir caixa de entrada do Instagram</a>}
-            </section>
-          )}
+
+              <div>
+                <span>Última origem</span>
+                <strong>
+                  {originLabel(
+                    lead.last_source_platform || lead.source_platform || 'site',
+                    lead.last_source_channel || lead.source_channel || 'form',
+                    lead.last_source_detail || lead.source_detail
+                  )}
+                </strong>
+              </div>
+
+              <div>
+                <span>Último contato de origem</span>
+                <strong>{formatDateTime(lead.last_source_at || lead.created_at)}</strong>
+              </div>
+            </div>
+
+            {lead.campaign_name && (
+              <div className="lead-original-message">
+                <strong>Campanha</strong>
+                <p>{lead.campaign_name}{lead.ad_name ? ` · ${lead.ad_name}` : ''}</p>
+              </div>
+            )}
+
+            {sourceHistory.length > 1 && (
+              <div className="source-history-list">
+                <strong>Histórico de canais</strong>
+                {sourceHistory.map((item) => (
+                  <div key={item.id}>
+                    <span>{originLabel(item.platform, item.channel, item.detail)}</span>
+                    <small>{formatDateTime(item.occurred_at)}</small>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
 
           {lead.source_platform === 'instagram' && lead.source_channel === 'direct' && (
             <section className="admin-panel">

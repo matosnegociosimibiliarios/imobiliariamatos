@@ -70,23 +70,27 @@ export async function submitLead({
   sourceDetail = null,
   landingPath = null,
 }) {
-  const payload = {
-    property_id: propertyId,
-    name: name.trim(),
-    whatsapp: whatsapp.trim(),
-    email: email?.trim() || null,
-    message: message?.trim() || null,
-    source,
-    source_detail: sourceDetail,
-    session_id: getSessionId(),
-    landing_path: landingPath || window.location.pathname,
-  };
+  const sourcePlatform = 'site';
+  const sourceChannel = propertyId ? 'property_form' : 'form';
 
-  return supabase
-    .from('leads')
-    .insert(payload)
-    .select('id')
-    .single();
+  const { data, error } = await supabase.rpc('submit_public_lead', {
+    p_property_id: propertyId,
+    p_name: name.trim(),
+    p_whatsapp: whatsapp.trim(),
+    p_email: email?.trim() || null,
+    p_message: message?.trim() || null,
+    p_source: source,
+    p_source_detail: sourceDetail,
+    p_session_id: getSessionId(),
+    p_landing_path: landingPath || window.location.pathname,
+    p_source_platform: sourcePlatform,
+    p_source_channel: sourceChannel,
+  });
+
+  return {
+    data: Array.isArray(data) ? data[0] || null : data,
+    error,
+  };
 }
 
 export async function submitAppointment({

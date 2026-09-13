@@ -2566,3 +2566,171 @@ button, input, select { font: inherit; }
     max-width: 88%;
   }
 }
+
+
+/* =========================================================
+   VERSÃO 10.3 - MULTICANAL, ORIGEM E OPERAÇÃO DIÁRIA
+   ========================================================= */
+
+.admin-nav-with-badge {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.admin-nav-with-badge b {
+  display: inline-grid;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  place-items: center;
+  border-radius: 999px;
+  background: #f2c94c;
+  color: #172019;
+  font-size: 11px;
+}
+
+.crm-toolbar-multichannel {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(180px, 260px) auto;
+}
+
+.crm-toolbar-multichannel select {
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+}
+
+.crm-card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.origin-badge {
+  display: inline-flex;
+  max-width: 125px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #eef2ef;
+  color: #455249;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.origin-instagram { background: #f4eaf7; color: #6c327a; }
+.origin-site { background: #e8f1ea; color: #2e6840; }
+.origin-whatsapp { background: #e7f5ec; color: #24613a; }
+.origin-facebook { background: #e8eef8; color: #315b92; }
+.origin-meta { background: #edf0fa; color: #4a5594; }
+
+.source-history-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.source-history-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #eef1ee;
+}
+
+.source-history-list small { color: var(--muted); }
+
+.ig-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ig-head-actions button,
+.ig-head-actions a {
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ig-quick-replies {
+  display: grid;
+  gap: 7px;
+  padding: 10px 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.ig-quick-replies > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.ig-quick-replies > div {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 3px;
+}
+
+.ig-quick-replies button {
+  flex: 0 0 auto;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #f7f9f7;
+  color: #3f4c43;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.channel-performance-table-wrap { overflow-x: auto; }
+
+.channel-performance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.channel-performance-table th,
+.channel-performance-table td {
+  padding: 11px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.channel-performance-table th {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+@media (max-width: 760px) {
+  .crm-toolbar-multichannel {
+    grid-template-columns: 1fr;
+  }
+
+  .crm-card-title-row,
+  .source-history-list > div,
+  .ig-head-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .origin-badge { max-width: max-content; }
+}

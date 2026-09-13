@@ -624,3 +624,40 @@ export async function sendInstagramMessage(leadId, text) {
 export async function getIntegrationEvents() {
   return supabase.from('integration_events').select('*').order('created_at', { ascending: false }).limit(30);
 }
+
+
+export async function getLeadSourceHistory(leadId) {
+  return supabase
+    .from('lead_source_history')
+    .select('*')
+    .eq('lead_id', leadId)
+    .order('occurred_at', { ascending: false });
+}
+
+export async function getResponseTemplates(channel = 'instagram') {
+  const { data, error } = await supabase
+    .from('response_templates')
+    .select('id,name,channel,content,sort_order,active')
+    .eq('active', true)
+    .in('channel', ['all', channel])
+    .order('sort_order', { ascending: true })
+    .order('name', { ascending: true });
+
+  return { data, error };
+}
+
+export async function getUnreadInstagramCount() {
+  return supabase.rpc('admin_unread_social_count');
+}
+
+export async function markLeadSocialUnread(leadId) {
+  return supabase.rpc('mark_social_conversation_unread', {
+    p_lead_id: leadId,
+  });
+}
+
+export async function getChannelPerformance(daysBack = 30) {
+  return supabase.rpc('admin_channel_performance', {
+    days_back: daysBack,
+  });
+}

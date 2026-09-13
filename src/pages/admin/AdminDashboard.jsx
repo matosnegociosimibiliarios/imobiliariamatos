@@ -7,10 +7,12 @@ import {
   getTopLeadProperties,
   getUpcomingActions,
   getAcquisitionMetrics,
+  getChannelPerformance,
 } from '../../services/admin';
 import {
   formatCurrency,
   formatDateTime,
+  originLabel,
 } from '../../services/crm';
 
 export default function AdminDashboard() {
@@ -20,6 +22,7 @@ export default function AdminDashboard() {
   const [topProperties, setTopProperties] = useState([]);
   const [actions, setActions] = useState([]);
   const [acquisition, setAcquisition] = useState(null);
+  const [channelPerformance, setChannelPerformance] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,6 +34,7 @@ export default function AdminDashboard() {
         topResult,
         actionsResult,
         acquisitionResult,
+        channelResult,
       ] = await Promise.all([
         getDashboardMetrics(30),
         getLeadSources(30),
@@ -38,6 +42,7 @@ export default function AdminDashboard() {
         getTopLeadProperties(30),
         getUpcomingActions(),
         getAcquisitionMetrics(30),
+        getChannelPerformance(30),
       ]);
 
       setMetrics(metricsResult.data || null);
@@ -46,6 +51,7 @@ export default function AdminDashboard() {
       setTopProperties(topResult.data || []);
       setActions((actionsResult.data || []).slice(0, 5));
       setAcquisition(acquisitionResult.data || null);
+      setChannelPerformance(channelResult.data || []);
       setLoading(false);
     })();
   }, []);
@@ -178,6 +184,46 @@ export default function AdminDashboard() {
         </>
       )}
 
+
+      <section className="admin-panel">
+        <div className="panel-title-row">
+          <div>
+            <span className="eyebrow">Origem dos resultados</span>
+            <h2>Desempenho por canal nos últimos 30 dias</h2>
+          </div>
+        </div>
+
+        {channelPerformance.length === 0 ? (
+          <p>Ainda não há dados suficientes.</p>
+        ) : (
+          <div className="channel-performance-table-wrap">
+            <table className="channel-performance-table">
+              <thead>
+                <tr>
+                  <th>Canal</th>
+                  <th>Leads</th>
+                  <th>Visitas</th>
+                  <th>Fechados</th>
+                  <th>Valor fechado</th>
+                  <th>Comissão</th>
+                </tr>
+              </thead>
+              <tbody>
+                {channelPerformance.map((item) => (
+                  <tr key={`${item.platform}-${item.channel}`}>
+                    <td>{originLabel(item.platform, item.channel)}</td>
+                    <td>{item.leads}</td>
+                    <td>{item.appointments}</td>
+                    <td>{item.won}</td>
+                    <td>{formatCurrency(item.deal_value)}</td>
+                    <td>{formatCurrency(item.commission_value)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       <section className="admin-panel">
         <div className="panel-title-row"><div><span className="eyebrow">Aquisição</span><h2>Interações nos últimos 30 dias</h2></div><Link to="/admin/integracoes">Instagram / Meta</Link></div>

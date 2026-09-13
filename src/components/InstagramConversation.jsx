@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   getLeadSocialMessages,
+  getResponseTemplates,
   markLeadSocialRead,
+  markLeadSocialUnread,
   sendInstagramMessage,
 } from '../services/admin';
 import { formatDateTime } from '../services/crm';
@@ -25,6 +27,7 @@ export default function InstagramConversation({
   onActivity,
 }) {
   const [messages, setMessages] = useState([]);
+  const [templates, setTemplates] = useState([]);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -51,6 +54,17 @@ export default function InstagramConversation({
 
     if (!quiet) setLoading(false);
   }
+
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      const result = await getResponseTemplates('instagram');
+      if (active && !result.error) setTemplates(result.data || []);
+    })();
+
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     setMessages([]);
@@ -90,6 +104,15 @@ export default function InstagramConversation({
     }
   }
 
+  async function markUnread() {
+    const result = await markLeadSocialUnread(leadId);
+    if (result.error) {
+      setError('Não foi possível marcar como não lida.');
+      return;
+    }
+    onActivity?.();
+  }
+
   return (
     <div className={`ig-conversation ${compact ? 'compact' : ''}`}>
       <div className="ig-conversation-head">
@@ -98,13 +121,18 @@ export default function InstagramConversation({
           <strong>{leadName}</strong>
         </div>
 
-        <a
-          href="https://www.instagram.com/direct/inbox/"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Abrir Instagram
-        </a>
+        <div className="ig-head-actions">
+          <button type="button" onClick={markUnread}>
+            Marcar como não lida
+          </button>
+          <a
+            href="https://www.instagram.com/direct/inbox/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Abrir Instagram
+          </a>
+        </div>
       </div>
 
       <div className="ig-thread" aria-live="polite">
@@ -146,6 +174,24 @@ export default function InstagramConversation({
       </div>
 
       {error && <div className="ig-compose-error">{error}</div>}
+
+      {templates.length > 0 && (
+        <div className="ig-quick-replies">
+          <span>Respostas rápidas</span>
+          <div>
+            {templates.map((template) => (
+              <button
+                type="button"
+                key={template.id}
+                onClick={() => setText(template.content)}
+                title={template.content}
+              >
+                {template.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <form className="ig-compose" onSubmit={handleSend}>
         <textarea

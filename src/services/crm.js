@@ -59,3 +59,31 @@ export function makeWhatsAppUrl(phone, name = '') {
 
   return `https://wa.me/${normalized}?text=${text}`;
 }
+
+
+export const ORIGIN_PLATFORM_LABELS = {
+  site: 'Site',
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  whatsapp: 'WhatsApp',
+  meta: 'Meta',
+  manual: 'Manual',
+};
+
+export const ORIGIN_CHANNEL_LABELS = {
+  form: 'Formulário',
+  property_form: 'Formulário do imóvel',
+  direct: 'Direct',
+  lead_ads: 'Formulário de anúncio',
+  messenger: 'Messenger',
+  whatsapp: 'WhatsApp',
+  manual: 'Cadastro manual',
+};
+
+export function originLabel(platform, channel, detail = null) {
+  const p = ORIGIN_PLATFORM_LABELS[platform] || platform || 'Não informada';
+  const c = ORIGIN_CHANNEL_LABELS[channel] || channel || null;
+
+  if (detail && detail !== c) return `${p} · ${c || detail}`;
+  return c ? `${p} · ${c}` : p;
+}

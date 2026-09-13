@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { signOut } from '../services/auth';
+import { getUnreadInstagramCount } from '../services/admin';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const [unreadInstagram, setUnreadInstagram] = useState(0);
+
+  async function loadUnread() {
+    const { data } = await getUnreadInstagramCount();
+    setUnreadInstagram(Number(data || 0));
+  }
+
+  useEffect(() => {
+    loadUnread();
+    const interval = window.setInterval(loadUnread, 10000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   async function handleLogout() {
     await signOut();
@@ -24,7 +37,12 @@ export default function AdminLayout() {
         <nav className="admin-nav">
           <NavLink end to="/admin">Visão geral</NavLink>
           <NavLink to="/admin/imoveis">Imóveis</NavLink>
-          <NavLink to="/admin/mensagens">Mensagens Instagram</NavLink>
+          <NavLink to="/admin/mensagens" className="admin-nav-with-badge">
+            <span>Mensagens Instagram</span>
+            {unreadInstagram > 0 && (
+              <b>{unreadInstagram > 99 ? '99+' : unreadInstagram}</b>
+            )}
+          </NavLink>
           <NavLink to="/admin/leads">Funil de clientes</NavLink>
           <NavLink to="/admin/acoes">Próximas ações</NavLink>
           <NavLink to="/admin/agendamentos">Agendamentos</NavLink>

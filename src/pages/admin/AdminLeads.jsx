@@ -3,21 +3,31 @@ import { Link } from 'react-router-dom';
 import { getLeads, updateLeadStatus } from '../../services/admin';
 import {
   LEAD_STATUSES,
-  STATUS_LABELS,
   formatCurrency,
   formatDateTime,
   makeWhatsAppUrl,
+  originLabel,
 } from '../../services/crm';
+
+const ORIGIN_FILTERS = [
+  ['', 'Todas as origens'],
+  ['site', 'Site'],
+  ['instagram', 'Instagram'],
+  ['whatsapp', 'WhatsApp'],
+  ['facebook', 'Facebook'],
+  ['meta', 'Meta'],
+  ['manual', 'Manual'],
+];
 
 export default function AdminLeads() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [origin, setOrigin] = useState('');
   const [message, setMessage] = useState('');
 
   async function load() {
     setLoading(true);
-
     const { data, error } = await getLeads();
 
     if (error) {
@@ -27,35 +37,40 @@ export default function AdminLeads() {
       setMessage('');
       setLeads(data || []);
     }
-
     setLoading(false);
   }
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const visibleLeads = useMemo(() => {
     const term = search.trim().toLowerCase();
 
-    if (!term) return leads;
-
     return leads.filter((lead) => {
-      return [
+      const platform =
+        lead.initial_source_platform || lead.source_platform ||
+        (['instagram','facebook','whatsapp','meta'].includes(lead.source)
+          ? lead.source
+          : 'site');
+
+      const originOk = !origin || platform === origin;
+      const searchOk = !term || [
         lead.name,
         lead.whatsapp,
         lead.email,
         lead.property?.code,
         lead.property?.title,
+        lead.initial_source_detail,
+        lead.last_source_detail,
       ]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(term));
+
+      return originOk && searchOk;
     });
-  }, [leads, search]);
+  }, [leads, search, origin]);
 
   async function changeStatus(leadId, status) {
     const { error } = await updateLeadStatus(leadId, status);
-
     if (error) {
       setMessage('Não foi possível mover o lead.');
       return;
@@ -77,13 +92,19 @@ export default function AdminLeads() {
         </div>
       </div>
 
-      <div className="crm-toolbar">
+      <div className="crm-toolbar crm-toolbar-multichannel">
         <input
           type="search"
           placeholder="Buscar cliente, telefone ou imóvel..."
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
+
+        <select value={origin} onChange={(event) => setOrigin(event.target.value)}>
+          {ORIGIN_FILTERS.map(([value, label]) => (
+            <option value={value} key={value || 'all'}>{label}</option>
+          ))}
+        </select>
 
         <span>
           {visibleLeads.length} lead{visibleLeads.length === 1 ? '' : 's'}
@@ -116,38 +137,41 @@ export default function AdminLeads() {
                     <div className="crm-empty-column">Nenhum cliente</div>
                   ) : (
                     columnLeads.map((lead) => {
-                      const whatsappUrl = makeWhatsAppUrl(
-                        lead.whatsapp,
-                        lead.name
-                      );
+                      const whatsappUrl = makeWhatsAppUrl(lead.whatsapp, lead.name);
+                      const platform = lead.initial_source_platform || lead.source_platform || 'site';
+                      const channel = lead.initial_source_channel || lead.source_channel || 'form';
 
                       return (
                         <article className="crm-card" key={lead.id}>
-                          <Link
-                            className="crm-card-main"
-                            to={`/admin/leads/${lead.id}`}
-                          >
-                            <strong>{lead.name}</strong>
+                          <Link className="crm-card-main" to={`/admin/leads/${lead.id}`}>
+                            <div className="crm-card-title-row">
+                              <strong>{lead.name}</strong>
+                              <span className={`origin-badge origin-${platform}`}>
+                                {originLabel(platform, channel)}
+                              </span>
+                            </div>
 
-                            <span>{lead.whatsapp || (lead.source_platform === 'instagram' ? 'Instagram Direct' : 'Sem telefone')}</span>
+                            <span>
+                              {lead.whatsapp || (lead.source_platform === 'instagram'
+                                ? 'Instagram Direct'
+                                : 'Sem telefone')}
+                            </span>
 
-                            {lead.last_inbound_message && <small className="crm-instagram-preview">{lead.last_inbound_message}</small>}
+                            {lead.last_inbound_message && (
+                              <small className="crm-instagram-preview">
+                                {lead.last_inbound_message}
+                              </small>
+                            )}
 
                             {lead.property && (
-                              <small>
-                                {lead.property.code} — {lead.property.title}
-                              </small>
+                              <small>{lead.property.code} — {lead.property.title}</small>
                             )}
 
                             {lead.next_action_at && (
                               <div className="crm-next-action">
                                 <b>Próxima ação</b>
-                                <span>
-                                  {lead.next_action_text || 'Atender cliente'}
-                                </span>
-                                <small>
-                                  {formatDateTime(lead.next_action_at)}
-                                </small>
+                                <span>{lead.next_action_text || 'Atender cliente'}</span>
+                                <small>{formatDateTime(lead.next_action_at)}</small>
                               </div>
                             )}
 
@@ -161,27 +185,16 @@ export default function AdminLeads() {
                           <div className="crm-card-footer">
                             <select
                               value={lead.status}
-                              onChange={(event) =>
-                                changeStatus(lead.id, event.target.value)
-                              }
+                              onChange={(event) => changeStatus(lead.id, event.target.value)}
                               aria-label="Mover lead"
                             >
                               {LEAD_STATUSES.map((item) => (
-                                <option
-                                  key={item.value}
-                                  value={item.value}
-                                >
-                                  {item.label}
-                                </option>
+                                <option key={item.value} value={item.value}>{item.label}</option>
                               ))}
                             </select>
 
                             {whatsappUrl && (
-                              <a
-                                href={whatsappUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
+                              <a href={whatsappUrl} target="_blank" rel="noreferrer">
                                 WhatsApp
                               </a>
                             )}
