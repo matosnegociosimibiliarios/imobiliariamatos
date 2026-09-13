@@ -1,95 +1,163 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import {
+  getAgencySettings,
+  getPropertyBySlug,
+  propertyLocation,
+  propertyPrice,
+} from '../services/properties';
 
-function FotoModelo({ grande = false, texto = 'Foto do imóvel' }) {
+function Fact({ value, label }) {
+  if (value === null || value === undefined) return null;
   return (
-    <div className={`property-photo-placeholder ${grande ? 'large' : ''}`}>
-      <span>⌂</span>
-      <small>{texto}</small>
+    <div>
+      <strong>{value}</strong>
+      <span>{label}</span>
     </div>
   );
 }
 
 export default function Imovel() {
   const { slug } = useParams();
+  const [property, setProperty] = useState(null);
+  const [agency, setAgency] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      const [propertyResult, agencyResult] = await Promise.all([
+        getPropertyBySlug(slug),
+        getAgencySettings(),
+      ]);
+
+      if (!active) return;
+
+      setAgency(agencyResult.data || null);
+
+      if (propertyResult.error || !propertyResult.data) {
+        setNotFound(true);
+      } else {
+        setProperty(propertyResult.data);
+      }
+
+      setLoading(false);
+    })();
+
+    return () => { active = false; };
+  }, [slug]);
+
+  const features = useMemo(() => {
+    return (property?.property_features || [])
+      .map((item) => item.feature)
+      .filter((feature) => feature?.active !== false);
+  }, [property]);
+
+  const whatsappLink = useMemo(() => {
+    if (!property || !agency?.whatsapp) return null;
+
+    const number = agency.whatsapp.replace(/\D/g, '');
+    const message = encodeURIComponent(
+      `Olá! Tenho interesse no imóvel ${property.code} — ${property.title}. Gostaria de mais informações. ${window.location.href}`
+    );
+
+    return `https://wa.me/${number}?text=${message}`;
+  }, [property, agency]);
+
+  if (loading) {
+    return <main className="section"><div className="loading-box">Carregando imóvel...</div></main>;
+  }
+
+  if (notFound) {
+    return (
+      <main className="section">
+        <div className="empty-state">
+          <h1>Este imóvel não está disponível.</h1>
+          <p>Ele pode ter sido removido ou ainda não estar publicado.</p>
+          <Link className="button" to="/comprar">Ver outros imóveis</Link>
+        </div>
+      </main>
+    );
+  }
+
+  const pricePurpose =
+    property.purpose === 'rent' ? 'rent' :
+    property.purpose === 'sale' ? 'sale' : undefined;
 
   return (
     <main className="property-page">
-      <section className="property-demo-alert">
-        <strong>Página modelo</strong>
-        <span>
-          Esta tela serve apenas para você visualizar como será a página de cada imóvel.
-          Ainda não representa um anúncio real.
-        </span>
-      </section>
-
       <section className="property-top">
         <div>
           <Link className="back-link" to="/comprar">← Voltar para imóveis</Link>
-          <span className="eyebrow">Imóvel</span>
-          <h1>Página individual do imóvel</h1>
-          <p className="property-location">Localização pública aparecerá aqui</p>
+          <span className="eyebrow">{property.property_type}</span>
+          <h1>{property.title}</h1>
+          <p className="property-location">{propertyLocation(property)}</p>
         </div>
 
         <div className="property-code-box">
           <small>Código</small>
-          <strong>MAT-XXXX</strong>
+          <strong>{property.code}</strong>
         </div>
       </section>
 
       <section className="property-gallery">
-        <FotoModelo grande texto="Foto principal" />
-        <div className="property-gallery-side">
-          <FotoModelo texto="Foto 2" />
-          <FotoModelo texto="Foto 3" />
-          <FotoModelo texto="Foto 4" />
-          <FotoModelo texto="Foto 5" />
+        <div className="property-photo-placeholder large">
+          <span>⌂</span>
+          <small>Fotos serão conectadas na próxima etapa</small>
         </div>
-        <button className="gallery-button">Ver todas as fotos</button>
       </section>
 
       <section className="property-main-grid">
         <div className="property-content">
           <div className="property-price-block">
             <span className="eyebrow">Valor</span>
-            <h2>Preço do imóvel</h2>
-            <p>O valor real será carregado automaticamente do cadastro.</p>
+            <h2>{propertyPrice(property, pricePurpose)}</h2>
+
+            {property.condominium_fee != null && (
+              <p>Condomínio: {property.condominium_fee}</p>
+            )}
           </div>
 
           <div className="property-facts">
-            <div><strong>—</strong><span>Quartos</span></div>
-            <div><strong>—</strong><span>Suítes</span></div>
-            <div><strong>—</strong><span>Banheiros</span></div>
-            <div><strong>—</strong><span>Vagas</span></div>
-            <div><strong>—</strong><span>Área</span></div>
+            <Fact value={property.bedrooms} label="Quartos" />
+            <Fact value={property.suites} label="Suítes" />
+            <Fact value={property.bathrooms} label="Banheiros" />
+            <Fact value={property.parking_spaces} label="Vagas" />
+            <Fact value={property.total_area ? `${property.total_area} m²` : null} label="Área total" />
           </div>
 
-          <section className="property-section">
-            <h2>Sobre este imóvel</h2>
-            <p>
-              Aqui será exibida a descrição cadastrada para o imóvel, com informações
-              relevantes para o comprador ou locatário.
-            </p>
-          </section>
+          {property.description && (
+            <section className="property-section">
+              <h2>Sobre este imóvel</h2>
+              <p>{property.description}</p>
+            </section>
+          )}
 
           <section className="property-section">
             <h2>Características</h2>
             <div className="feature-list">
-              <span>Características cadastradas</span>
-              <span>Financiamento, quando aplicável</span>
-              <span>Aceita troca, quando aplicável</span>
-              <span>Outras informações públicas</span>
+              {property.financing_allowed && <span>Aceita financiamento</span>}
+              {property.exchange_allowed && <span>Aceita troca</span>}
+              {property.furnished && <span>Mobiliado</span>}
+              {features.map((feature) => (
+                <span key={feature.id}>{feature.label}</span>
+              ))}
+              {!property.financing_allowed &&
+               !property.exchange_allowed &&
+               !property.furnished &&
+               features.length === 0 && (
+                 <span>Nenhuma característica adicional cadastrada.</span>
+               )}
             </div>
           </section>
 
           <section className="property-section">
             <h2>Localização</h2>
             <div className="location-box">
-              <strong>Bairro e cidade</strong>
-              <p>
-                O endereço exato não será exibido publicamente. Aqui aparecerá somente
-                a localização autorizada para divulgação.
-              </p>
+              <strong>{propertyLocation(property)}</strong>
+              <p>O endereço exato não é exibido publicamente.</p>
             </div>
           </section>
         </div>
@@ -97,45 +165,23 @@ export default function Imovel() {
         <aside className="property-contact-card">
           <span className="eyebrow">Atendimento</span>
           <h2>Interessado neste imóvel?</h2>
-          <p>
-            Quando o site estiver conectado ao banco, os botões usarão os dados do imóvel
-            e o WhatsApp da imobiliária.
-          </p>
+          <p>Entre em contato para tirar dúvidas ou solicitar uma visita.</p>
 
-          <button className="button full-button" type="button">
-            Falar pelo WhatsApp
-          </button>
+          {whatsappLink ? (
+            <a className="button full-button" href={whatsappLink} target="_blank" rel="noreferrer">
+              Falar pelo WhatsApp
+            </a>
+          ) : (
+            <button className="button full-button" type="button" disabled>
+              WhatsApp ainda não configurado
+            </button>
+          )}
 
-          <button className="button button-outline full-button" type="button">
-            Agendar visita
-          </button>
-
-          <button className="share-button" type="button">
-            Compartilhar imóvel
+          <button className="button button-outline full-button" type="button" disabled>
+            Agendamento em breve
           </button>
         </aside>
       </section>
-
-      <section className="section related-properties">
-        <div className="section-heading">
-          <span className="eyebrow">Outras oportunidades</span>
-          <h2>Imóveis semelhantes</h2>
-          <p>
-            Depois da conexão com o banco, outros imóveis compatíveis aparecerão aqui.
-          </p>
-        </div>
-
-        <div className="empty-state">
-          <div className="empty-icon">⌂</div>
-          <h3>Nenhum imóvel relacionado ainda</h3>
-          <p>Esta área será preenchida automaticamente.</p>
-        </div>
-      </section>
-
-      <div className="mobile-contact-bar">
-        <button type="button">WhatsApp</button>
-        <button type="button">Agendar visita</button>
-      </div>
     </main>
   );
 }

@@ -1,7 +1,7 @@
 {
   "name": "matos-negocios-imobiliarios",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.4.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
     "@vitejs/plugin-react": "^4.3.4",
     "vite": "^6.0.5",
     "typescript": "~5.6.2",

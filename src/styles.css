@@ -419,3 +419,112 @@ button, input, select { font: inherit; }
     font-weight: 800;
   }
 }
+
+
+/* Versão 4 - cards reais vindos do Supabase */
+.loading-box {
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fbfcfb;
+  color: var(--muted);
+}
+
+.property-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.property-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 10px 30px rgba(20,51,32,.05);
+}
+
+.property-card-image {
+  position: relative;
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #e9efea, #dce6df);
+}
+
+.property-card-placeholder {
+  font-size: 52px;
+  color: var(--accent);
+}
+
+.property-card-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: white;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.property-card-body {
+  padding: 20px;
+}
+
+.property-card-code {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.property-card h3 {
+  margin: 8px 0;
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+.property-card-location {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.property-card-price {
+  margin: 18px 0 12px;
+  color: var(--accent);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.property-card-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  min-height: 38px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.property-card-fact strong {
+  color: var(--ink);
+}
+
+.property-card-button {
+  margin-top: 16px;
+}
+
+@media (max-width: 1000px) {
+  .property-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .property-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,9 +1,32 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import PropertyFilters from '../components/PropertyFilters';
+import PropertyGrid from '../components/PropertyGrid';
 import EmptyProperties from '../components/EmptyProperties';
+import { getProperties } from '../services/properties';
 
 export default function Alugar() {
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      const { data, error } = await getProperties({
+        purpose: 'rent',
+        limit: 48,
+      });
+
+      if (!active) return;
+      setProperties(data || []);
+      setLoadError(Boolean(error));
+      setLoading(false);
+    })();
+
+    return () => { active = false; };
+  }, []);
+
   return (
     <main className="listing-page">
       <section className="listing-hero">
@@ -17,25 +40,25 @@ export default function Alugar() {
       <section className="section listing-content">
         <div className="listing-toolbar">
           <div>
-            <strong>0 imóveis encontrados</strong>
-            <span>Os anúncios reais serão conectados depois.</span>
+            <strong>{loading ? 'Carregando...' : `${properties.length} imóvel${properties.length === 1 ? '' : 'is'} encontrado${properties.length === 1 ? '' : 's'}`}</strong>
+            <span>Somente imóveis publicados são exibidos.</span>
           </div>
-
-          <label className="sort">
-            Ordenar por
-            <select defaultValue="recentes">
-              <option value="recentes">Mais recentes</option>
-              <option value="menor">Menor preço</option>
-              <option value="maior">Maior preço</option>
-            </select>
-          </label>
         </div>
 
-        <EmptyProperties tipo="para alugar" />
-        <div className="model-preview">
-          <span>Quer visualizar como ficará um anúncio?</span>
-          <Link className="button" to="/imovel/modelo">Ver página modelo do imóvel</Link>
-        </div>
+        {!loading && loadError && (
+          <div className="empty-state">
+            <h3>Não foi possível carregar os imóveis</h3>
+            <p>Confira a conexão com o banco e tente novamente.</p>
+          </div>
+        )}
+
+        {!loading && !loadError && properties.length > 0 && (
+          <PropertyGrid properties={properties} purpose="rent" />
+        )}
+
+        {!loading && !loadError && properties.length === 0 && (
+          <EmptyProperties tipo="para alugar" />
+        )}
       </section>
     </main>
   );

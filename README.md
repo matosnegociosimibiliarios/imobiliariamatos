@@ -1,19 +1,20 @@
-# Matos Negócios Imobiliários — Versão 3
+# Matos Negócios Imobiliários — Versão 4
 
-## Já disponível
-- Home
-- Comprar
-- Alugar
-- Página individual do imóvel em `/imovel/modelo`
-- Galeria visual
-- Área de características
-- Localização pública
-- Área de contato
-- Barra de contato no celular
-- Estrutura responsiva
+## Nesta versão
+- Conexão real com Supabase
+- Home consulta imóveis publicados
+- Comprar consulta imóveis à venda
+- Alugar consulta imóveis para locação
+- Página individual consulta o imóvel pelo slug
+- RLS do Supabase continua controlando a leitura pública
+- Estado vazio quando ainda não existem imóveis publicados
 
-## Importante
-A rota `/imovel/modelo` é apenas uma prévia visual. Não representa um imóvel real.
+## Variáveis necessárias na Vercel
+- VITE_SUPABASE_URL
+- VITE_SUPABASE_PUBLISHABLE_KEY
 
-## Próxima etapa
-Conectar o site ao Supabase para carregar imóveis reais automaticamente.
+## Próximas etapas
+1. Cadastrar o primeiro imóvel real
+2. Criar armazenamento e upload de fotos
+3. Ativar filtros
+4. Criar painel administrativo próprio

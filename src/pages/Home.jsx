@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import PropertyGrid from '../components/PropertyGrid';
+import { getHomeProperties } from '../services/properties';
 
 const propertyTypes = [
   ['Casa', 'Casas para morar, investir ou vender'],
@@ -10,6 +12,25 @@ const propertyTypes = [
 ];
 
 export default function Home() {
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    (async () => {
+      const { data, error } = await getHomeProperties();
+
+      if (!active) return;
+      setProperties(data || []);
+      setLoadError(Boolean(error));
+      setLoading(false);
+    })();
+
+    return () => { active = false; };
+  }, []);
+
   return (
     <main id="inicio">
       <section className="hero">
@@ -21,7 +42,7 @@ export default function Home() {
             alugar ou investir.
           </p>
 
-          <div className="search-panel" aria-label="Busca de imóveis">
+          <div className="search-panel">
             <div className="search-tabs">
               <Link className="tab active" to="/comprar">Comprar</Link>
               <Link className="tab" to="/alugar">Alugar</Link>
@@ -30,29 +51,20 @@ export default function Home() {
             <div className="search-grid">
               <label>
                 Localização
-                <input placeholder="Cidade ou bairro" />
+                <input placeholder="Cidade ou bairro" disabled title="Filtro será conectado na próxima etapa" />
               </label>
 
               <label>
                 Tipo de imóvel
-                <select defaultValue="">
-                  <option value="" disabled>Todos os tipos</option>
-                  <option>Casa</option>
-                  <option>Apartamento</option>
-                  <option>Terreno</option>
-                  <option>Sítio</option>
-                  <option>Comercial</option>
+                <select defaultValue="" disabled>
+                  <option value="">Todos os tipos</option>
                 </select>
               </label>
 
               <label>
                 Faixa de preço
-                <select defaultValue="">
-                  <option value="" disabled>Qualquer valor</option>
-                  <option>Até R$ 200 mil</option>
-                  <option>R$ 200 mil a R$ 400 mil</option>
-                  <option>R$ 400 mil a R$ 700 mil</option>
-                  <option>Acima de R$ 700 mil</option>
+                <select defaultValue="" disabled>
+                  <option value="">Qualquer valor</option>
                 </select>
               </label>
 
@@ -72,14 +84,29 @@ export default function Home() {
         <div className="section-heading">
           <span className="eyebrow">Oportunidades</span>
           <h2>Imóveis em destaque</h2>
-          <p>Os imóveis reais serão mostrados aqui quando conectarmos o site ao banco.</p>
+          <p>Os imóveis publicados no banco aparecem automaticamente nesta área.</p>
         </div>
 
-        <div className="empty-state">
-          <div className="empty-icon">⌂</div>
-          <h3>Nenhum imóvel publicado ainda</h3>
-          <p>As páginas e a navegação já estão funcionando.</p>
-        </div>
+        {loading && <div className="loading-box">Carregando imóveis...</div>}
+
+        {!loading && loadError && (
+          <div className="empty-state">
+            <h3>Não foi possível carregar os imóveis</h3>
+            <p>Confira a conexão com o banco e tente novamente.</p>
+          </div>
+        )}
+
+        {!loading && !loadError && properties.length > 0 && (
+          <PropertyGrid properties={properties} />
+        )}
+
+        {!loading && !loadError && properties.length === 0 && (
+          <div className="empty-state">
+            <div className="empty-icon">⌂</div>
+            <h3>Nenhum imóvel publicado ainda</h3>
+            <p>Assim que você publicar o primeiro imóvel, ele aparecerá aqui automaticamente.</p>
+          </div>
+        )}
       </section>
 
       <section className="section section-soft">
@@ -104,9 +131,7 @@ export default function Home() {
         <div>
           <span className="eyebrow eyebrow-light">Para proprietários</span>
           <h2>Quer vender ou alugar seu imóvel?</h2>
-          <p>
-            Prepare seu imóvel para aparecer para compradores e locatários com uma apresentação profissional.
-          </p>
+          <p>Em breve esta área receberá o formulário de captação de proprietários.</p>
         </div>
         <a className="button button-light" href="#contato">Quero anunciar meu imóvel</a>
       </section>
@@ -115,9 +140,7 @@ export default function Home() {
         <div>
           <span className="eyebrow">Avaliação</span>
           <h2>Quer saber quanto seu imóvel pode valer?</h2>
-          <p>
-            Solicite uma avaliação e tenha uma referência mais segura antes de vender ou alugar.
-          </p>
+          <p>Solicite uma avaliação antes de vender ou alugar.</p>
         </div>
         <a className="button" href="#contato">Solicitar avaliação</a>
       </section>
@@ -126,9 +149,7 @@ export default function Home() {
         <div className="section-heading">
           <span className="eyebrow">Sobre</span>
           <h2>Matos Negócios Imobiliários</h2>
-          <p>
-            Esta área será usada para apresentar a empresa, região de atuação, CRECI e forma de trabalho.
-          </p>
+          <p>Esta área será usada para apresentar a empresa, região de atuação, CRECI e forma de trabalho.</p>
         </div>
       </section>
     </main>
