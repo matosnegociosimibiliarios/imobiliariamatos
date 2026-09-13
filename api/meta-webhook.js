@@ -1,4 +1,4 @@
-import { createLeadFromLeadAd, logIntegration, readRawBody, upsertInstagramDirectLead, verifyMetaSignature } from './_meta.js';
+import { createLeadFromLeadAd, logIntegration, readRawBody, storeInstagramOutboundEcho, upsertInstagramDirectLead, verifyMetaSignature } from './_meta.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -30,10 +30,61 @@ export default async function handler(req, res) {
 
     for (const entry of payload.entry || []) {
       for (const event of entry.messaging || []) {
-        if (!event?.sender?.id || !event?.message || event.message.is_echo) continue;
-        if (process.env.META_INSTAGRAM_USER_ID && String(event.sender.id) === String(process.env.META_INSTAGRAM_USER_ID)) continue;
-        const text = event.message.text || (event.message.attachments ? '[Mídia recebida no Instagram]' : '[Mensagem recebida no Instagram]');
-        tasks.push(upsertInstagramDirectLead({ senderId:String(event.sender.id), messageId:event.message.mid || null, text, timestamp:event.timestamp || null, metadata:{ recipient_id:event.recipient?.id || null } }).then(() => logIntegration('instagram_direct_message', { externalEventId:event.message.mid || null, metadata:{ sender_id:event.sender.id } })));
+        if (!event?.message) continue;
+
+        const text = event.message.text ||
+          (event.message.attachments
+            ? '[Mídia recebida no Instagram]'
+            : '[Mensagem recebida no Instagram]');
+
+        const metadata = {
+          recipient_id: event.recipient?.id || null,
+          sender_id: event.sender?.id || null,
+          attachments: event.message.attachments || [],
+          is_echo: Boolean(event.message.is_echo),
+        };
+
+        if (event.message.is_echo) {
+          const recipientId = event.recipient?.id;
+          if (!recipientId) continue;
+
+          tasks.push(
+            storeInstagramOutboundEcho({
+              recipientId: String(recipientId),
+              messageId: event.message.mid || null,
+              text,
+              timestamp: event.timestamp || null,
+              metadata,
+            }).then(() =>
+              logIntegration('instagram_direct_outbound_echo', {
+                externalEventId: event.message.mid || null,
+                metadata: { recipient_id: recipientId },
+              })
+            )
+          );
+          continue;
+        }
+
+        if (!event?.sender?.id) continue;
+        if (
+          process.env.META_INSTAGRAM_USER_ID &&
+          String(event.sender.id) === String(process.env.META_INSTAGRAM_USER_ID)
+        ) continue;
+
+        tasks.push(
+          upsertInstagramDirectLead({
+            senderId: String(event.sender.id),
+            messageId: event.message.mid || null,
+            text,
+            timestamp: event.timestamp || null,
+            metadata,
+          }).then(() =>
+            logIntegration('instagram_direct_message', {
+              externalEventId: event.message.mid || null,
+              metadata: { sender_id: event.sender.id },
+            })
+          )
+        );
       }
 
       for (const change of entry.changes || []) {

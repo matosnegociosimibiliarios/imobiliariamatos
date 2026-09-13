@@ -24,6 +24,7 @@ export default function AdminLayout() {
         <nav className="admin-nav">
           <NavLink end to="/admin">Visão geral</NavLink>
           <NavLink to="/admin/imoveis">Imóveis</NavLink>
+          <NavLink to="/admin/mensagens">Mensagens Instagram</NavLink>
           <NavLink to="/admin/leads">Funil de clientes</NavLink>
           <NavLink to="/admin/acoes">Próximas ações</NavLink>
           <NavLink to="/admin/agendamentos">Agendamentos</NavLink>

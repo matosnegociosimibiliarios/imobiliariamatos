@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import InstagramConversation from '../../components/InstagramConversation';
 import {
   addLeadNote,
   getLeadDetails,
   getLeadNotes,
   getLeadStatusHistory,
-  getLeadSocialMessages,
   updateLead,
 } from '../../services/admin';
 import {
@@ -23,7 +23,6 @@ export default function AdminLeadDetail() {
   const [lead, setLead] = useState(null);
   const [notes, setNotes] = useState([]);
   const [history, setHistory] = useState([]);
-  const [socialMessages, setSocialMessages] = useState([]);
   const [noteText, setNoteText] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -41,11 +40,10 @@ export default function AdminLeadDetail() {
   async function load() {
     setLoading(true);
 
-    const [leadResult, notesResult, historyResult, socialResult] = await Promise.all([
+    const [leadResult, notesResult, historyResult] = await Promise.all([
       getLeadDetails(id),
       getLeadNotes(id),
       getLeadStatusHistory(id),
-      getLeadSocialMessages(id),
     ]);
 
     if (leadResult.error || !leadResult.data) {
@@ -59,7 +57,6 @@ export default function AdminLeadDetail() {
     setLead(data);
     setNotes(notesResult.data || []);
     setHistory(historyResult.data || []);
-    setSocialMessages(socialResult.data || []);
 
     setForm({
       status: data.status || 'new',
@@ -255,8 +252,19 @@ export default function AdminLeadDetail() {
             </section>
           )}
 
-          {socialMessages.length > 0 && (
-            <section className="admin-panel"><h2>Mensagens do Instagram</h2><div className="social-message-list">{socialMessages.map((item) => <article key={item.id}><p>{item.message_text || 'Mensagem sem texto'}</p><small>{formatDateTime(item.sent_at || item.created_at)}</small></article>)}</div></section>
+          {lead.source_platform === 'instagram' && lead.source_channel === 'direct' && (
+            <section className="admin-panel">
+              <div className="panel-title-row">
+                <h2>Conversa no Instagram</h2>
+                <Link to={`/admin/mensagens?lead=${lead.id}`}>Abrir caixa de mensagens</Link>
+              </div>
+
+              <InstagramConversation
+                leadId={lead.id}
+                leadName={lead.name}
+                compact
+              />
+            </section>
           )}
           <section className="admin-panel">
             <h2>Anotações do atendimento</h2>

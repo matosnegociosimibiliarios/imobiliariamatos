@@ -86,3 +86,19 @@ A conexão final depende da conta profissional do Instagram, do aplicativo Meta 
 - Política de Privacidade pública em `/politica-de-privacidade`
 - Instruções de exclusão de dados em `/exclusao-de-dados`
 - Link de Privacidade no rodapé
+
+
+## V10.2 — Caixa de atendimento do Instagram
+
+- Nova tela `/admin/mensagens` com conversas do Instagram Direct.
+- Histórico de mensagens recebidas e enviadas.
+- Resposta ao Direct diretamente pelo CRM.
+- Contador de mensagens não lidas.
+- Atualização automática da conversa a cada poucos segundos.
+- Mensagens enviadas pelo próprio Instagram também podem aparecer no histórico por meio do webhook de eco.
+- A ficha do cliente passa a ter a conversa completa e campo de resposta.
+
+### Instalação
+Antes de publicar os arquivos da V10.2, execute `SUPABASE_V10_2_SETUP.sql` no Editor SQL do Supabase.
+
+Não é necessário criar novas variáveis na Vercel. A V10.2 usa as mesmas configurações Meta/Instagram já validadas na V10.1.

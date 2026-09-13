@@ -66,6 +66,122 @@ export async function graphGet(idOrPath, token, fields=null) {
   return data;
 }
 
+
+
+export async function requireAdmin(req) {
+  const authorization = String(req.headers.authorization || '');
+  const match = authorization.match(/^Bearer\\s+(.+)$/i);
+  if (!match) {
+    const error = new Error('Sessão não informada.');
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const { url, key } = getSupabaseAdminConfig();
+  const response = await fetch(`${url}/auth/v1/user`, {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${match[1]}`,
+    },
+  });
+
+  const user = await response.json().catch(() => null);
+  if (!response.ok || !user?.id) {
+    const error = new Error('Sessão inválida ou expirada.');
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const profiles = await db(
+    `profiles?select=id,role&id=eq.${encodeURIComponent(user.id)}&limit=1`
+  );
+
+  if (!profiles?.length || profiles[0].role !== 'admin') {
+    const error = new Error('Acesso não autorizado.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return user;
+}
+
+export async function sendInstagramText(recipientId, text) {
+  const token = process.env.META_INSTAGRAM_ACCESS_TOKEN;
+  const igUserId = process.env.META_INSTAGRAM_USER_ID;
+
+  if (!token || !igUserId) {
+    throw new Error('Instagram não configurado no servidor.');
+  }
+
+  const response = await fetch(
+    `https://graph.instagram.com/${GRAPH_VERSION}/${encodeURIComponent(igUserId)}/messages`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        recipient: { id: String(recipientId) },
+        message: { text: String(text) },
+      }),
+    }
+  );
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || data.error) {
+    const error = new Error(
+      data.error?.message || `Instagram API ${response.status}`
+    );
+    error.statusCode = 400;
+    error.metaError = data.error || null;
+    throw error;
+  }
+
+  return data;
+}
+
+export async function storeInstagramOutboundEcho({
+  recipientId,
+  messageId,
+  text,
+  timestamp,
+  metadata = {},
+}) {
+  if (!recipientId) return null;
+
+  const existing = await db(
+    `leads?select=id&source_platform=eq.instagram&source_channel=eq.direct&external_contact_id=eq.${encodeURIComponent(recipientId)}&limit=1`
+  );
+
+  if (!existing?.length) return null;
+
+  const when = timestamp
+    ? new Date(Number(timestamp)).toISOString()
+    : new Date().toISOString();
+
+  await db('social_messages?on_conflict=platform,external_message_id', {
+    method: 'POST',
+    body: {
+      lead_id: existing[0].id,
+      platform: 'instagram',
+      channel: 'direct',
+      external_message_id: messageId || null,
+      external_sender_id: process.env.META_INSTAGRAM_USER_ID || null,
+      external_recipient_id: String(recipientId),
+      direction: 'outbound',
+      message_text: text,
+      sent_at: when,
+      delivery_status: 'sent',
+      metadata,
+    },
+    prefer: 'resolution=ignore-duplicates,return=minimal',
+  });
+
+  return existing[0];
+}
+
 function normalizeString(value) { return value == null ? null : String(value).trim() || null; }
 
 export async function upsertInstagramDirectLead({ senderId, messageId, text, timestamp, metadata={} }) {
@@ -82,7 +198,7 @@ export async function upsertInstagramDirectLead({ senderId, messageId, text, tim
 
   if (lead?.id) {
     try {
-      await db('social_messages?on_conflict=platform,external_message_id', { method:'POST', body:{ lead_id:lead.id, platform:'instagram', channel:'direct', external_message_id:messageId || null, external_sender_id:senderId, direction:'inbound', message_text:text, sent_at:when, metadata }, prefer:'resolution=ignore-duplicates,return=minimal' });
+      await db('social_messages?on_conflict=platform,external_message_id', { method:'POST', body:{ lead_id:lead.id, platform:'instagram', channel:'direct', external_message_id:messageId || null, external_sender_id:senderId, external_recipient_id:metadata?.recipient_id || null, direction:'inbound', message_text:text, sent_at:when, delivery_status:'received', metadata }, prefer:'resolution=ignore-duplicates,return=minimal' });
     } catch (error) { console.error('Falha ao salvar mensagem social', error); }
   }
   return lead;

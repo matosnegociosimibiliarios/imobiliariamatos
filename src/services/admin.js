@@ -552,8 +552,74 @@ export async function getIntegrationMetrics(daysBack = 30) {
 }
 
 export async function getLeadSocialMessages(leadId) {
-  return supabase.from('social_messages').select('*').eq('lead_id', leadId).order('created_at', { ascending: false }).limit(50);
+  return supabase
+    .from('social_messages')
+    .select('*')
+    .eq('lead_id', leadId)
+    .order('sent_at', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: true })
+    .limit(200);
 }
+
+export async function getInstagramConversations() {
+  return supabase
+    .from('leads')
+    .select(`
+      id,
+      name,
+      status,
+      source_platform,
+      source_channel,
+      external_contact_id,
+      last_inbound_message,
+      last_inbound_at,
+      last_outbound_message,
+      last_outbound_at,
+      last_message_at,
+      social_unread_count,
+      created_at
+    `)
+    .eq('source_platform', 'instagram')
+    .eq('source_channel', 'direct')
+    .order('last_message_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false });
+}
+
+export async function markLeadSocialRead(leadId) {
+  return supabase.rpc('mark_social_messages_read', {
+    p_lead_id: leadId,
+  });
+}
+
+export async function sendInstagramMessage(leadId, text) {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+
+  if (!accessToken) {
+    throw new Error('Sua sessão expirou. Entre novamente no painel.');
+  }
+
+  const response = await fetch('/api/instagram-send', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
+      lead_id: leadId,
+      text,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Não foi possível enviar a mensagem.');
+  }
+
+  return data;
+}
+
 
 export async function getIntegrationEvents() {
   return supabase.from('integration_events').select('*').order('created_at', { ascending: false }).limit(30);

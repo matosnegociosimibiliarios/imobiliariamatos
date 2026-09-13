@@ -194,6 +194,7 @@ export default function AdminDashboard() {
         <h2>Ações rápidas</h2>
 
         <div className="admin-actions">
+          <Link to="/admin/mensagens">Mensagens Instagram</Link>
           <Link to="/admin/leads">Abrir funil</Link>
           <Link to="/admin/acoes">Próximas ações</Link>
           <Link to="/admin/agendamentos">Agendamentos</Link>
