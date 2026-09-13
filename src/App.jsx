@@ -15,6 +15,8 @@ import AdminProperties from './pages/admin/AdminProperties';
 import AdminPropertyForm from './pages/admin/AdminPropertyForm';
 import AdminLeads from './pages/admin/AdminLeads';
 import AdminAppointments from './pages/admin/AdminAppointments';
+import AdminLeadDetail from './pages/admin/AdminLeadDetail';
+import AdminActions from './pages/admin/AdminActions';
 
 export default function App() {
   return (
@@ -33,6 +35,8 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/imoveis" element={<AdminProperties />} />
           <Route path="/admin/leads" element={<AdminLeads />} />
+          <Route path="/admin/leads/:id" element={<AdminLeadDetail />} />
+          <Route path="/admin/acoes" element={<AdminActions />} />
           <Route path="/admin/agendamentos" element={<AdminAppointments />} />
           <Route path="/admin/imoveis/novo" element={<AdminPropertyForm />} />
           <Route path="/admin/imoveis/:id/editar" element={<AdminPropertyForm />} />

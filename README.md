@@ -1,52 +1,68 @@
-# Matos Negócios Imobiliários — Versão 7
+# Matos Negócios Imobiliários — Versão 8
 
-## O que entra nesta versão
+## CRM de atendimento
 
-### Visitantes
-- Registro anônimo de páginas visitadas
-- Sessão anônima salva no navegador
-- Página visitada
-- Imóvel visitado
-- Referência
-- UTM source / medium / campaign
-- Sem IP e sem captura automática de dados pessoais
+Esta versão transforma a área de leads em um CRM comercial.
 
-### Leads
-- Formulário de interesse na página do imóvel
-- Nome
+### Funil visual
+Etapas:
+- Novo
+- Contatado
+- Qualificado
+- Visita
+- Proposta
+- Fechado
+- Perdido
+
+É possível mover o cliente de etapa diretamente no funil.
+
+### Ficha do cliente
+Cada lead passa a ter:
+- dados de contato
+- imóvel de interesse
+- mensagem inicial
+- origem
+- histórico das etapas
+- anotações de atendimento
+- próxima ação
+- data e horário da próxima ação
+- motivo de perda
+- valor do negócio
+- valor da comissão
+- visitas solicitadas
+- botão direto de WhatsApp
+
+### Próximas ações
+Nova tela administrativa para:
+- ações atrasadas
+- próximas ações
+- acesso rápido ao cliente
 - WhatsApp
-- E-mail opcional
-- Mensagem
-- Imóvel de origem
-- Sessão de origem
-- Status do atendimento
 
-### Agendamentos
-- Solicitação de visita
-- Data desejada
-- Horário desejado
-- Status do agendamento
+### Indicadores
+O painel passa a mostrar:
+- visitantes
+- leads
+- agendamentos
+- propostas
+- fechados
+- conversão de lead em venda
+- valor total fechado
+- comissão total
+- motivos de perda
+- imóveis que mais geram leads
 
-### Painel
-- Visitantes únicos
-- Visualizações
-- Leads
-- Agendamentos
-- Fechados
-- Taxa visitante → lead
-- Taxa lead → agendamento
-- Origem dos leads
-- Imóveis que mais geram leads
-- Tela de Leads
-- Tela de Agendamentos
+## Instalação
 
-## Antes de publicar
-Execute no Supabase:
-`SUPABASE_LEADS_SETUP.sql`
+ANTES de publicar a Versão 8:
 
-Depois publique esta versão no GitHub/Vercel.
+1. Abra `SUPABASE_CRM_SETUP.sql`.
+2. Copie todo o conteúdo.
+3. Execute no Editor SQL do Supabase.
+4. Confirme que apareceu sucesso.
+5. Depois publique os arquivos da Versão 8 no GitHub/Vercel.
 
 ## Segurança
-- Visitante pode inserir visita, lead e pedido de agendamento.
-- Visitante não pode ler a base de leads.
-- Somente administrador pode ler e editar leads, visitas e agendamentos.
+- Os dados do CRM continuam protegidos por RLS.
+- Apenas administrador autenticado pode ler ou alterar anotações, histórico e dados comerciais.
+- Nenhuma chave secreta é colocada no navegador.

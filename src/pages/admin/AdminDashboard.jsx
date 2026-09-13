@@ -3,26 +3,44 @@ import { Link } from 'react-router-dom';
 import {
   getDashboardMetrics,
   getLeadSources,
+  getLostReasons,
   getTopLeadProperties,
+  getUpcomingActions,
 } from '../../services/admin';
+import {
+  formatCurrency,
+  formatDateTime,
+} from '../../services/crm';
 
 export default function AdminDashboard() {
   const [metrics, setMetrics] = useState(null);
   const [sources, setSources] = useState([]);
+  const [lostReasons, setLostReasons] = useState([]);
   const [topProperties, setTopProperties] = useState([]);
+  const [actions, setActions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const [metricsResult, sourcesResult, topResult] = await Promise.all([
+      const [
+        metricsResult,
+        sourcesResult,
+        lostResult,
+        topResult,
+        actionsResult,
+      ] = await Promise.all([
         getDashboardMetrics(30),
         getLeadSources(30),
+        getLostReasons(90),
         getTopLeadProperties(30),
+        getUpcomingActions(),
       ]);
 
       setMetrics(metricsResult.data || null);
       setSources(sourcesResult.data || []);
+      setLostReasons(lostResult.data || []);
       setTopProperties(topResult.data || []);
+      setActions((actionsResult.data || []).slice(0, 5));
       setLoading(false);
     })();
   }, []);
@@ -30,12 +48,13 @@ export default function AdminDashboard() {
   const cards = metrics
     ? [
         ['Visitantes únicos', metrics.unique_visitors],
-        ['Visualizações', metrics.visits],
         ['Leads', metrics.leads],
         ['Agendamentos', metrics.appointments],
+        ['Propostas', metrics.proposals],
         ['Fechados', metrics.won],
-        ['Visitante → lead', `${metrics.visitor_to_lead_rate}%`],
-        ['Lead → visita', `${metrics.lead_to_appointment_rate}%`],
+        ['Lead → venda', `${metrics.lead_to_won_rate}%`],
+        ['Valor fechado', formatCurrency(metrics.won_value)],
+        ['Comissão', formatCurrency(metrics.commission_value)],
       ]
     : [];
 
@@ -67,17 +86,30 @@ export default function AdminDashboard() {
 
           <div className="admin-dashboard-grid">
             <section className="admin-panel">
-              <h2>Origem dos leads</h2>
+              <div className="panel-title-row">
+                <h2>Próximas ações</h2>
+                <Link to="/admin/acoes">Ver todas</Link>
+              </div>
 
-              {sources.length === 0 ? (
-                <p>Ainda não há leads.</p>
+              {actions.length === 0 ? (
+                <p>Nenhuma ação cadastrada.</p>
               ) : (
                 <div className="metric-list">
-                  {sources.map((item) => (
-                    <div key={item.source}>
-                      <span>{item.source}</span>
-                      <strong>{item.total}</strong>
-                    </div>
+                  {actions.map((item) => (
+                    <Link
+                      className="dashboard-action-row"
+                      to={`/admin/leads/${item.id}`}
+                      key={item.id}
+                    >
+                      <span>
+                        <strong>{item.name}</strong>
+                        <small>
+                          {item.next_action_text || 'Atender cliente'}
+                        </small>
+                      </span>
+
+                      <b>{formatDateTime(item.next_action_at)}</b>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -99,6 +131,40 @@ export default function AdminDashboard() {
                 </div>
               )}
             </section>
+
+            <section className="admin-panel">
+              <h2>Origem dos leads</h2>
+
+              {sources.length === 0 ? (
+                <p>Ainda não há leads.</p>
+              ) : (
+                <div className="metric-list">
+                  {sources.map((item) => (
+                    <div key={item.source}>
+                      <span>{item.source}</span>
+                      <strong>{item.total}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="admin-panel">
+              <h2>Por que perdemos clientes?</h2>
+
+              {lostReasons.length === 0 ? (
+                <p>Ainda não há negócios marcados como perdidos.</p>
+              ) : (
+                <div className="metric-list">
+                  {lostReasons.map((item) => (
+                    <div key={item.reason}>
+                      <span>{item.reason}</span>
+                      <strong>{item.total}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
         </>
       )}
@@ -107,10 +173,10 @@ export default function AdminDashboard() {
         <h2>Ações rápidas</h2>
 
         <div className="admin-actions">
-          <Link to="/admin/leads">Ver leads</Link>
-          <Link to="/admin/agendamentos">Ver agendamentos</Link>
-          <Link to="/admin/imoveis">Gerenciar imóveis</Link>
-          <Link to="/admin/imoveis/novo">Cadastrar imóvel</Link>
+          <Link to="/admin/leads">Abrir funil</Link>
+          <Link to="/admin/acoes">Próximas ações</Link>
+          <Link to="/admin/agendamentos">Agendamentos</Link>
+          <Link to="/admin/imoveis">Imóveis</Link>
         </div>
       </section>
     </div>

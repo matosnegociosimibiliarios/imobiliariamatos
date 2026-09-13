@@ -305,3 +305,101 @@ export async function updateAppointment(id, payload) {
     .select()
     .single();
 }
+
+
+export async function getLeadDetails(id) {
+  return supabase
+    .from('leads')
+    .select(`
+      *,
+      property:properties(
+        id,
+        code,
+        title,
+        slug,
+        purpose,
+        sale_price,
+        rent_price,
+        public_location_text
+      ),
+      appointments(
+        id,
+        requested_date,
+        requested_time,
+        scheduled_at,
+        status,
+        notes,
+        created_at
+      )
+    `)
+    .eq('id', id)
+    .maybeSingle();
+}
+
+export async function updateLead(id, payload) {
+  return supabase
+    .from('leads')
+    .update(payload)
+    .eq('id', id)
+    .select(`
+      *,
+      property:properties(id,code,title,slug)
+    `)
+    .single();
+}
+
+export async function getLeadNotes(leadId) {
+  return supabase
+    .from('lead_notes')
+    .select('id,lead_id,note,created_by,created_at')
+    .eq('lead_id', leadId)
+    .order('created_at', { ascending: false });
+}
+
+export async function addLeadNote(leadId, note) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return supabase
+    .from('lead_notes')
+    .insert({
+      lead_id: leadId,
+      note: note.trim(),
+      created_by: user?.id || null,
+    })
+    .select()
+    .single();
+}
+
+export async function getLeadStatusHistory(leadId) {
+  return supabase
+    .from('lead_status_history')
+    .select('id,lead_id,from_status,to_status,changed_by,created_at')
+    .eq('lead_id', leadId)
+    .order('created_at', { ascending: false });
+}
+
+export async function getUpcomingActions() {
+  return supabase
+    .from('leads')
+    .select(`
+      id,
+      name,
+      whatsapp,
+      status,
+      next_action_text,
+      next_action_at,
+      property:properties(id,code,title)
+    `)
+    .not('next_action_at', 'is', null)
+    .not('status', 'in', '("won","lost")')
+    .order('next_action_at', { ascending: true })
+    .limit(50);
+}
+
+export async function getLostReasons(daysBack = 90) {
+  return supabase.rpc('admin_lost_reasons', {
+    days_back: daysBack,
+  });
+}
