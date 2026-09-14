@@ -4040,3 +4040,363 @@ button, input, select { font: inherit; }
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* =========================================================
+   V10.9 — CENTRAL DE DOCUMENTOS
+   ========================================================= */
+
+.document-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.document-metrics article {
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.document-metrics span {
+  color: #667085;
+  font-size: 0.82rem;
+}
+
+.document-metrics strong {
+  font-size: 1.65rem;
+}
+
+.document-central-upload form,
+.document-upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.document-file-field small {
+  color: #667085;
+  font-weight: 500;
+}
+
+.document-section-heading,
+.document-manager-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.document-section-heading h2,
+.document-manager-heading h2 {
+  margin-bottom: 4px;
+}
+
+.document-manager-heading p {
+  margin: 0;
+  color: #667085;
+}
+
+.document-count-pill {
+  min-width: 38px;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #f2f4f7;
+  font-weight: 800;
+}
+
+.document-mini-metrics {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.document-mini-metrics span {
+  background: #f8fafc;
+  border: 1px solid #e5e9ef;
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: #475467;
+  font-size: 0.78rem;
+}
+
+.document-mini-metrics strong {
+  color: #101828;
+}
+
+.document-missing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.document-missing-grid a {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #f0d6b2;
+  background: #fffaf3;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.document-missing-grid a:hover {
+  border-color: #d89b4a;
+}
+
+.document-missing-grid span {
+  color: #667085;
+  font-size: 0.78rem;
+}
+
+.document-filters {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.document-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475467;
+}
+
+.document-filters input,
+.document-filters select {
+  width: 100%;
+  border: 1px solid #d7dde5;
+  border-radius: 9px;
+  min-height: 42px;
+  padding: 0 10px;
+  background: #fff;
+}
+
+.document-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.document-list.embedded {
+  margin-top: 18px;
+  border-top: 1px solid #edf0f4;
+}
+
+.document-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.document-row:last-child {
+  border-bottom: 0;
+}
+
+.document-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef4ff;
+  color: #3538cd;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.document-row-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.document-row-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.document-row-main p,
+.document-row-main small {
+  margin: 0;
+  color: #667085;
+}
+
+.document-row-main p {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.document-row-main small a {
+  color: inherit;
+  font-weight: 700;
+}
+
+.document-status,
+.document-expiry {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.document-status.pending_review {
+  background: #fff4e5;
+  color: #9a4d00;
+}
+
+.document-status.approved {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.document-status.rejected {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.document-expiry.ok {
+  background: #f2f4f7;
+  color: #475467;
+}
+
+.document-expiry.expiring {
+  background: #fff4e5;
+  color: #9a4d00;
+}
+
+.document-expiry.expired {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.document-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.document-row-actions select {
+  min-height: 38px;
+  border: 1px solid #d7dde5;
+  border-radius: 8px;
+  padding: 0 8px;
+  background: #fff;
+  max-width: 190px;
+}
+
+.document-row-actions button {
+  min-height: 38px;
+}
+
+.danger-link {
+  border: 0;
+  background: transparent;
+  color: #b42318;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.danger-link:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+.document-empty-state {
+  padding: 18px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #667085;
+}
+
+.document-empty-state strong {
+  color: #344054;
+}
+
+.compact-message {
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+.routine-kind.document {
+  background: #f4ebff;
+  color: #6941c6;
+}
+
+.routine-card.document-attention.expired,
+.routine-card.document-attention.rejected {
+  border-color: #f4b4ad;
+}
+
+.routine-card.document-attention.expiring {
+  border-color: #f7c98b;
+}
+
+@media (max-width: 1180px) {
+  .document-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .document-missing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .document-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .document-metrics,
+  .document-missing-grid,
+  .document-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .document-section-heading,
+  .document-manager-heading {
+    flex-direction: column;
+  }
+
+  .document-mini-metrics {
+    justify-content: flex-start;
+  }
+
+  .document-row {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  .document-row-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}

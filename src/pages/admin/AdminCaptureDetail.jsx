@@ -16,6 +16,7 @@ import {
   CAPTURE_STATUSES,
   CAPTURE_STATUS_LABELS,
 } from '../../services/captures';
+import DocumentManager from '../../components/DocumentManager';
 import {
   formatCurrency,
   formatDateTime,
@@ -650,6 +651,7 @@ export default function AdminCaptureDetail() {
           </section>
         </aside>
       </div>
+      <DocumentManager contextType="capture" contextId={capture.id} contextLabel={capture.owner_name || 'Captação'} />
     </div>
   );
 }

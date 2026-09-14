@@ -20,6 +20,7 @@ import {
 } from '../../services/crm';
 import { buildRoutine, nextBusinessMoment } from '../../services/routine';
 import { getPropertyPortfolio } from '../../services/propertyManagement';
+import { DOCUMENT_CATEGORY_LABELS, documentContext, getDocumentAlerts } from '../../services/documents';
 
 const CAPTURE_STATUS_LABELS = {
   new: 'Novo contato',
@@ -45,14 +46,16 @@ export default function AdminActions() {
   const [message, setMessage] = useState('');
   const [filter, setFilter] = useState('all');
   const [propertyAlerts, setPropertyAlerts] = useState([]);
+  const [documentAlerts, setDocumentAlerts] = useState([]);
 
   async function load() {
     setLoading(true);
-    const [routineResult, propertyResult] = await Promise.all([
+    const [routineResult, propertyResult, documentResult] = await Promise.all([
       getDailyRoutineData(),
       getPropertyPortfolio(),
+      getDocumentAlerts(30),
     ]);
-    if (routineResult.error || propertyResult.error) {
+    if (routineResult.error || propertyResult.error || documentResult.error) {
       setMessage('Não foi possível carregar toda a rotina. Atualize a página e tente novamente.');
     }
     setRawData(routineResult.data || { leads: [], captures: [], appointments: [], proposals: [] });
@@ -61,6 +64,7 @@ export default function AdminActions() {
         .filter((item) => item.alert_count > 0 && ['draft', 'published', 'reserved'].includes(item.status))
         .sort((a, b) => (b.alert_count - a.alert_count) || ((b.metrics?.inactive_days || 0) - (a.metrics?.inactive_days || 0)))
     );
+    setDocumentAlerts(documentResult.data || []);
     setLoading(false);
   }
 
@@ -190,6 +194,27 @@ export default function AdminActions() {
         <div className="routine-card-actions">
           <Link to={`/admin/imoveis/${item.id}/gestao`}>Abrir gestão</Link>
           <Link to={`/admin/imoveis/${item.id}/editar`}>Editar anúncio</Link>
+        </div>
+      </article>
+    );
+  }
+
+  function documentAlertCard(item) {
+    const context = documentContext(item);
+    return (
+      <article className={`routine-card document-attention ${item.alert_type || ''}`} key={`document-${item.id}`}>
+        <div className="routine-card-main">
+          <div className="routine-card-topline">
+            <span className="routine-kind document">Documento</span>
+            <small>{item.alert_label}</small>
+          </div>
+          <h3>{item.title}</h3>
+          <p>{DOCUMENT_CATEGORY_LABELS[item.category] || item.category} · {context.label}</p>
+          {item.expires_at && <strong>Validade: {formatDate(item.expires_at)}</strong>}
+        </div>
+        <div className="routine-card-actions">
+          <Link to={context.href}>Abrir ficha</Link>
+          <Link to="/admin/documentos">Central de documentos</Link>
         </div>
       </article>
     );
@@ -405,6 +430,14 @@ export default function AdminActions() {
             <p className="routine-section-help">Imóveis parados, com documentação, autorização, exclusividade ou revisão pendente.</p>
             <div className="routine-list">
               {propertyAlerts.length === 0 ? <p>Nenhum imóvel ativo precisa de atenção neste momento.</p> : propertyAlerts.slice(0, 20).map(propertyAlertCard)}
+            </div>
+          </section>
+
+          <section className="admin-panel routine-section" id="documentos-atencao">
+            <div className="action-section-title"><div><span className="eyebrow">Documentação</span><h2>Documentos que precisam de atenção</h2></div><span>{documentAlerts.length}</span></div>
+            <p className="routine-section-help">Arquivos vencidos, perto do vencimento ou marcados com pendência.</p>
+            <div className="routine-list">
+              {documentAlerts.length === 0 ? <p>Nenhum documento com alerta nos próximos 30 dias.</p> : documentAlerts.slice(0, 20).map(documentAlertCard)}
             </div>
           </section>
 

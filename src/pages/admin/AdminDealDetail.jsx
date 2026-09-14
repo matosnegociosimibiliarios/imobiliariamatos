@@ -6,6 +6,7 @@ import {
   updateDeal,
   updateDealDocument,
 } from '../../services/admin';
+import DocumentManager from '../../components/DocumentManager';
 import {
   COMMISSION_STATUS_LABELS,
   DEAL_STATUSES,
@@ -418,6 +419,7 @@ export default function AdminDealDetail() {
           </section>
         </aside>
       </div>
+      <DocumentManager contextType="deal" contextId={deal.id} contextLabel={`${deal.code} — ${deal.lead?.name || 'Cliente'}`} />
     </div>
   );
 }

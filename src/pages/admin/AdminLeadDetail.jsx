@@ -12,6 +12,7 @@ import {
   getDealByLead,
   updateLead,
 } from '../../services/admin';
+import DocumentManager from '../../components/DocumentManager';
 import {
   LEAD_STATUSES,
   STATUS_LABELS,
@@ -570,6 +571,7 @@ export default function AdminLeadDetail() {
           )}
         </aside>
       </div>
+      <DocumentManager contextType="lead" contextId={lead.id} contextLabel={lead.name || 'Cliente'} />
     </div>
   );
 }

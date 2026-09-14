@@ -9,6 +9,7 @@ import {
   getProposalStatusHistory,
   updateProposal,
 } from '../../services/admin';
+import DocumentManager from '../../components/DocumentManager';
 import {
   PROPOSAL_STATUSES,
   PROPOSAL_STATUS_LABELS,
@@ -344,6 +345,7 @@ export default function AdminProposalForm() {
           {!isNew && current?.sent_at && <section className="admin-panel proposal-timestamps"><h2>Datas</h2><p>Enviada: <strong>{formatDateTime(current.sent_at)}</strong></p>{current.accepted_at && <p>Aceita: <strong>{formatDateTime(current.accepted_at)}</strong></p>}{current.rejected_at && <p>Recusada: <strong>{formatDateTime(current.rejected_at)}</strong></p>}</section>}
         </aside>
       </div>
+      {!isNew && current && <DocumentManager contextType="proposal" contextId={current.id} contextLabel={current.code || 'Proposta'} />}
     </div>
   );
 }

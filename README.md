@@ -302,3 +302,28 @@ Principais recursos:
 1. Execute `SUPABASE_V10_8_SETUP.sql` no Supabase SQL Editor.
 2. Depois publique os arquivos desta versão no GitHub/Vercel.
 3. Não são necessárias novas variáveis de ambiente.
+
+## Versão 10.9 — Central de documentos e arquivos
+
+A 10.9 adiciona uma central privada de documentos ao CRM.
+
+### O que foi incluído
+- nova área **Documentos** no painel administrativo;
+- upload de PDF, imagem, Word, Excel, TXT e CSV;
+- arquivos privados no Supabase Storage, acessíveis apenas por administrador autenticado;
+- vínculo do documento com **imóvel, cliente, captação, proposta ou negócio fechado**;
+- categoria, situação, data do documento, validade e observações;
+- situação **Pendente de conferência / Conferido / Com pendência**;
+- alertas de documentos vencidos ou que vencem em até 30 dias na **Rotina de hoje**;
+- visão central dos itens que ainda faltam nos checklists de captação, imóvel e fechamento;
+- anexos diretamente dentro das fichas de cliente, captação, proposta, imóvel e negócio fechado;
+- ao anexar um arquivo a um item de checklist, o item passa automaticamente de **Pendente** para **Recebido**;
+- URLs temporárias assinadas para abrir arquivos privados.
+
+### Instalação
+1. Execute `SUPABASE_V10_9_SETUP.sql` no Editor SQL do Supabase.
+2. Depois publique os arquivos desta versão no GitHub/Vercel.
+3. Não é necessário criar nova variável de ambiente.
+
+### Segurança
+O bucket `crm-documents` é privado. Não transforme esse bucket em público.

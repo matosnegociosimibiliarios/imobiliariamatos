@@ -5,6 +5,7 @@ import {
   savePropertyManagement,
   updatePropertyDocument,
 } from '../../services/propertyManagement';
+import DocumentManager from '../../components/DocumentManager';
 import {
   DEAL_STATUS_LABELS,
   DOCUMENT_STATUS_LABELS,
@@ -281,6 +282,7 @@ export default function AdminPropertyManagement() {
           <div><span>Última interação</span><strong>{metrics.last_activity_at ? formatDateTime(metrics.last_activity_at) : 'Sem interação'}</strong></div>
         </div>
       </section>
+      <DocumentManager contextType="property" contextId={property.id} contextLabel={`${property.code} — ${property.title}`} />
     </div>
   );
 }

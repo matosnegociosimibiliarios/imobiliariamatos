@@ -57,6 +57,7 @@ export default function AdminLayout() {
           <NavLink to="/admin/leads">Funil de clientes</NavLink>
           <NavLink to="/admin/propostas">Propostas</NavLink>
           <NavLink to="/admin/negocios">Negócios fechados</NavLink>
+          <NavLink to="/admin/documentos">Documentos</NavLink>
           <NavLink to="/admin/acoes">Rotina de hoje</NavLink>
           <NavLink to="/admin/agendamentos">Agendamentos</NavLink>
           <NavLink to="/admin/captacoes">Captações</NavLink>
