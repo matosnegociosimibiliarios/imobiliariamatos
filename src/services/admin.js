@@ -739,3 +739,56 @@ export async function getChannelPerformance(daysBack = 30) {
     days_back: daysBack,
   });
 }
+
+export async function getDailyRoutineData() {
+  const [leadsResult, capturesResult, appointmentsResult] = await Promise.all([
+    getLeads(),
+    getOwnerCaptures(),
+    getAppointments(),
+  ]);
+
+  return {
+    data: {
+      leads: leadsResult.data || [],
+      captures: capturesResult.data || [],
+      appointments: appointmentsResult.data || [],
+    },
+    error: leadsResult.error || capturesResult.error || appointmentsResult.error || null,
+  };
+}
+
+export async function completeLeadNextAction(item) {
+  const text = item?.next_action_text?.trim() || 'Ação de atendimento';
+  const { data, error } = await updateLead(item.id, {
+    next_action_text: null,
+    next_action_at: null,
+  });
+
+  if (error) return { data, error };
+  await addLeadNote(item.id, `Ação concluída: ${text}`);
+  return { data, error: null };
+}
+
+export async function completeCaptureNextAction(item) {
+  const text = item?.next_action_text?.trim() || 'Ação de captação';
+  const { data, error } = await updateOwnerCapture(item.id, {
+    next_action_text: null,
+    next_action_at: null,
+  });
+
+  if (error) return { data, error };
+  await addCaptureNote(item.id, `Ação concluída: ${text}`);
+  return { data, error: null };
+}
+
+export async function rescheduleLeadNextAction(item, nextActionAt) {
+  return updateLead(item.id, {
+    next_action_at: nextActionAt,
+  });
+}
+
+export async function rescheduleCaptureNextAction(item, nextActionAt) {
+  return updateOwnerCapture(item.id, {
+    next_action_at: nextActionAt,
+  });
+}

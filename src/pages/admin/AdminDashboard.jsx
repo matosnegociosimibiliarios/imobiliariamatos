@@ -8,12 +8,14 @@ import {
   getUpcomingActions,
   getAcquisitionMetrics,
   getChannelPerformance,
+  getDailyRoutineData,
 } from '../../services/admin';
 import {
   formatCurrency,
   formatDateTime,
   originLabel,
 } from '../../services/crm';
+import { buildRoutine } from '../../services/routine';
 
 export default function AdminDashboard() {
   const [metrics, setMetrics] = useState(null);
@@ -23,6 +25,7 @@ export default function AdminDashboard() {
   const [actions, setActions] = useState([]);
   const [acquisition, setAcquisition] = useState(null);
   const [channelPerformance, setChannelPerformance] = useState([]);
+  const [routineSummary, setRoutineSummary] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,6 +38,7 @@ export default function AdminDashboard() {
         actionsResult,
         acquisitionResult,
         channelResult,
+        routineResult,
       ] = await Promise.all([
         getDashboardMetrics(30),
         getLeadSources(30),
@@ -43,6 +47,7 @@ export default function AdminDashboard() {
         getUpcomingActions(),
         getAcquisitionMetrics(30),
         getChannelPerformance(30),
+        getDailyRoutineData(),
       ]);
 
       setMetrics(metricsResult.data || null);
@@ -52,6 +57,7 @@ export default function AdminDashboard() {
       setActions((actionsResult.data || []).slice(0, 5));
       setAcquisition(acquisitionResult.data || null);
       setChannelPerformance(channelResult.data || []);
+      setRoutineSummary(buildRoutine(routineResult.data || {}).counts);
       setLoading(false);
     })();
   }, []);
@@ -185,6 +191,24 @@ export default function AdminDashboard() {
       )}
 
 
+      <section className="admin-panel routine-dashboard-panel">
+        <div className="panel-title-row">
+          <div>
+            <span className="eyebrow">Centro de comando</span>
+            <h2>O que precisa de atenção hoje</h2>
+          </div>
+          <Link to="/admin/acoes">Abrir rotina</Link>
+        </div>
+
+        <div className="routine-dashboard-grid">
+          <Link to="/admin/acoes#atrasadas"><span>Ações atrasadas</span><strong>{routineSummary?.overdue || 0}</strong></Link>
+          <Link to="/admin/acoes#hoje"><span>Ações para hoje</span><strong>{routineSummary?.today || 0}</strong></Link>
+          <Link to="/admin/acoes#visitas"><span>Visitas hoje</span><strong>{routineSummary?.visits || 0}</strong></Link>
+          <Link to="/admin/acoes#sem-acao"><span>Sem próxima ação</span><strong>{routineSummary?.no_next_action || 0}</strong></Link>
+          <Link to="/admin/acoes#propostas"><span>Propostas abertas</span><strong>{routineSummary?.proposals || 0}</strong></Link>
+        </div>
+      </section>
+
       <section className="admin-panel">
         <div className="panel-title-row">
           <div>
@@ -242,7 +266,7 @@ export default function AdminDashboard() {
         <div className="admin-actions">
           <Link to="/admin/mensagens">Mensagens Instagram</Link>
           <Link to="/admin/leads">Abrir funil</Link>
-          <Link to="/admin/acoes">Próximas ações</Link>
+          <Link to="/admin/acoes">Rotina de hoje</Link>
           <Link to="/admin/agendamentos">Agendamentos</Link>
           <Link to="/admin/captacoes">Captações</Link>
           <Link to="/admin/imoveis">Imóveis</Link>

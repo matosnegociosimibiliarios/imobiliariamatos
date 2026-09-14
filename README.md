@@ -1,3 +1,36 @@
+# Matos Negócios Imobiliários — V10.5
+
+## V10.5 — Gestão diária do CRM
+
+Esta versão transforma **Próximas ações** em uma central de rotina comercial, usando a estrutura de dados que já existe no CRM. **Não exige novo SQL nem novas variáveis de ambiente.**
+
+### O que foi acrescentado
+
+- **Rotina de hoje** no menu administrativo.
+- Resumo com **ações atrasadas, ações para hoje, visitas de hoje, atendimentos sem próxima ação e propostas abertas**.
+- Clientes e captações no mesmo centro de comando.
+- Filtro rápido por **Tudo / Clientes / Captações**.
+- Botões para **concluir uma ação**, **reagendar para amanhã às 9h** ou **reagendar para +7 dias** sem abrir a ficha.
+- Ao concluir uma ação, o CRM limpa a próxima ação e registra a conclusão nas **notas/histórico da ficha**.
+- Visitas de hoje com ações rápidas para **Confirmar** e **Marcar como realizada**.
+- Lista de clientes e captações **sem próxima ação**, priorizada pelo tempo sem atividade.
+- Área específica de **propostas em aberto**.
+- Bloco **O que precisa de atenção hoje** na Visão geral do painel.
+- Próximos 7 dias reúne ações e visitas futuras.
+
+### Publicação
+
+1. Envie os arquivos desta versão para o mesmo repositório no GitHub.
+2. Aguarde a implantação automática da Vercel.
+3. Faça `Ctrl + F5` no painel.
+4. Abra **Rotina de hoje**.
+
+### Banco de dados
+
+Nenhuma alteração de banco é necessária nesta versão. A V10.5 usa os campos e tabelas já existentes nas versões anteriores.
+
+---
+
 # Matos Negócios Imobiliários — Versão 10
 
 ## O que entra nesta versão

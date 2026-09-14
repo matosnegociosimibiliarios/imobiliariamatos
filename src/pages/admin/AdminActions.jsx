@@ -1,125 +1,347 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getUpcomingActions } from '../../services/admin';
+import {
+  completeCaptureNextAction,
+  completeLeadNextAction,
+  getDailyRoutineData,
+  rescheduleCaptureNextAction,
+  rescheduleLeadNextAction,
+  updateAppointment,
+} from '../../services/admin';
 import {
   STATUS_LABELS,
   formatDateTime,
   makeWhatsAppUrl,
 } from '../../services/crm';
+import { buildRoutine, nextBusinessMoment } from '../../services/routine';
+
+const CAPTURE_STATUS_LABELS = {
+  new: 'Novo contato',
+  evaluation: 'Avaliação',
+  documents: 'Documentação',
+  authorized: 'Autorizado',
+  published: 'Publicado',
+  lost: 'Perdido',
+};
+
+const APPOINTMENT_STATUS_LABELS = {
+  requested: 'Solicitado',
+  confirmed: 'Confirmado',
+  completed: 'Realizado',
+  cancelled: 'Cancelado',
+  no_show: 'Não compareceu',
+};
 
 export default function AdminActions() {
-  const [items, setItems] = useState([]);
+  const [rawData, setRawData] = useState({ leads: [], captures: [], appointments: [] });
   const [loading, setLoading] = useState(true);
+  const [busyKey, setBusyKey] = useState('');
+  const [message, setMessage] = useState('');
+  const [filter, setFilter] = useState('all');
+
+  async function load() {
+    setLoading(true);
+    const { data, error } = await getDailyRoutineData();
+    if (error) setMessage('Não foi possível carregar toda a rotina. Atualize a página e tente novamente.');
+    setRawData(data || { leads: [], captures: [], appointments: [] });
+    setLoading(false);
+  }
 
   useEffect(() => {
-    (async () => {
-      const { data } = await getUpcomingActions();
-      setItems(data || []);
-      setLoading(false);
-    })();
+    load();
   }, []);
 
-  const now = Date.now();
+  const routine = useMemo(() => buildRoutine(rawData), [rawData]);
 
-  const overdue = useMemo(
-    () =>
-      items.filter(
-        (item) =>
-          item.next_action_at &&
-          new Date(item.next_action_at).getTime() < now
-      ),
-    [items, now]
-  );
+  function filterItems(items) {
+    if (filter === 'all') return items;
+    return items.filter((item) => item.kind === filter);
+  }
 
-  const upcoming = useMemo(
-    () =>
-      items.filter(
-        (item) =>
-          item.next_action_at &&
-          new Date(item.next_action_at).getTime() >= now
-      ),
-    [items, now]
-  );
+  async function completeAction(item) {
+    const key = `${item.kind}-${item.id}-complete`;
+    setBusyKey(key);
+    setMessage('');
 
-  function renderItem(item, overdueItem = false) {
-    const whatsappUrl = makeWhatsAppUrl(item.whatsapp, item.name);
+    const result = item.kind === 'lead'
+      ? await completeLeadNextAction(item)
+      : await completeCaptureNextAction(item);
 
+    if (result.error) {
+      setMessage(result.error.message || 'Não foi possível concluir a ação.');
+    } else {
+      setMessage('Ação concluída e registrada no histórico.');
+      await load();
+    }
+
+    setBusyKey('');
+  }
+
+  async function postpone(item, days) {
+    const key = `${item.kind}-${item.id}-postpone-${days}`;
+    setBusyKey(key);
+    setMessage('');
+    const nextAt = nextBusinessMoment(days);
+
+    const result = item.kind === 'lead'
+      ? await rescheduleLeadNextAction(item, nextAt)
+      : await rescheduleCaptureNextAction(item, nextAt);
+
+    if (result.error) {
+      setMessage(result.error.message || 'Não foi possível reagendar a ação.');
+    } else {
+      setMessage(days === 1 ? 'Ação reagendada para amanhã às 9h.' : 'Ação reagendada para daqui a 7 dias às 9h.');
+      await load();
+    }
+
+    setBusyKey('');
+  }
+
+  async function appointmentStatus(item, status) {
+    const key = `appointment-${item.id}-${status}`;
+    setBusyKey(key);
+    setMessage('');
+    const { error } = await updateAppointment(item.id, { status });
+    if (error) {
+      setMessage(error.message || 'Não foi possível atualizar a visita.');
+    } else {
+      setMessage(status === 'completed' ? 'Visita marcada como realizada.' : 'Visita confirmada.');
+      await load();
+    }
+    setBusyKey('');
+  }
+
+  function itemLink(item) {
+    return item.kind === 'capture'
+      ? `/admin/captacoes/${item.id}`
+      : `/admin/leads/${item.id}`;
+  }
+
+  function itemStatus(item) {
+    return item.kind === 'capture'
+      ? CAPTURE_STATUS_LABELS[item.status] || item.status
+      : STATUS_LABELS[item.status] || item.status;
+  }
+
+  function actionCard(item, tone = '') {
+    const whatsappUrl = makeWhatsAppUrl(item.whatsapp, item.label);
     return (
-      <article
-        className={`action-card ${overdueItem ? 'overdue' : ''}`}
-        key={item.id}
-      >
-        <div>
-          <small>
-            {overdueItem ? 'Atrasado' : STATUS_LABELS[item.status]}
-          </small>
-          <h3>{item.name}</h3>
-          <p>{item.next_action_text || 'Atender cliente'}</p>
+      <article className={`routine-card ${tone}`} key={`${item.kind}-${item.id}`}>
+        <div className="routine-card-main">
+          <div className="routine-card-topline">
+            <span className={`routine-kind ${item.kind}`}>
+              {item.kind === 'capture' ? 'Captação' : 'Cliente'}
+            </span>
+            <small>{itemStatus(item)}</small>
+          </div>
+          <h3>{item.label}</h3>
+          <p>{item.next_action_text || 'Fazer contato'}</p>
           <strong>{formatDateTime(item.next_action_at)}</strong>
-
           {item.property && (
-            <span>
-              {item.property.code} — {item.property.title}
+            <span className="routine-property">{item.property.code} — {item.property.title}</span>
+          )}
+          {item.kind === 'capture' && (
+            <span className="routine-property">
+              {[item.property_type, item.neighborhood_name, item.city_name].filter(Boolean).join(' · ') || 'Imóvel em captação'}
             </span>
           )}
         </div>
-
-        <div className="action-card-buttons">
-          <Link to={`/admin/leads/${item.id}`}>Abrir ficha</Link>
-
-          {whatsappUrl && (
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              WhatsApp
-            </a>
-          )}
+        <div className="routine-card-actions">
+          <Link to={itemLink(item)}>Abrir ficha</Link>
+          {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>}
+          <button
+            type="button"
+            onClick={() => completeAction(item)}
+            disabled={busyKey.startsWith(`${item.kind}-${item.id}`)}
+          >
+            Concluir
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => postpone(item, 1)}
+            disabled={busyKey.startsWith(`${item.kind}-${item.id}`)}
+          >
+            Amanhã 9h
+          </button>
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => postpone(item, 7)}
+            disabled={busyKey.startsWith(`${item.kind}-${item.id}`)}
+          >
+            +7 dias
+          </button>
         </div>
       </article>
     );
   }
 
+  function noActionCard(item) {
+    const whatsappUrl = makeWhatsAppUrl(item.whatsapp, item.label);
+    return (
+      <article className="routine-card attention" key={`${item.kind}-${item.id}-no-action`}>
+        <div className="routine-card-main">
+          <div className="routine-card-topline">
+            <span className={`routine-kind ${item.kind}`}>
+              {item.kind === 'capture' ? 'Captação' : 'Cliente'}
+            </span>
+            <small>{itemStatus(item)}</small>
+          </div>
+          <h3>{item.label}</h3>
+          <p>Sem próxima ação cadastrada.</p>
+          <strong>{item.idle_days === 0 ? 'Atividade recente' : `Sem atividade há ${item.idle_days} dia${item.idle_days === 1 ? '' : 's'}`}</strong>
+          {item.property && <span className="routine-property">{item.property.code} — {item.property.title}</span>}
+        </div>
+        <div className="routine-card-actions">
+          <Link to={itemLink(item)}>Definir próxima ação</Link>
+          {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>}
+        </div>
+      </article>
+    );
+  }
+
+  function visitCard(item) {
+    const lead = item.lead || {};
+    const whatsappUrl = makeWhatsAppUrl(lead.whatsapp, lead.name);
+    return (
+      <article className="routine-card visit" key={`visit-${item.id}`}>
+        <div className="routine-card-main">
+          <div className="routine-card-topline">
+            <span className="routine-kind visit">Visita</span>
+            <small>{APPOINTMENT_STATUS_LABELS[item.status] || item.status}</small>
+          </div>
+          <h3>{lead.name || 'Cliente'}</h3>
+          <p>{item.property ? `${item.property.code} — ${item.property.title}` : 'Imóvel a definir'}</p>
+          <strong>{item.routine_date ? formatDateTime(item.routine_date) : 'Horário a combinar'}</strong>
+          {item.notes && <span className="routine-property">{item.notes}</span>}
+        </div>
+        <div className="routine-card-actions">
+          {lead.id && <Link to={`/admin/leads/${lead.id}`}>Abrir cliente</Link>}
+          {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>}
+          {item.status === 'requested' && (
+            <button type="button" onClick={() => appointmentStatus(item, 'confirmed')} disabled={busyKey.startsWith(`appointment-${item.id}`)}>
+              Confirmar
+            </button>
+          )}
+          <button type="button" className="secondary" onClick={() => appointmentStatus(item, 'completed')} disabled={busyKey.startsWith(`appointment-${item.id}`)}>
+            Realizada
+          </button>
+        </div>
+      </article>
+    );
+  }
+
+  const overdue = filterItems(routine.overdue);
+  const todayActions = filterItems(routine.todayActions);
+  const nextSevenDays = filterItems(routine.nextSevenDays);
+  const noNextAction = filterItems(routine.noNextAction);
+
   return (
-    <div className="admin-page">
+    <div className="admin-page routine-page">
       <div className="admin-page-header">
         <div>
-          <span className="eyebrow">Rotina comercial</span>
-          <h1>Próximas ações</h1>
+          <span className="eyebrow">Centro de comando</span>
+          <h1>Rotina de hoje</h1>
+          <p>Veja o que precisa de atenção agora e não deixe nenhum negócio parado.</p>
         </div>
       </div>
 
+      {message && <div className="routine-feedback">{message}</div>}
+
       {loading ? (
-        <section className="admin-panel">Carregando...</section>
+        <section className="admin-panel">Carregando sua rotina...</section>
       ) : (
         <>
-          <section className="admin-panel">
-            <div className="action-section-title">
-              <h2>Atrasadas</h2>
-              <span>{overdue.length}</span>
-            </div>
+          <div className="routine-summary-grid">
+            <button type="button" onClick={() => document.getElementById('atrasadas')?.scrollIntoView({ behavior: 'smooth' })}>
+              <span>Atrasadas</span><strong>{routine.counts.overdue}</strong>
+            </button>
+            <button type="button" onClick={() => document.getElementById('hoje')?.scrollIntoView({ behavior: 'smooth' })}>
+              <span>Para hoje</span><strong>{routine.counts.today}</strong>
+            </button>
+            <button type="button" onClick={() => document.getElementById('visitas')?.scrollIntoView({ behavior: 'smooth' })}>
+              <span>Visitas hoje</span><strong>{routine.counts.visits}</strong>
+            </button>
+            <button type="button" onClick={() => document.getElementById('sem-acao')?.scrollIntoView({ behavior: 'smooth' })}>
+              <span>Sem próxima ação</span><strong>{routine.counts.no_next_action}</strong>
+            </button>
+            <button type="button" onClick={() => document.getElementById('propostas')?.scrollIntoView({ behavior: 'smooth' })}>
+              <span>Propostas abertas</span><strong>{routine.counts.proposals}</strong>
+            </button>
+          </div>
 
-            <div className="actions-list">
-              {overdue.length === 0 ? (
-                <p>Nenhuma ação atrasada.</p>
-              ) : (
-                overdue.map((item) => renderItem(item, true))
-              )}
+          <div className="routine-filter-row">
+            <span>Mostrar:</span>
+            <button className={filter === 'all' ? 'active' : ''} type="button" onClick={() => setFilter('all')}>Tudo</button>
+            <button className={filter === 'lead' ? 'active' : ''} type="button" onClick={() => setFilter('lead')}>Clientes</button>
+            <button className={filter === 'capture' ? 'active' : ''} type="button" onClick={() => setFilter('capture')}>Captações</button>
+          </div>
+
+          <section className="admin-panel routine-section" id="atrasadas">
+            <div className="action-section-title"><div><span className="eyebrow">Prioridade máxima</span><h2>Ações atrasadas</h2></div><span>{overdue.length}</span></div>
+            <div className="routine-list">
+              {overdue.length === 0 ? <p>Nenhuma ação atrasada.</p> : overdue.map((item) => actionCard(item, 'overdue'))}
             </div>
           </section>
 
-          <section className="admin-panel">
-            <div className="action-section-title">
-              <h2>Próximas</h2>
-              <span>{upcoming.length}</span>
+          <section className="admin-panel routine-section" id="hoje">
+            <div className="action-section-title"><div><span className="eyebrow">Hoje</span><h2>O que precisa ser feito hoje</h2></div><span>{todayActions.length}</span></div>
+            <div className="routine-list">
+              {todayActions.length === 0 ? <p>Nenhuma ação programada para hoje.</p> : todayActions.map((item) => actionCard(item, 'today'))}
             </div>
+          </section>
 
-            <div className="actions-list">
-              {upcoming.length === 0 ? (
-                <p>Nenhuma próxima ação cadastrada.</p>
+          <section className="admin-panel routine-section" id="visitas">
+            <div className="action-section-title"><div><span className="eyebrow">Agenda</span><h2>Visitas de hoje</h2></div><span>{routine.visitsToday.length}</span></div>
+            <div className="routine-list">
+              {routine.visitsToday.length === 0 ? <p>Nenhuma visita marcada para hoje.</p> : routine.visitsToday.map(visitCard)}
+            </div>
+          </section>
+
+          <section className="admin-panel routine-section" id="sem-acao">
+            <div className="action-section-title"><div><span className="eyebrow">Não deixar esfriar</span><h2>Sem próxima ação</h2></div><span>{noNextAction.length}</span></div>
+            <p className="routine-section-help">Clientes e captações em andamento que ainda não têm um próximo passo marcado.</p>
+            <div className="routine-list">
+              {noNextAction.length === 0 ? <p>Todos os atendimentos ativos têm próxima ação definida.</p> : noNextAction.slice(0, 30).map(noActionCard)}
+            </div>
+          </section>
+
+          <section className="admin-panel routine-section" id="propostas">
+            <div className="action-section-title"><div><span className="eyebrow">Negócios quentes</span><h2>Propostas em aberto</h2></div><span>{routine.proposals.length}</span></div>
+            <div className="routine-list">
+              {routine.proposals.length === 0 ? (
+                <p>Nenhuma proposta aberta no momento.</p>
+              ) : routine.proposals.map((item) => {
+                const whatsappUrl = makeWhatsAppUrl(item.whatsapp, item.name);
+                return (
+                  <article className="routine-card proposal" key={`proposal-${item.id}`}>
+                    <div className="routine-card-main">
+                      <div className="routine-card-topline"><span className="routine-kind lead">Cliente</span><small>Proposta</small></div>
+                      <h3>{item.name}</h3>
+                      <p>{item.property ? `${item.property.code} — ${item.property.title}` : 'Imóvel não informado'}</p>
+                      <strong>{item.next_action_at ? `Próximo passo: ${formatDateTime(item.next_action_at)}` : 'Sem próximo passo definido'}</strong>
+                    </div>
+                    <div className="routine-card-actions">
+                      <Link to={`/admin/leads/${item.id}`}>Abrir proposta</Link>
+                      {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="admin-panel routine-section">
+            <div className="action-section-title"><div><span className="eyebrow">Próximos dias</span><h2>Próximos 7 dias</h2></div><span>{nextSevenDays.length + routine.upcomingVisits.length}</span></div>
+            <div className="routine-list">
+              {nextSevenDays.length === 0 && routine.upcomingVisits.length === 0 ? (
+                <p>Nenhuma ação ou visita nos próximos 7 dias.</p>
               ) : (
-                upcoming.map((item) => renderItem(item))
+                <>
+                  {nextSevenDays.map((item) => actionCard(item))}
+                  {routine.upcomingVisits.map(visitCard)}
+                </>
               )}
             </div>
           </section>
