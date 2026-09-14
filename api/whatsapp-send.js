@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await requireAdmin(req);
+    await requireAdmin(req, 'messages.respond');
 
     const leadId = String(req.body?.lead_id || '').trim();
     const text = String(req.body?.text || '').trim();

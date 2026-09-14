@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const user = await requireAdmin(req);
+    const user = await requireAdmin(req, 'health.view');
     const checks = [];
 
     const started = Date.now();

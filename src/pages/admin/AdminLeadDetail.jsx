@@ -14,6 +14,7 @@ import {
 } from '../../services/admin';
 import DocumentManager from '../../components/DocumentManager';
 import LeadPropertyMatch from '../../components/LeadPropertyMatch';
+import ResponsibleSelect from '../../components/ResponsibleSelect';
 import {
   LEAD_STATUSES,
   STATUS_LABELS,
@@ -436,6 +437,13 @@ export default function AdminLeadDetail() {
         <aside>
           <section className="admin-panel lead-crm-panel">
             <h2>Controle da negociação</h2>
+
+            <ResponsibleSelect
+              table="leads"
+              recordId={lead.id}
+              value={lead.assigned_to}
+              onChange={(next) => setLead((current) => ({ ...current, assigned_to: next }))}
+            />
 
             <label>
               Etapa do cliente

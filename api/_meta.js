@@ -71,7 +71,59 @@ export async function graphGet(idOrPath, token, fields=null) {
 
 
 
-export async function requireAdmin(req) {
+const SERVER_ROLE_PERMISSIONS = {
+  owner: { all: true },
+  admin: { all: true },
+  broker: {
+    'dashboard.view': true,
+    'management.view': true,
+    'reports.view': true,
+    'analytics.view': true,
+    'properties.view': true,
+    'properties.manage': true,
+    'leads.view': true,
+    'leads.manage': true,
+    'appointments.view': true,
+    'appointments.manage': true,
+    'captures.view': true,
+    'captures.manage': true,
+    'proposals.view': true,
+    'proposals.manage': true,
+    'deals.view': true,
+    'deals.manage': true,
+    'documents.view': true,
+    'documents.manage': true,
+    'messages.view': true,
+    'messages.respond': true,
+    'team.view': true,
+  },
+  assistant: {
+    'dashboard.view': true,
+    'properties.view': true,
+    'leads.view': true,
+    'leads.manage': true,
+    'appointments.view': true,
+    'appointments.manage': true,
+    'captures.view': true,
+    'captures.manage': true,
+    'proposals.view': true,
+    'documents.view': true,
+    'documents.manage': true,
+    'messages.view': true,
+    'messages.respond': true,
+    'team.view': true,
+  },
+};
+
+function memberHasPermission(member, permission) {
+  if (!permission) return true;
+  const custom = member?.permissions || {};
+  if (Object.prototype.hasOwnProperty.call(custom, permission)) return Boolean(custom[permission]);
+  const rolePermissions = SERVER_ROLE_PERMISSIONS[member?.role] || {};
+  return Boolean(rolePermissions.all || rolePermissions[permission]);
+}
+
+export async function requireAdmin(req, permission = null) {
   const authorization = String(req.headers.authorization || '');
   const match = authorization.match(/^Bearer\s+(.+)$/i);
   if (!match) {
@@ -96,16 +148,31 @@ export async function requireAdmin(req) {
   }
 
   const profiles = await db(
-    `profiles?select=id,role&id=eq.${encodeURIComponent(user.id)}&limit=1`
+    `profiles?select=id,role,full_name,email&id=eq.${encodeURIComponent(user.id)}&limit=1`
   );
+  const profile = profiles?.[0] || null;
 
-  if (!profiles?.length || profiles[0].role !== 'admin') {
+  // Compatibilidade com o administrador criado antes da camada de equipe.
+  if (profile?.role === 'admin' && !permission) return { ...user, profile, membership: null };
+
+  const memberships = await db(
+    `organization_members?select=id,organization_id,user_id,role,status,permissions&user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&limit=1`
+  );
+  const membership = memberships?.[0] || null;
+
+  if (!membership && profile?.role !== 'admin') {
     const error = new Error('Acesso não autorizado.');
     error.statusCode = 403;
     throw error;
   }
 
-  return user;
+  if (permission && profile?.role !== 'admin' && !memberHasPermission(membership, permission)) {
+    const error = new Error('Seu perfil não possui permissão para esta ação.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return { ...user, profile, membership };
 }
 
 export async function sendInstagramText(recipientId, text) {

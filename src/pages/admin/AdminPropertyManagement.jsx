@@ -6,6 +6,7 @@ import {
   updatePropertyDocument,
 } from '../../services/propertyManagement';
 import DocumentManager from '../../components/DocumentManager';
+import ResponsibleSelect from '../../components/ResponsibleSelect';
 import {
   DEAL_STATUS_LABELS,
   DOCUMENT_STATUS_LABELS,
@@ -169,7 +170,17 @@ export default function AdminPropertyManagement() {
           <h1>{property.code} — {property.title}</h1>
           <p>{property.public_location_text || 'Localização não informada'}</p>
         </div>
-        <div className="admin-page-actions">
+        <div className="admin-page-actions property-team-actions">
+          <ResponsibleSelect
+            table="properties"
+            recordId={property.id}
+            value={property.assigned_to}
+            compact
+            onChange={(next) => setData((current) => ({
+              ...current,
+              property: { ...current.property, assigned_to: next },
+            }))}
+          />
           <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/editar`}>Editar anúncio</Link>
           <Link className="admin-link-button" to="/admin/imoveis">Voltar</Link>
         </div>

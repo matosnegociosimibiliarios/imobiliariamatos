@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { getCurrentProfile, getCurrentSession } from '../services/auth';
+import { getCurrentSession } from '../services/auth';
+import { getAccessContext } from '../services/team';
 
 export default function AdminRoute() {
   const location = useLocation();
   const [state, setState] = useState({
     loading: true,
     authenticated: false,
-    admin: false,
+    authorized: false,
   });
 
   useEffect(() => {
@@ -18,44 +19,33 @@ export default function AdminRoute() {
         const session = await getCurrentSession();
 
         if (!session) {
-          if (active) {
-            setState({ loading: false, authenticated: false, admin: false });
-          }
+          if (active) setState({ loading: false, authenticated: false, authorized: false });
           return;
         }
 
-        const profile = await getCurrentProfile();
-
+        const accessResult = await getAccessContext();
         if (active) {
           setState({
             loading: false,
             authenticated: true,
-            admin: profile?.role === 'admin',
+            authorized: Boolean(accessResult.data && !accessResult.error),
           });
         }
       } catch {
-        if (active) {
-          setState({ loading: false, authenticated: false, admin: false });
-        }
+        if (active) setState({ loading: false, authenticated: false, authorized: false });
       }
     })();
 
     return () => { active = false; };
   }, [location.pathname]);
 
-  if (state.loading) {
-    return <div className="admin-loading">Verificando acesso...</div>;
-  }
-
-  if (!state.authenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
-  }
-
-  if (!state.admin) {
+  if (state.loading) return <div className="admin-loading">Verificando acesso...</div>;
+  if (!state.authenticated) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (!state.authorized) {
     return (
       <div className="admin-denied">
         <h1>Acesso não autorizado</h1>
-        <p>Este usuário não possui permissão de administrador.</p>
+        <p>Seu usuário não está ativo em nenhuma empresa do CRM.</p>
       </div>
     );
   }

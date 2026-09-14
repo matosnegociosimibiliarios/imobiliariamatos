@@ -394,3 +394,29 @@ Inclui:
 
 ### Limite do backup operacional
 O arquivo JSON contém os registros do banco que o administrador pode ler. Ele **não substitui o backup nativo do Supabase** e não inclui os bytes dos arquivos do Storage (fotos e documentos). Use-o como cópia operacional/exportação periódica.
+
+## Versão 10.14 — Equipe, usuários e permissões · base para futuro SaaS
+
+A 10.14 prepara o CRM para crescer além do uso individual, sem transformar o sistema em multiempresa ainda.
+
+### O que foi adicionado
+- entidade **Organização/Empresa**, com a Matos Negócios Imobiliários criada como organização inicial;
+- usuários vinculados à organização;
+- funções padrão: **Proprietário, Administrador, Corretor e Assistente**;
+- permissões por área e exceções individuais por usuário;
+- nova área **Equipe e permissões**;
+- convite de usuário por e-mail usando o Supabase Auth;
+- tela pública `/convite` para o convidado criar sua senha;
+- menu e rotas administrativas passam a respeitar as permissões do usuário;
+- responsável por **cliente, imóvel, visita, captação, proposta e negócio**;
+- histórico de atividade com usuário, data, registro alterado e campos modificados;
+- proteção para impedir que a organização fique sem um proprietário ativo;
+- estrutura de organização e plano criada para facilitar a futura evolução para SaaS.
+
+### Importante sobre a futura comercialização
+Esta versão **ainda não transforma o CRM em multiempresa**. Os dados atuais continuam pertencendo ao ambiente único da Matos. Antes de vender o sistema para outras imobiliárias, será necessária uma migração específica para adicionar `organization_id` aos dados comerciais e aplicar isolamento total entre empresas.
+
+### Instalação
+1. Execute `SUPABASE_V10_14_SETUP.sql` no Editor SQL do Supabase.
+2. Depois publique os arquivos desta versão no GitHub/Vercel.
+3. Não são necessárias novas variáveis na Vercel; o convite utiliza a `SUPABASE_SERVICE_ROLE_KEY` já configurada no servidor.

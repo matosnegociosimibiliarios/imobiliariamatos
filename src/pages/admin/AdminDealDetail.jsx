@@ -7,6 +7,7 @@ import {
   updateDealDocument,
 } from '../../services/admin';
 import DocumentManager from '../../components/DocumentManager';
+import ResponsibleSelect from '../../components/ResponsibleSelect';
 import {
   COMMISSION_STATUS_LABELS,
   DEAL_STATUSES,
@@ -211,7 +212,16 @@ export default function AdminDealDetail() {
           <h1>{deal.code}</h1>
           <p>{deal.lead?.name || 'Cliente'} · {DEAL_STATUS_LABELS[deal.status] || deal.status}</p>
         </div>
-        <Link className="admin-link-button" to="/admin/negocios">Voltar aos negócios</Link>
+        <div className="admin-page-actions">
+          <ResponsibleSelect
+            table="deals"
+            recordId={deal.id}
+            value={deal.assigned_to}
+            compact
+            onChange={(next) => setDeal((current) => ({ ...current, assigned_to: next }))}
+          />
+          <Link className="admin-link-button" to="/admin/negocios">Voltar aos negócios</Link>
+        </div>
       </div>
 
       {message && <div className="admin-message">{message}</div>}

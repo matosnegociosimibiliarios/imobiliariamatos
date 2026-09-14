@@ -1,14 +1,45 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { signOut } from '../services/auth';
 import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/admin';
+import { ROLE_LABELS, can, getAccessContext } from '../services/team';
+
+const NAV_ITEMS = [
+  { to: '/admin', end: true, label: 'Visão geral', permission: 'dashboard.view' },
+  { to: '/admin/gestao', label: 'Painel gerencial', permission: 'management.view' },
+  { to: '/admin/relatorios', label: 'Relatórios', permission: 'reports.view' },
+  { to: '/admin/imoveis', label: 'Imóveis', permission: 'properties.view' },
+  { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', badge: 'instagram' },
+  { to: '/admin/whatsapp', label: 'Mensagens WhatsApp', permission: 'messages.view', badge: 'whatsapp' },
+  { to: '/admin/leads', label: 'Funil de clientes', permission: 'leads.view' },
+  { to: '/admin/propostas', label: 'Propostas', permission: 'proposals.view' },
+  { to: '/admin/negocios', label: 'Negócios fechados', permission: 'deals.view' },
+  { to: '/admin/documentos', label: 'Documentos', permission: 'documents.view' },
+  { to: '/admin/acoes', label: 'Rotina de hoje', permission: 'leads.view' },
+  { to: '/admin/agendamentos', label: 'Agendamentos', permission: 'appointments.view' },
+  { to: '/admin/captacoes', label: 'Captações', permission: 'captures.view' },
+  { to: '/admin/equipe', label: 'Equipe e permissões', permission: 'team.view' },
+  { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage' },
+  { to: '/admin/saude', label: 'Saúde do sistema', permission: 'health.view' },
+  { to: '/admin/imoveis/novo', label: 'Novo imóvel', permission: 'properties.manage' },
+];
 
 export default function AdminLayout() {
   const navigate = useNavigate();
   const [unreadInstagram, setUnreadInstagram] = useState(0);
   const [unreadWhatsApp, setUnreadWhatsApp] = useState(0);
+  const [access, setAccess] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    getAccessContext().then((result) => {
+      if (active && !result.error) setAccess(result.data || null);
+    });
+    return () => { active = false; };
+  }, []);
 
   async function loadUnread() {
+    if (!can(access, 'messages.view')) return;
     try {
       const [instagramResult, whatsappResult] = await Promise.all([
         getUnreadInstagramCount(),
@@ -22,6 +53,7 @@ export default function AdminLayout() {
   }
 
   useEffect(() => {
+    if (!access) return undefined;
     let interval = null;
 
     const startPolling = () => {
@@ -39,11 +71,22 @@ export default function AdminLayout() {
       if (interval) window.clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, []);
+  }, [access]);
 
   async function handleLogout() {
     await signOut();
     navigate('/login', { replace: true });
+  }
+
+  const visibleNav = useMemo(
+    () => NAV_ITEMS.filter((item) => access && can(access, item.permission)),
+    [access]
+  );
+
+  function badgeValue(type) {
+    const value = type === 'instagram' ? unreadInstagram : type === 'whatsapp' ? unreadWhatsApp : 0;
+    if (!value) return null;
+    return value > 99 ? '99+' : value;
   }
 
   return (
@@ -53,47 +96,38 @@ export default function AdminLayout() {
           <span className="brand-mark">M</span>
           <div>
             <strong>Matos</strong>
-            <small>Painel administrativo</small>
+            <small>{access?.organization_name || 'Painel administrativo'}</small>
           </div>
         </div>
 
         <nav className="admin-nav">
-          <NavLink end to="/admin">Visão geral</NavLink>
-          <NavLink to="/admin/gestao">Painel gerencial</NavLink>
-          <NavLink to="/admin/relatorios">Relatórios</NavLink>
-          <NavLink to="/admin/imoveis">Imóveis</NavLink>
-          <NavLink to="/admin/mensagens" className="admin-nav-with-badge">
-            <span>Mensagens Instagram</span>
-            {unreadInstagram > 0 && (
-              <b>{unreadInstagram > 99 ? '99+' : unreadInstagram}</b>
-            )}
-          </NavLink>
-          <NavLink to="/admin/whatsapp" className="admin-nav-with-badge">
-            <span>Mensagens WhatsApp</span>
-            {unreadWhatsApp > 0 && (
-              <b>{unreadWhatsApp > 99 ? '99+' : unreadWhatsApp}</b>
-            )}
-          </NavLink>
-          <NavLink to="/admin/leads">Funil de clientes</NavLink>
-          <NavLink to="/admin/propostas">Propostas</NavLink>
-          <NavLink to="/admin/negocios">Negócios fechados</NavLink>
-          <NavLink to="/admin/documentos">Documentos</NavLink>
-          <NavLink to="/admin/acoes">Rotina de hoje</NavLink>
-          <NavLink to="/admin/agendamentos">Agendamentos</NavLink>
-          <NavLink to="/admin/captacoes">Captações</NavLink>
-          <NavLink to="/admin/integracoes">Integrações</NavLink>
-          <NavLink to="/admin/saude">Saúde do sistema</NavLink>
-          <NavLink to="/admin/imoveis/novo">Novo imóvel</NavLink>
+          {visibleNav.map((item) => (
+            <NavLink
+              key={item.to}
+              end={item.end}
+              to={item.to}
+              className={item.badge ? 'admin-nav-with-badge' : undefined}
+            >
+              <span>{item.label}</span>
+              {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="admin-sidebar-bottom">
+          {access && (
+            <div className="admin-current-user">
+              <strong>{access.full_name || access.email || 'Usuário'}</strong>
+              <small>{ROLE_LABELS[access.role] || access.role}</small>
+            </div>
+          )}
           <a href="/" target="_blank" rel="noreferrer">Ver site público</a>
           <button type="button" onClick={handleLogout}>Sair</button>
         </div>
       </aside>
 
       <main className="admin-main">
-        <Outlet />
+        <Outlet context={{ access }} />
       </main>
     </div>
   );

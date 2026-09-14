@@ -10,6 +10,7 @@ import {
   updateProposal,
 } from '../../services/admin';
 import DocumentManager from '../../components/DocumentManager';
+import ResponsibleSelect from '../../components/ResponsibleSelect';
 import {
   PROPOSAL_STATUSES,
   PROPOSAL_STATUS_LABELS,
@@ -200,7 +201,18 @@ export default function AdminProposalForm() {
           <h1>{isNew ? 'Nova proposta' : current?.code || 'Proposta'}</h1>
           {!isNew && <p>{PROPOSAL_STATUS_LABELS[current?.status] || current?.status}</p>}
         </div>
-        <Link className="admin-link-button" to="/admin/propostas">Voltar às propostas</Link>
+        <div className="admin-page-actions">
+          {!isNew && current && (
+            <ResponsibleSelect
+              table="proposals"
+              recordId={current.id}
+              value={current.assigned_to}
+              compact
+              onChange={(next) => setCurrent((value) => ({ ...value, assigned_to: next }))}
+            />
+          )}
+          <Link className="admin-link-button" to="/admin/propostas">Voltar às propostas</Link>
+        </div>
       </div>
 
       {message && <div className="admin-message">{message}</div>}
