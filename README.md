@@ -1,4 +1,4 @@
-# Matos Negócios Imobiliários — V10.6
+# Matos Negócios Imobiliários — V10.7
 
 ## V10.6 — Propostas e acompanhamento comercial
 
@@ -254,3 +254,27 @@ No WhatsApp, o campo de webhook **messages** precisa estar assinado para receber
 ### Segurança
 
 Tokens do WhatsApp, segredo do app e chave service role ficam somente na Vercel. Nenhum deles deve usar prefixo `VITE_`.
+
+## V10.7 — Fechamento, documentação e comissão
+
+A versão 10.7 adiciona a etapa pós-venda ao CRM:
+
+- área **Negócios fechados**;
+- código automático `NEG-0001`;
+- valor final do negócio;
+- comissão por percentual ou valor;
+- controle de quem paga a comissão;
+- comissão pendente, parcial ou recebida;
+- previsão e data real de recebimento;
+- checklist de documentos do comprador, vendedor e do negócio;
+- acompanhamento de contrato, financiamento, escritura e registro;
+- pendências e observações internas;
+- histórico das etapas do fechamento;
+- métricas de valor vendido, comissão total, recebida e a receber;
+- negócios fechados na V10.6 são importados automaticamente para a nova área quando o SQL da V10.7 é executado.
+
+### Instalação
+
+1. Execute `SUPABASE_V10_7_SETUP.sql` no Supabase.
+2. Depois publique os arquivos da V10.7 no GitHub/Vercel.
+3. Não são necessárias novas variáveis de ambiente.

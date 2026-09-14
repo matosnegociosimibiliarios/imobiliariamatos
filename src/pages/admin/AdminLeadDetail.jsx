@@ -9,6 +9,7 @@ import {
   getLeadStatusHistory,
   getLeadSourceHistory,
   getLeadProposals,
+  getDealByLead,
   updateLead,
 } from '../../services/admin';
 import {
@@ -31,6 +32,7 @@ export default function AdminLeadDetail() {
   const [history, setHistory] = useState([]);
   const [sourceHistory, setSourceHistory] = useState([]);
   const [proposals, setProposals] = useState([]);
+  const [deal, setDeal] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,12 +50,13 @@ export default function AdminLeadDetail() {
   async function load() {
     setLoading(true);
 
-    const [leadResult, notesResult, historyResult, sourceHistoryResult, proposalsResult] = await Promise.all([
+    const [leadResult, notesResult, historyResult, sourceHistoryResult, proposalsResult, dealResult] = await Promise.all([
       getLeadDetails(id),
       getLeadNotes(id),
       getLeadStatusHistory(id),
       getLeadSourceHistory(id),
       getLeadProposals(id),
+      getDealByLead(id),
     ]);
 
     if (leadResult.error || !leadResult.data) {
@@ -69,6 +72,7 @@ export default function AdminLeadDetail() {
     setHistory(historyResult.data || []);
     setSourceHistory(sourceHistoryResult.data || []);
     setProposals(proposalsResult.data || []);
+    setDeal(dealResult.data || null);
 
     setForm({
       status: data.status || 'new',
@@ -247,6 +251,15 @@ export default function AdminLeadDetail() {
                   Ver imóvel
                 </a>
               </div>
+            </section>
+          )}
+
+          {deal && (
+            <section className="admin-panel crm-success-panel">
+              <span>Negócio fechado</span>
+              <strong>{deal.code} · {formatCurrency(deal.sale_value)}</strong>
+              <small>Comissão: {formatCurrency(deal.commission_value)} · {deal.commission_status === 'received' ? 'recebida' : 'em acompanhamento'}</small>
+              <Link className="button full-button" to={`/admin/negocios/${deal.id}`}>Abrir fechamento</Link>
             </section>
           )}
 

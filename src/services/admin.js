@@ -912,21 +912,92 @@ export async function getProposalFormOptions() {
 }
 
 export async function closeLeadFromProposal(proposal) {
-  if (!proposal?.lead_id) {
-    return { data: null, error: new Error('Cliente não informado na proposta.') };
+  if (!proposal?.id) {
+    return { data: null, error: new Error('Proposta não informada.') };
   }
 
-  const result = await updateLead(proposal.lead_id, {
-    status: 'won',
-    deal_value: proposal.proposal_value ?? null,
+  return supabase.rpc('admin_create_deal_from_proposal', {
+    p_proposal_id: proposal.id,
   });
+}
 
-  if (result.error) return result;
+export async function getDeals() {
+  return supabase
+    .from('deals')
+    .select(`
+      *,
+      lead:leads(id,name,whatsapp,email,status),
+      proposal:proposals(id,code,status,proposal_value),
+      property:properties(id,code,title,slug,purpose,status,public_location_text),
+      documents:deal_documents(id,status,party)
+    `)
+    .order('created_at', { ascending: false });
+}
 
-  await addLeadNote(
-    proposal.lead_id,
-    `Negócio fechado a partir da proposta ${proposal.code || ''}${proposal.proposal_value ? ` no valor de R$ ${Number(proposal.proposal_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : ''}.`
-  );
+export async function getDeal(id) {
+  return supabase
+    .from('deals')
+    .select(`
+      *,
+      lead:leads(id,name,whatsapp,email,status),
+      proposal:proposals(id,code,status,proposal_value,payment_terms,conditions),
+      property:properties(id,code,title,slug,purpose,status,public_location_text,sale_price,rent_price),
+      documents:deal_documents(*)
+    `)
+    .eq('id', id)
+    .maybeSingle();
+}
 
-  return result;
+export async function getDealByProposal(proposalId) {
+  if (!proposalId) return { data: null, error: null };
+  return supabase
+    .from('deals')
+    .select('id,code,status,commission_status,commission_value,commission_received_amount')
+    .eq('proposal_id', proposalId)
+    .maybeSingle();
+}
+
+export async function getDealByLead(leadId) {
+  if (!leadId) return { data: null, error: null };
+  return supabase
+    .from('deals')
+    .select('id,code,status,sale_value,commission_value,commission_status,commission_received_amount')
+    .eq('lead_id', leadId)
+    .maybeSingle();
+}
+
+export async function updateDeal(id, payload) {
+  return supabase
+    .from('deals')
+    .update(payload)
+    .eq('id', id)
+    .select(`
+      *,
+      lead:leads(id,name,whatsapp,email,status),
+      proposal:proposals(id,code,status,proposal_value),
+      property:properties(id,code,title,slug,purpose,status,public_location_text),
+      documents:deal_documents(*)
+    `)
+    .single();
+}
+
+export async function updateDealDocument(id, payload) {
+  return supabase
+    .from('deal_documents')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+}
+
+export async function getDealStatusHistory(dealId) {
+  return supabase
+    .from('deal_status_history')
+    .select('*')
+    .eq('deal_id', dealId)
+    .order('created_at', { ascending: false });
+}
+
+export async function getDealMetrics(daysBack = 365) {
+  return supabase.rpc('admin_deal_metrics', { days_back: daysBack });
 }

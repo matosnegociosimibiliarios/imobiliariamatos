@@ -121,3 +121,36 @@ export function proposalValidityLabel(validUntil) {
   if (days === 1) return 'Vence amanhã';
   return `Vence em ${days} dias`;
 }
+
+export const DEAL_STATUSES = [
+  { value: 'documents', label: 'Documentação' },
+  { value: 'contract', label: 'Contrato' },
+  { value: 'financing', label: 'Financiamento' },
+  { value: 'deed_registry', label: 'Escritura / registro' },
+  { value: 'completed', label: 'Concluído' },
+  { value: 'cancelled', label: 'Cancelado' },
+];
+
+export const DEAL_STATUS_LABELS = Object.fromEntries(
+  DEAL_STATUSES.map((item) => [item.value, item.label])
+);
+
+export const COMMISSION_STATUS_LABELS = {
+  pending: 'Pendente',
+  partial: 'Parcial',
+  received: 'Recebida',
+};
+
+export const DOCUMENT_STATUS_LABELS = {
+  pending: 'Pendente',
+  received: 'Recebido',
+  validated: 'Validado',
+  not_applicable: 'Não se aplica',
+};
+
+export function commissionReceivable(deal) {
+  return Math.max(
+    Number(deal?.commission_value || 0) - Number(deal?.commission_received_amount || 0),
+    0
+  );
+}

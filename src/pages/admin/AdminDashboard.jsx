@@ -270,6 +270,7 @@ export default function AdminDashboard() {
           <Link to="/admin/leads">Abrir funil</Link>
           <Link to="/admin/acoes">Rotina de hoje</Link>
           <Link to="/admin/propostas">Propostas</Link>
+          <Link to="/admin/negocios">Negócios fechados</Link>
           <Link to="/admin/agendamentos">Agendamentos</Link>
           <Link to="/admin/captacoes">Captações</Link>
           <Link to="/admin/imoveis">Imóveis</Link>

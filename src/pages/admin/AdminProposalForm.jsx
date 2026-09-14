@@ -4,6 +4,7 @@ import {
   createProposal,
   closeLeadFromProposal,
   getProposal,
+  getDealByProposal,
   getProposalFormOptions,
   getProposalStatusHistory,
   updateProposal,
@@ -42,6 +43,7 @@ export default function AdminProposalForm() {
   const [closing, setClosing] = useState(false);
   const [message, setMessage] = useState('');
   const [current, setCurrent] = useState(null);
+  const [deal, setDeal] = useState(null);
   const [form, setForm] = useState({
     lead_id: searchParams.get('lead') || '',
     property_id: '',
@@ -72,9 +74,10 @@ export default function AdminProposalForm() {
       return;
     }
 
-    const [proposalResult, historyResult] = await Promise.all([
+    const [proposalResult, historyResult, dealResult] = await Promise.all([
       getProposal(id),
       getProposalStatusHistory(id),
+      getDealByProposal(id),
     ]);
 
     if (proposalResult.error || !proposalResult.data) {
@@ -86,6 +89,7 @@ export default function AdminProposalForm() {
     const data = proposalResult.data;
     setCurrent(data);
     setHistory(historyResult.data || []);
+    setDeal(dealResult.data || null);
     setForm({
       lead_id: data.lead_id || '',
       property_id: data.property_id || '',
@@ -130,8 +134,8 @@ export default function AdminProposalForm() {
     if (result.error) {
       setMessage(`Não foi possível fechar o negócio: ${result.error.message}`);
     } else {
-      setMessage('Negócio marcado como fechado na ficha do cliente.');
-      await load();
+      navigate(`/admin/negocios/${result.data}`);
+      return;
     }
     setClosing(false);
   }
@@ -304,13 +308,16 @@ export default function AdminProposalForm() {
             <section className="admin-panel crm-success-panel">
               <span>Proposta aceita</span>
               <strong>{formatCurrency(form.proposal_value)}</strong>
-              {selectedLead?.status === 'won' ? (
-                <small>O negócio já está marcado como fechado no funil.</small>
+              {deal ? (
+                <>
+                  <small>O fechamento já foi aberto e agora pode ser acompanhado até documentação, registro e comissão.</small>
+                  <Link className="button full-button" to={`/admin/negocios/${deal.id}`}>Abrir fechamento</Link>
+                </>
               ) : (
                 <>
-                  <small>Quando a venda estiver confirmada, feche o negócio para entrar nos indicadores de vendas e comissão.</small>
+                  <small>Abra o fechamento para acompanhar documentação, contrato, registro e recebimento da comissão.</small>
                   <button type="button" className="button full-button" onClick={closeDeal} disabled={closing}>
-                    {closing ? 'Fechando...' : 'Marcar negócio como fechado'}
+                    {closing ? 'Abrindo...' : 'Abrir acompanhamento do fechamento'}
                   </button>
                 </>
               )}

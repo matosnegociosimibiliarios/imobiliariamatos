@@ -3297,3 +3297,316 @@ button, input, select { font: inherit; }
     text-align: left;
   }
 }
+
+/* =========================================================
+   V10.7 - NEGÓCIOS FECHADOS / PÓS-VENDA
+   ========================================================= */
+.deal-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .8rem;
+  margin-bottom: 1rem;
+}
+
+.deal-metrics-grid article {
+  border: 1px solid #dfe6e1;
+  background: #fff;
+  border-radius: 14px;
+  padding: 1rem;
+  display: grid;
+  gap: .3rem;
+}
+
+.deal-metrics-grid span {
+  color: #667169;
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.deal-metrics-grid strong {
+  color: #173c28;
+  font-size: 1.25rem;
+}
+
+.deal-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px 220px;
+  gap: .8rem;
+  margin-bottom: 1rem;
+}
+
+.deal-filters input,
+.deal-filters select,
+.deal-form input,
+.deal-form select,
+.deal-form textarea,
+.deal-document-row select {
+  width: 100%;
+  border: 1px solid #cfd8d1;
+  border-radius: 10px;
+  padding: .78rem .85rem;
+  background: #fff;
+  font: inherit;
+  color: #17241c;
+  box-sizing: border-box;
+}
+
+.deal-list {
+  display: grid;
+  gap: .7rem;
+}
+
+.deal-list-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #e0e6e1;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  background: #fff;
+}
+
+.deal-list-card:hover {
+  border-color: #99ad9f;
+  background: #fbfdfb;
+}
+
+.deal-list-main h3,
+.deal-list-main p {
+  margin: .25rem 0;
+}
+
+.deal-list-main p,
+.deal-list-main small,
+.deal-list-side span,
+.deal-list-side small {
+  color: #667169;
+}
+
+.deal-list-topline {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  flex-wrap: wrap;
+}
+
+.deal-status,
+.commission-status {
+  display: inline-flex;
+  width: fit-content;
+  padding: .22rem .58rem;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 900;
+  background: #edf0ee;
+  color: #465149;
+}
+
+.deal-status.contract { background: #e5eef7; color: #315a7b; }
+.deal-status.financing { background: #fff1d6; color: #805b16; }
+.deal-status.deed_registry { background: #ece8f7; color: #5a477d; }
+.deal-status.completed { background: #e1f2e6; color: #2f6b40; }
+.deal-status.cancelled { background: #fae5e3; color: #903d36; }
+.commission-status.received { background: #e1f2e6; color: #2f6b40; }
+.commission-status.partial { background: #fff1d6; color: #805b16; }
+.commission-status.pending { background: #f1ece8; color: #6f5548; }
+
+.deal-list-side {
+  min-width: 210px;
+  text-align: right;
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  gap: .2rem;
+}
+
+.deal-list-side > strong {
+  font-size: 1.1rem;
+  color: #173c28;
+}
+
+.deal-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(290px, .65fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.deal-main-column,
+.deal-side-column {
+  display: grid;
+  gap: 1rem;
+}
+
+.deal-form {
+  display: grid;
+  gap: .9rem;
+}
+
+.deal-form h2 {
+  margin: .35rem 0 0;
+}
+
+.deal-form label {
+  display: grid;
+  gap: .38rem;
+  font-size: .84rem;
+  font-weight: 800;
+  color: #334239;
+}
+
+.deal-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .8rem;
+}
+
+.deal-form-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.deal-checkbox-label {
+  display: flex !important;
+  align-items: center;
+  gap: .6rem !important;
+  border: 1px solid #dce4de;
+  border-radius: 10px;
+  padding: .8rem;
+  background: #fbfdfb;
+}
+
+.deal-checkbox-label input {
+  width: auto;
+}
+
+.commission-preview {
+  border: 1px solid #dce4de;
+  border-radius: 10px;
+  padding: .75rem .85rem;
+  display: grid;
+  gap: .15rem;
+  background: #fbfdfb;
+}
+
+.commission-preview span,
+.commission-preview small {
+  color: #667169;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.commission-preview strong {
+  color: #173c28;
+}
+
+.deal-warning {
+  border: 1px solid #e7cf9a;
+  background: #fff8e8;
+  color: #715718;
+  border-radius: 10px;
+  padding: .8rem;
+  font-size: .85rem;
+  font-weight: 700;
+}
+
+.deal-help {
+  color: #667169;
+  font-size: .86rem;
+}
+
+.deal-document-groups {
+  display: grid;
+  gap: 1rem;
+}
+
+.deal-document-group {
+  border-top: 1px solid #e2e8e3;
+  padding-top: .8rem;
+}
+
+.deal-document-group:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.deal-document-group h3 {
+  margin: 0 0 .6rem;
+  color: #173c28;
+}
+
+.deal-document-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: .8rem;
+  align-items: center;
+  padding: .55rem 0;
+  border-bottom: 1px solid #f0f3f1;
+}
+
+.deal-document-row:last-child {
+  border-bottom: 0;
+}
+
+.deal-document-row span {
+  font-size: .88rem;
+  font-weight: 700;
+  color: #334239;
+}
+
+.deal-summary-card {
+  display: grid;
+  gap: .2rem;
+}
+
+.deal-summary-card > span {
+  margin-top: .55rem;
+  color: #6b756e;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.deal-summary-card > strong {
+  line-height: 1.35;
+}
+
+.commission-card > strong {
+  display: block;
+  font-size: 1.65rem;
+  color: #173c28;
+  margin: .4rem 0;
+}
+
+@media (max-width: 1050px) {
+  .deal-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .deal-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .deal-metrics-grid,
+  .deal-filters,
+  .deal-form-grid,
+  .deal-form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .deal-list-card {
+    flex-direction: column;
+  }
+
+  .deal-list-side {
+    min-width: 0;
+    text-align: left;
+    justify-items: start;
+  }
+
+  .deal-document-row {
+    grid-template-columns: 1fr;
+  }
+}
