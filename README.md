@@ -375,3 +375,22 @@ Nenhuma variável nova é necessária na Vercel.
 1. Execute `SUPABASE_V10_12_SETUP.sql` no Supabase.
 2. Depois publique os arquivos da V10.12 no GitHub/Vercel.
 3. Não são necessárias novas variáveis de ambiente.
+
+
+## Versão 10.13 — Estabilidade, segurança e saúde do sistema
+
+Esta versão não exige SQL novo nem novas variáveis de ambiente.
+
+Inclui:
+- nova tela **Saúde do sistema** no menu administrativo;
+- diagnóstico autenticado do Supabase, serviço seguro do servidor, webhook Meta, Instagram e estado do WhatsApp;
+- exibição do último evento de integração sem revelar tokens ou segredos;
+- botão de **backup operacional em JSON** dos principais dados do CRM;
+- tratamento global de erros de interface com opção de recarregar o painel;
+- registro local do último erro do navegador para facilitar diagnóstico;
+- cabeçalhos de segurança adicionais na Vercel (`nosniff`, `SAMEORIGIN`, política de referência e bloqueio de câmera/microfone/geolocalização por padrão);
+- tela responsiva de diagnóstico;
+- contadores de mensagens atualizados apenas quando o painel está visível, reduzindo consultas desnecessárias em abas em segundo plano.
+
+### Limite do backup operacional
+O arquivo JSON contém os registros do banco que o administrador pode ler. Ele **não substitui o backup nativo do Supabase** e não inclui os bytes dos arquivos do Storage (fotos e documentos). Use-o como cópia operacional/exportação periódica.

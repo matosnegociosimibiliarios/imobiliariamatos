@@ -9,18 +9,36 @@ export default function AdminLayout() {
   const [unreadWhatsApp, setUnreadWhatsApp] = useState(0);
 
   async function loadUnread() {
-    const [instagramResult, whatsappResult] = await Promise.all([
-      getUnreadInstagramCount(),
-      getUnreadWhatsAppCount(),
-    ]);
-    setUnreadInstagram(Number(instagramResult.data || 0));
-    setUnreadWhatsApp(Number(whatsappResult.data || 0));
+    try {
+      const [instagramResult, whatsappResult] = await Promise.all([
+        getUnreadInstagramCount(),
+        getUnreadWhatsAppCount(),
+      ]);
+      if (!instagramResult.error) setUnreadInstagram(Number(instagramResult.data || 0));
+      if (!whatsappResult.error) setUnreadWhatsApp(Number(whatsappResult.data || 0));
+    } catch (error) {
+      console.warn('Não foi possível atualizar os contadores de mensagens.', error);
+    }
   }
 
   useEffect(() => {
-    loadUnread();
-    const interval = window.setInterval(loadUnread, 10000);
-    return () => window.clearInterval(interval);
+    let interval = null;
+
+    const startPolling = () => {
+      if (interval) window.clearInterval(interval);
+      if (document.visibilityState !== 'visible') return;
+      loadUnread();
+      interval = window.setInterval(loadUnread, 15000);
+    };
+
+    const handleVisibility = () => startPolling();
+    startPolling();
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      if (interval) window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   async function handleLogout() {
@@ -64,6 +82,7 @@ export default function AdminLayout() {
           <NavLink to="/admin/agendamentos">Agendamentos</NavLink>
           <NavLink to="/admin/captacoes">Captações</NavLink>
           <NavLink to="/admin/integracoes">Integrações</NavLink>
+          <NavLink to="/admin/saude">Saúde do sistema</NavLink>
           <NavLink to="/admin/imoveis/novo">Novo imóvel</NavLink>
         </nav>
 

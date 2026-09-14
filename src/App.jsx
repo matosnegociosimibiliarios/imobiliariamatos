@@ -35,6 +35,7 @@ import AdminDealDetail from './pages/admin/AdminDealDetail';
 import AdminDocuments from './pages/admin/AdminDocuments';
 import AdminManagement from './pages/admin/AdminManagement';
 import AdminReports from './pages/admin/AdminReports';
+import AdminHealth from './pages/admin/AdminHealth';
 
 export default function App() {
   return (
@@ -78,6 +79,7 @@ export default function App() {
           <Route path="/admin/documentos" element={<AdminDocuments />} />
           <Route path="/admin/gestao" element={<AdminManagement />} />
           <Route path="/admin/relatorios" element={<AdminReports />} />
+          <Route path="/admin/saude" element={<AdminHealth />} />
           <Route path="/admin/agendamentos" element={<AdminAppointments />} />
           <Route path="/admin/captacoes" element={<AdminCaptures />} />
           <Route path="/admin/captacoes/:id" element={<AdminCaptureDetail />} />
