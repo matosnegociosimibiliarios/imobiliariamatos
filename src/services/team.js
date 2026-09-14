@@ -137,3 +137,38 @@ export async function assignRecord(table, id, userId) {
     .select('id,assigned_to,assigned_by,assigned_at')
     .single();
 }
+
+export async function getPortfolioSummary(userId) {
+  if (!userId) return { data: null, error: null };
+  const result = await withSupabaseRetry(() => supabase.rpc('team_portfolio_summary', {
+    p_user_id: userId,
+  }));
+  return {
+    data: result?.data || null,
+    error: result?.error || null,
+    status: result?.status,
+  };
+}
+
+export async function transferTeamPortfolio({
+  fromUserId,
+  toUserId,
+  resources,
+}) {
+  const selected = resources || {};
+  const result = await withSupabaseRetry(() => supabase.rpc('transfer_team_portfolio', {
+    p_from_user_id: fromUserId,
+    p_to_user_id: toUserId,
+    p_transfer_leads: Boolean(selected.leads),
+    p_transfer_properties: Boolean(selected.properties),
+    p_transfer_appointments: Boolean(selected.appointments),
+    p_transfer_captures: Boolean(selected.captures),
+    p_transfer_proposals: Boolean(selected.proposals),
+    p_transfer_deals: Boolean(selected.deals),
+  }));
+  return {
+    data: result?.data || null,
+    error: result?.error || null,
+    status: result?.status,
+  };
+}

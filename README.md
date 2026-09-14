@@ -1,3 +1,36 @@
+# Matos Negócios Imobiliários — V10.15
+
+## V10.15 — Transferência de carteira
+
+Esta versão acrescenta a transferência de carteira entre usuários da equipe, preparada para o uso atual da Matos e para a futura evolução SaaS.
+
+### O que foi acrescentado
+
+- nova área **Transferir carteira** dentro de **Equipe e permissões**;
+- escolha de quem entrega e quem recebe a carteira;
+- transferência seletiva de **Clientes, Imóveis, Agendamentos, Captações, Propostas e Negócios fechados**;
+- contador da quantidade de registros de cada tipo antes da transferência;
+- opção de transferir tudo ou somente tipos específicos;
+- o usuário de destino precisa estar **Ativo**;
+- usuários desativados podem continuar como origem para facilitar desligamentos;
+- o histórico dos registros é preservado;
+- a auditoria existente registra a mudança de responsável;
+- somente **Proprietário** e **Administrador** podem executar a transferência.
+
+### Instalação
+
+Antes de publicar os arquivos da V10.15, execute no Supabase:
+
+`SUPABASE_V10_15_SETUP.sql`
+
+Depois publique os arquivos no GitHub/Vercel e faça `Ctrl + F5`.
+
+### Variáveis de ambiente
+
+Nenhuma variável nova na Vercel é necessária.
+
+---
+
 # Matos Negócios Imobiliários — V10.7
 
 ## V10.6 — Propostas e acompanhamento comercial
