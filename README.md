@@ -348,3 +348,13 @@ Antes de publicar esta versão, execute no Supabase:
 `SUPABASE_V10_10_SETUP.sql`
 
 Nenhuma variável nova é necessária na Vercel.
+
+## Versão 10.11 — Relatórios e exportação
+
+- Corrige o menu lateral do painel: em telas menores que a altura do menu, os itens agora possuem rolagem própria e continuam acessíveis.
+- Nova área **Relatórios**.
+- Relatórios de leads, funil comercial, imóveis, captações, visitas, propostas, negócios, comissões, documentos pendentes e desempenho por origem.
+- Filtros por período, origem, cidade, imóvel e situação (quando aplicável).
+- Exportação compatível com Microsoft Excel (`.xls`).
+- Geração de versão para PDF por meio da impressão do navegador (Salvar como PDF).
+- Não exige alteração no banco de dados nem novas variáveis na Vercel.

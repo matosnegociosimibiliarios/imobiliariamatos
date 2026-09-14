@@ -42,6 +42,7 @@ export default function AdminLayout() {
         <nav className="admin-nav">
           <NavLink end to="/admin">Visão geral</NavLink>
           <NavLink to="/admin/gestao">Painel gerencial</NavLink>
+          <NavLink to="/admin/relatorios">Relatórios</NavLink>
           <NavLink to="/admin/imoveis">Imóveis</NavLink>
           <NavLink to="/admin/mensagens" className="admin-nav-with-badge">
             <span>Mensagens Instagram</span>
