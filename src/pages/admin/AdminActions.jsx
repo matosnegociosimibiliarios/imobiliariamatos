@@ -19,6 +19,7 @@ import {
   proposalValidityLabel,
 } from '../../services/crm';
 import { buildRoutine, nextBusinessMoment } from '../../services/routine';
+import { getPropertyPortfolio } from '../../services/propertyManagement';
 
 const CAPTURE_STATUS_LABELS = {
   new: 'Novo contato',
@@ -43,12 +44,23 @@ export default function AdminActions() {
   const [busyKey, setBusyKey] = useState('');
   const [message, setMessage] = useState('');
   const [filter, setFilter] = useState('all');
+  const [propertyAlerts, setPropertyAlerts] = useState([]);
 
   async function load() {
     setLoading(true);
-    const { data, error } = await getDailyRoutineData();
-    if (error) setMessage('Não foi possível carregar toda a rotina. Atualize a página e tente novamente.');
-    setRawData(data || { leads: [], captures: [], appointments: [], proposals: [] });
+    const [routineResult, propertyResult] = await Promise.all([
+      getDailyRoutineData(),
+      getPropertyPortfolio(),
+    ]);
+    if (routineResult.error || propertyResult.error) {
+      setMessage('Não foi possível carregar toda a rotina. Atualize a página e tente novamente.');
+    }
+    setRawData(routineResult.data || { leads: [], captures: [], appointments: [], proposals: [] });
+    setPropertyAlerts(
+      (propertyResult.data || [])
+        .filter((item) => item.alert_count > 0 && ['draft', 'published', 'reserved'].includes(item.status))
+        .sort((a, b) => (b.alert_count - a.alert_count) || ((b.metrics?.inactive_days || 0) - (a.metrics?.inactive_days || 0)))
+    );
     setLoading(false);
   }
 
@@ -155,6 +167,29 @@ export default function AdminActions() {
           {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>}
           <button type="button" className="secondary" onClick={() => postponeProposal(item, 1)} disabled={busyKey.startsWith(`proposal-${item.id}`)}>Amanhã 9h</button>
           <button type="button" className="secondary" onClick={() => postponeProposal(item, 7)} disabled={busyKey.startsWith(`proposal-${item.id}`)}>+7 dias</button>
+        </div>
+      </article>
+    );
+  }
+
+  function propertyAlertCard(item) {
+    return (
+      <article className="routine-card property-attention" key={`property-${item.id}`}>
+        <div className="routine-card-main">
+          <div className="routine-card-topline">
+            <span className="routine-kind property">Imóvel</span>
+            <small>{item.metrics?.days_in_portfolio || 0} dias em carteira</small>
+          </div>
+          <h3>{item.code} — {item.title}</h3>
+          <p>{item.public_location_text || 'Localização não informada'}</p>
+          <strong>{item.metrics?.inactive_days || 0} dias sem interação</strong>
+          <div className="property-alert-chips compact">
+            {item.alerts.slice(0, 3).map((alert) => <span key={alert}>{alert}</span>)}
+          </div>
+        </div>
+        <div className="routine-card-actions">
+          <Link to={`/admin/imoveis/${item.id}/gestao`}>Abrir gestão</Link>
+          <Link to={`/admin/imoveis/${item.id}/editar`}>Editar anúncio</Link>
         </div>
       </article>
     );
@@ -324,6 +359,9 @@ export default function AdminActions() {
             <button type="button" onClick={() => document.getElementById('propostas-vencendo')?.scrollIntoView({ behavior: 'smooth' })}>
               <span>Vencem em 3 dias</span><strong>{routine.counts.proposal_expiring}</strong>
             </button>
+            <button type="button" onClick={() => document.getElementById('imoveis-atencao')?.scrollIntoView({ behavior: 'smooth' })}>
+              <span>Imóveis com atenção</span><strong>{propertyAlerts.length}</strong>
+            </button>
           </div>
 
           <div className="routine-filter-row">
@@ -359,6 +397,14 @@ export default function AdminActions() {
             <p className="routine-section-help">Clientes e captações em andamento que ainda não têm um próximo passo marcado.</p>
             <div className="routine-list">
               {noNextAction.length === 0 ? <p>Todos os atendimentos ativos têm próxima ação definida.</p> : noNextAction.slice(0, 30).map(noActionCard)}
+            </div>
+          </section>
+
+          <section className="admin-panel routine-section" id="imoveis-atencao">
+            <div className="action-section-title"><div><span className="eyebrow">Carteira</span><h2>Imóveis que precisam de atenção</h2></div><span>{propertyAlerts.length}</span></div>
+            <p className="routine-section-help">Imóveis parados, com documentação, autorização, exclusividade ou revisão pendente.</p>
+            <div className="routine-list">
+              {propertyAlerts.length === 0 ? <p>Nenhum imóvel ativo precisa de atenção neste momento.</p> : propertyAlerts.slice(0, 20).map(propertyAlertCard)}
             </div>
           </section>
 

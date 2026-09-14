@@ -622,9 +622,9 @@ export default function AdminCaptureDetail() {
 
                 <Link
                   className="button full-button"
-                  to={`/admin/imoveis/${capture.converted_property.id}/editar`}
+                  to={`/admin/imoveis/${capture.converted_property.id}/gestao`}
                 >
-                  Abrir imóvel
+                  Gestão do imóvel
                 </Link>
               </>
             ) : (

@@ -904,6 +904,10 @@ button, input, select { font: inherit; }
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.admin-form-grid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .admin-form-grid.four {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
@@ -1105,6 +1109,7 @@ button, input, select { font: inherit; }
   }
 
   .admin-form-grid.two,
+  .admin-form-grid.three,
   .admin-form-grid.four {
     grid-template-columns: 1fr;
   }
@@ -3608,5 +3613,430 @@ button, input, select { font: inherit; }
 
   .deal-document-row {
     grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   V10.8 - GESTÃO DE IMÓVEIS E PROPRIETÁRIOS
+   ========================================================= */
+.admin-page-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.property-portfolio-summary,
+.property-management-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.property-portfolio-summary article,
+.property-management-metrics article {
+  background: #fff;
+  border: 1px solid #e8edf3;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.property-portfolio-summary span,
+.property-management-metrics span {
+  color: #667085;
+  font-size: 0.82rem;
+}
+
+.property-portfolio-summary strong,
+.property-management-metrics strong {
+  color: #172033;
+  font-size: 1.35rem;
+}
+
+.property-portfolio-filters {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 220px auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.property-portfolio-filters input,
+.property-portfolio-filters select,
+.property-document-row select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #d7dde5;
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #fff;
+  color: #182230;
+}
+
+.property-attention-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  color: #344054;
+  font-weight: 600;
+}
+
+.property-attention-toggle input {
+  width: auto;
+  min-height: auto;
+}
+
+.property-management-table td:first-child {
+  min-width: 260px;
+}
+
+.property-management-table td:nth-child(2) {
+  min-width: 170px;
+}
+
+.property-management-table small {
+  display: block;
+  margin-top: 4px;
+  color: #667085;
+}
+
+.property-mini-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  white-space: nowrap;
+  color: #475467;
+  font-size: 0.82rem;
+}
+
+.property-mini-metrics b {
+  color: #172033;
+}
+
+.property-alert-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 150px;
+}
+
+.property-alert-compact strong {
+  color: #b54708;
+}
+
+.property-alert-compact small {
+  color: #667085;
+}
+
+.property-ok-label {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #ecfdf3;
+  color: #027a48;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.property-manage-link {
+  font-weight: 800;
+}
+
+.property-alert-panel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  border-color: #f7c98b;
+  background: #fffbf5;
+}
+
+.property-alert-panel h2 {
+  margin: 4px 0 0;
+}
+
+.property-alert-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.property-alert-chips span {
+  background: #fff4e5;
+  border: 1px solid #f6c77d;
+  color: #9a4d00;
+  padding: 6px 9px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.property-alert-chips.compact {
+  justify-content: flex-start;
+  margin-top: 7px;
+}
+
+.property-alert-chips.compact span {
+  padding: 4px 7px;
+  font-size: 0.72rem;
+}
+
+.property-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.property-section-heading h2 {
+  margin: 4px 0 0;
+}
+
+.inline-action {
+  display: inline-flex;
+  margin-top: 12px;
+}
+
+.property-exclusivity-row {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  align-items: flex-end;
+}
+
+.property-exclusivity-row label:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.property-exclusivity-row input[type="date"] {
+  border: 1px solid #d7dde5;
+  border-radius: 9px;
+  min-height: 40px;
+  padding: 0 10px;
+}
+
+.property-document-summary {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.property-document-summary.pending {
+  background: #fff4e5;
+  color: #9a4d00;
+}
+
+.property-document-summary.partial {
+  background: #eef4ff;
+  color: #3538cd;
+}
+
+.property-document-summary.complete {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.property-document-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.property-document-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.property-document-row:last-child {
+  border-bottom: 0;
+}
+
+.property-document-row div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.property-document-row small {
+  color: #667085;
+}
+
+.property-activity-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.property-activity-grid > div {
+  background: #f8fafc;
+  border: 1px solid #e7ebf0;
+  border-radius: 12px;
+  padding: 14px;
+  min-width: 0;
+}
+
+.property-activity-grid h3 {
+  margin: 0 0 10px;
+}
+
+.property-activity-grid a,
+.property-activity-grid > div > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+  color: inherit;
+  text-decoration: none;
+}
+
+.property-activity-grid a:last-child,
+.property-activity-grid > div > div:last-child {
+  border-bottom: 0;
+}
+
+.property-activity-grid span {
+  color: #667085;
+  font-size: 0.78rem;
+}
+
+.property-history-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.property-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.property-history-list > div {
+  padding: 12px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.property-history-list > div:last-child {
+  border-bottom: 0;
+}
+
+.property-history-list > div > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.property-history-list span {
+  color: #667085;
+  font-size: 0.78rem;
+}
+
+.property-history-list p {
+  margin: 5px 0 0;
+  color: #475467;
+}
+
+.property-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.property-overview-grid > div {
+  background: #f8fafc;
+  border: 1px solid #e8edf3;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.property-overview-grid span {
+  color: #667085;
+  font-size: 0.78rem;
+}
+
+.routine-kind.property {
+  background: #eef4ff;
+  color: #3538cd;
+}
+
+.routine-card.property-attention {
+  border-color: #f7c98b;
+}
+
+@media (max-width: 1180px) {
+  .property-portfolio-summary,
+  .property-management-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .property-activity-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-page-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .property-portfolio-summary,
+  .property-management-metrics,
+  .property-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .property-portfolio-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .property-alert-panel,
+  .property-section-heading {
+    flex-direction: column;
+  }
+
+  .property-alert-chips {
+    justify-content: flex-start;
+  }
+
+  .property-document-row {
+    grid-template-columns: 1fr;
+  }
+
+  .property-activity-grid,
+  .property-history-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 460px) {
+  .property-portfolio-summary,
+  .property-management-metrics,
+  .property-overview-grid {
+    grid-template-columns: 1fr 1fr;
   }
 }

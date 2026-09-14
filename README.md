@@ -278,3 +278,27 @@ A versão 10.7 adiciona a etapa pós-venda ao CRM:
 1. Execute `SUPABASE_V10_7_SETUP.sql` no Supabase.
 2. Depois publique os arquivos da V10.7 no GitHub/Vercel.
 3. Não são necessárias novas variáveis de ambiente.
+
+## Versão 10.8 — Gestão de imóveis e proprietários
+
+A 10.8 transforma a área **Imóveis** em uma carteira gerencial, conectando o anúncio ao proprietário, à documentação e ao desempenho comercial.
+
+Principais recursos:
+- proprietário vinculado ao imóvel, com WhatsApp e e-mail;
+- vínculo automático com a captação que originou o imóvel;
+- controle de autorização para venda/locação e validade;
+- controle de exclusividade e vencimento;
+- percentual e responsável pelo pagamento da comissão;
+- checklist documental do imóvel e do proprietário;
+- dias em carteira e dias sem interação;
+- indicadores por imóvel: leads, visitas, propostas e negócios;
+- histórico automático de alterações de preço;
+- histórico automático de status do imóvel;
+- alertas para imóvel parado há 30 dias, autorização pendente/vencendo, exclusividade vencendo, documentação incompleta e revisão atrasada;
+- imóveis com atenção também aparecem em **Rotina de hoje**;
+- nova tela `/admin/imoveis/:id/gestao`.
+
+### Instalação da 10.8
+1. Execute `SUPABASE_V10_8_SETUP.sql` no Supabase SQL Editor.
+2. Depois publique os arquivos desta versão no GitHub/Vercel.
+3. Não são necessárias novas variáveis de ambiente.

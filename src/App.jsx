@@ -18,6 +18,7 @@ import Login from './pages/admin/Login';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProperties from './pages/admin/AdminProperties';
 import AdminPropertyForm from './pages/admin/AdminPropertyForm';
+import AdminPropertyManagement from './pages/admin/AdminPropertyManagement';
 import AdminLeads from './pages/admin/AdminLeads';
 import AdminAppointments from './pages/admin/AdminAppointments';
 import AdminLeadDetail from './pages/admin/AdminLeadDetail';
@@ -79,6 +80,7 @@ export default function App() {
           <Route path="/admin/whatsapp" element={<AdminWhatsAppInbox />} />
           <Route path="/admin/imoveis/novo" element={<AdminPropertyForm />} />
           <Route path="/admin/imoveis/:id/editar" element={<AdminPropertyForm />} />
+          <Route path="/admin/imoveis/:id/gestao" element={<AdminPropertyManagement />} />
         </Route>
       </Route>
     </Routes>

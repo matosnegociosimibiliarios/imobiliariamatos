@@ -219,9 +219,16 @@ export default function AdminPropertyForm() {
           </h1>
         </div>
 
-        <Link className="admin-link-button" to="/admin/imoveis">
-          Voltar
-        </Link>
+        <div className="admin-page-actions">
+          {editing && property && (
+            <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/gestao`}>
+              Gestão do imóvel
+            </Link>
+          )}
+          <Link className="admin-link-button" to="/admin/imoveis">
+            Voltar
+          </Link>
+        </div>
       </div>
 
       {message && <div className="admin-message">{message}</div>}
