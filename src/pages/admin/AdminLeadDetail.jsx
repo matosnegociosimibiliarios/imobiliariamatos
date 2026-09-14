@@ -13,6 +13,7 @@ import {
   updateLead,
 } from '../../services/admin';
 import DocumentManager from '../../components/DocumentManager';
+import LeadPropertyMatch from '../../components/LeadPropertyMatch';
 import {
   LEAD_STATUSES,
   STATUS_LABELS,
@@ -263,6 +264,8 @@ export default function AdminLeadDetail() {
               <Link className="button full-button" to={`/admin/negocios/${deal.id}`}>Abrir fechamento</Link>
             </section>
           )}
+
+          <LeadPropertyMatch lead={lead} />
 
           <section className="admin-panel">
             <div className="panel-title-row">

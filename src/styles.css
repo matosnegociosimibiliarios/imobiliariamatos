@@ -4724,3 +4724,207 @@ button, input, select { font: inherit; }
   .reports-filter-grid { grid-template-columns: 1fr; }
   .reports-stats { grid-template-columns: 1fr; }
 }
+
+/* =========================================================
+   V10.12 - PERFIL DO CLIENTE E MATCH DE IMÓVEIS
+   ========================================================= */
+.lead-match-panel {
+  overflow: hidden;
+}
+
+.match-preferences-form {
+  display: grid;
+  gap: 18px;
+}
+
+.match-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.match-checkbox-line {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding-top: 24px;
+}
+
+.match-checkbox-line input {
+  width: auto !important;
+  margin: 0;
+}
+
+.match-type-block {
+  display: grid;
+  gap: 10px;
+}
+
+.match-type-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.match-type-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--admin-border, #d8dde6);
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  background: #fff;
+}
+
+.match-type-options label.selected {
+  border-color: #1f5b45;
+  background: #eef7f3;
+}
+
+.match-type-options input {
+  width: auto !important;
+  margin: 0;
+}
+
+.match-results-block {
+  border-top: 1px solid var(--admin-border, #e1e5eb);
+  padding-top: 22px;
+  margin-top: 8px;
+}
+
+.match-share-actions,
+.property-match-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.property-match-list {
+  display: grid;
+  gap: 12px;
+}
+
+.property-match-card {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 16px;
+  border: 1px solid var(--admin-border, #dde2e8);
+  border-radius: 14px;
+  padding: 16px;
+  background: #fff;
+}
+
+.property-match-card.is-discarded {
+  opacity: .58;
+}
+
+.property-match-score {
+  min-height: 84px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #eef7f3;
+  text-align: center;
+}
+
+.property-match-score strong {
+  font-size: 1.45rem;
+  color: #1f5b45;
+}
+
+.property-match-score span {
+  font-size: .78rem;
+  color: #65716c;
+}
+
+.property-match-main {
+  min-width: 0;
+}
+
+.property-match-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.property-match-heading h4 {
+  margin: 4px 0;
+  font-size: 1rem;
+}
+
+.property-match-heading p,
+.property-match-heading small {
+  margin: 0;
+  color: #6f7780;
+}
+
+.property-match-reasons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.property-match-reasons span {
+  font-size: .78rem;
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: #f2f4f6;
+  color: #535d66;
+}
+
+.property-match-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid #eef0f3;
+  padding-top: 12px;
+}
+
+.property-match-status {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  font-size: .84rem;
+}
+
+.danger-link {
+  color: #9f2f2f !important;
+}
+
+@media (max-width: 900px) {
+  .match-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .match-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .match-checkbox-line {
+    padding-top: 0;
+  }
+
+  .property-match-card {
+    grid-template-columns: 1fr;
+  }
+
+  .property-match-score {
+    min-height: 64px;
+  }
+
+  .property-match-heading,
+  .property-match-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

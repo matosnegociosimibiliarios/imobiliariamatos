@@ -358,3 +358,20 @@ Nenhuma variável nova é necessária na Vercel.
 - Exportação compatível com Microsoft Excel (`.xls`).
 - Geração de versão para PDF por meio da impressão do navegador (Salvar como PDF).
 - Não exige alteração no banco de dados nem novas variáveis na Vercel.
+
+
+## Versão 10.12 — Perfil do cliente e Match de imóveis
+
+- adiciona o perfil estruturado do que cada cliente procura;
+- registra objetivo de compra/aluguel, orçamento, cidades, bairros, tipo de imóvel, quartos, banheiros, vagas e áreas mínimas;
+- registra prazo de decisão, intenção de financiamento, itens indispensáveis e observações;
+- calcula automaticamente a compatibilidade entre o perfil e os imóveis publicados;
+- ordena os imóveis por percentual de compatibilidade;
+- permite marcar imóvel como **Interessou**, **Visita** ou **Descartado**;
+- gera uma seleção dos 3 melhores imóveis para copiar ou enviar pelo WhatsApp;
+- mantém o perfil dentro da ficha do cliente para uso em todo o atendimento.
+
+### Instalação
+1. Execute `SUPABASE_V10_12_SETUP.sql` no Supabase.
+2. Depois publique os arquivos da V10.12 no GitHub/Vercel.
+3. Não são necessárias novas variáveis de ambiente.
