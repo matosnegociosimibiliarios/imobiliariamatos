@@ -420,12 +420,3 @@ Esta versão **ainda não transforma o CRM em multiempresa**. Os dados atuais co
 1. Execute `SUPABASE_V10_14_SETUP.sql` no Editor SQL do Supabase.
 2. Depois publique os arquivos desta versão no GitHub/Vercel.
 3. Não são necessárias novas variáveis na Vercel; o convite utiliza a `SUPABASE_SERVICE_ROLE_KEY` já configurada no servidor.
-
-
-## Versão 10.14.1 — correção da equipe
-
-- Corrige a relação ambígua entre `organization_members` e `profiles` ao carregar a lista da equipe.
-- Repete automaticamente consultas temporariamente afetadas por HTTP 429/502/503/504.
-- Repete chamadas REST administrativas do Supabase usadas no convite quando o gateway oscila.
-- Exibe mensagem amigável de indisponibilidade temporária em vez de mostrar o erro bruto do gateway.
-- Não exige novo SQL nem novas variáveis de ambiente.

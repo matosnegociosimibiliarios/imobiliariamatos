@@ -30,27 +30,10 @@ export async function db(path, { method='GET', body=null, prefer=null } = {}) {
   const { url, key } = getSupabaseAdminConfig();
   const headers = { apikey:key, Authorization:`Bearer ${key}`, 'Content-Type':'application/json' };
   if (prefer) headers.Prefer = prefer;
-
-  const payload = body == null ? undefined : JSON.stringify(body);
-  let lastStatus = 0;
-  let lastText = '';
-
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
-    const response = await fetch(`${url}/rest/v1/${path}`, { method, headers, body: payload });
-    const text = await response.text();
-    lastStatus = response.status;
-    lastText = text;
-
-    if (response.ok) return text ? JSON.parse(text) : null;
-
-    const retryable = [429, 502, 503, 504].includes(response.status);
-    if (!retryable || attempt === 3) break;
-    await new Promise((resolve) => setTimeout(resolve, 250 * attempt));
-  }
-
-  const error = new Error(`Supabase ${lastStatus}: ${lastText}`);
-  error.statusCode = [429, 502, 503, 504].includes(lastStatus) ? 503 : 500;
-  throw error;
+  const response = await fetch(`${url}/rest/v1/${path}`, { method, headers, body: body == null ? undefined : JSON.stringify(body) });
+  const text = await response.text();
+  if (!response.ok) throw new Error(`Supabase ${response.status}: ${text}`);
+  return text ? JSON.parse(text) : null;
 }
 
 export async function logIntegration(eventType, { externalEventId=null, status='received', errorMessage=null, metadata={} } = {}) {
