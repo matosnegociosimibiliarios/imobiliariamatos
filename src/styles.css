@@ -4400,3 +4400,270 @@ button, input, select { font: inherit; }
     flex-wrap: wrap;
   }
 }
+
+/* =========================================================
+   V10.10 — PAINEL GERENCIAL E METAS
+   ========================================================= */
+.management-header {
+  align-items: flex-end;
+  gap: 24px;
+}
+
+.management-header p {
+  margin: 6px 0 0;
+  color: #6f6f6f;
+}
+
+.management-period-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.management-period-controls label,
+.management-goal-form-grid label,
+.management-goal-notes {
+  display: grid;
+  gap: 7px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #4f4f4f;
+}
+
+.management-period-controls input,
+.management-goal-form-grid input,
+.management-goal-notes textarea {
+  min-height: 42px;
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+  padding: 9px 11px;
+  background: #fff;
+  font: inherit;
+  color: #222;
+}
+
+.management-message {
+  margin-bottom: 16px;
+}
+
+.management-goal-editor {
+  margin-bottom: 18px;
+}
+
+.management-goal-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.management-goal-notes {
+  margin-top: 14px;
+}
+
+.management-goals-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.management-goal-card {
+  border: 1px solid #ececec;
+  border-radius: 14px;
+  padding: 16px;
+  background: #fff;
+}
+
+.management-goal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.management-goal-head > span {
+  font-size: 0.88rem;
+  color: #666;
+}
+
+.management-goal-head small {
+  font-size: 0.72rem;
+  white-space: nowrap;
+  color: #777;
+}
+
+.management-goal-head .goal-on-pace {
+  color: #207544;
+}
+
+.management-goal-head .goal-behind {
+  color: #a3482d;
+}
+
+.management-goal-card > strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 1.5rem;
+  color: #171717;
+}
+
+.management-goal-target {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 0.76rem;
+  color: #777;
+}
+
+.management-progress-track {
+  height: 7px;
+  border-radius: 999px;
+  background: #ececec;
+  overflow: hidden;
+  margin-top: 9px;
+}
+
+.management-progress-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #222;
+}
+
+.management-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.management-financial-card {
+  margin: 0;
+}
+
+.management-financial-card > span,
+.management-financial-card > small {
+  color: #737373;
+}
+
+.management-financial-card > strong {
+  display: block;
+  margin: 8px 0 5px;
+  font-size: 1.55rem;
+}
+
+.management-funnel {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.management-funnel > div {
+  padding: 18px;
+  border: 1px solid #ececec;
+  border-radius: 14px;
+  min-height: 112px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+}
+
+.management-funnel > div span,
+.management-funnel > div small {
+  color: #6d6d6d;
+}
+
+.management-funnel > div strong {
+  font-size: 1.7rem;
+}
+
+.management-funnel > i {
+  font-style: normal;
+  color: #999;
+  font-size: 1.3rem;
+}
+
+.management-funnel-total {
+  margin: 14px 0 0;
+  color: #666;
+}
+
+.management-trend-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.management-trend-grid article {
+  min-width: 150px;
+  border: 1px solid #ececec;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.management-trend-grid article > strong {
+  display: block;
+  text-transform: capitalize;
+  margin-bottom: 10px;
+}
+
+.management-trend-grid article > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-top: 1px solid #f1f1f1;
+  font-size: 0.8rem;
+}
+
+.management-trend-grid article span {
+  color: #777;
+}
+
+.management-trend-grid article b {
+  text-align: right;
+}
+
+@media (max-width: 1180px) {
+  .management-goals-grid,
+  .management-summary-grid,
+  .management-goal-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .management-funnel {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .management-funnel > i {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .management-header,
+  .management-period-controls {
+    align-items: stretch;
+  }
+
+  .management-goals-grid,
+  .management-summary-grid,
+  .management-goal-form-grid,
+  .management-funnel {
+    grid-template-columns: 1fr;
+  }
+
+  .management-period-controls {
+    width: 100%;
+  }
+
+  .management-period-controls label,
+  .management-period-controls .button {
+    width: 100%;
+  }
+}

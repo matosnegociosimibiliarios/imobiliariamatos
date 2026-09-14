@@ -327,3 +327,24 @@ A 10.9 adiciona uma central privada de documentos ao CRM.
 
 ### Segurança
 O bucket `crm-documents` é privado. Não transforme esse bucket em público.
+
+## Versão 10.10 — Painel gerencial e metas
+
+A versão 10.10 cria uma nova área **Painel gerencial** no CRM para acompanhar metas e desempenho mensal.
+
+### O que foi adicionado
+- metas mensais para leads, visitas realizadas, captações, propostas, negócios fechados, valor vendido e comissão;
+- acompanhamento **meta x realizado**, com percentual de avanço e indicação de ritmo do mês;
+- visão financeira com valor vendido, comissão gerada e comissão recebida;
+- funil gerencial: **Leads → Visitas → Propostas → Negócios**, com taxas de conversão;
+- desempenho por origem/canal, incluindo Site, Instagram e canais futuros;
+- evolução dos últimos 6 meses;
+- seleção de mês para consultar resultados históricos;
+- atalho para o novo painel no menu administrativo e na Visão geral.
+
+### Banco de dados
+Antes de publicar esta versão, execute no Supabase:
+
+`SUPABASE_V10_10_SETUP.sql`
+
+Nenhuma variável nova é necessária na Vercel.

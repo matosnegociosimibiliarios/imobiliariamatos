@@ -33,6 +33,7 @@ import AdminProposalForm from './pages/admin/AdminProposalForm';
 import AdminDeals from './pages/admin/AdminDeals';
 import AdminDealDetail from './pages/admin/AdminDealDetail';
 import AdminDocuments from './pages/admin/AdminDocuments';
+import AdminManagement from './pages/admin/AdminManagement';
 
 export default function App() {
   return (
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="/admin/negocios" element={<AdminDeals />} />
           <Route path="/admin/negocios/:id" element={<AdminDealDetail />} />
           <Route path="/admin/documentos" element={<AdminDocuments />} />
+          <Route path="/admin/gestao" element={<AdminManagement />} />
           <Route path="/admin/agendamentos" element={<AdminAppointments />} />
           <Route path="/admin/captacoes" element={<AdminCaptures />} />
           <Route path="/admin/captacoes/:id" element={<AdminCaptureDetail />} />
