@@ -8,6 +8,7 @@ import {
   getLeadNotes,
   getLeadStatusHistory,
   getLeadSourceHistory,
+  getLeadProposals,
   updateLead,
 } from '../../services/admin';
 import {
@@ -18,6 +19,8 @@ import {
   makeWhatsAppUrl,
   toDateTimeLocal,
   originLabel,
+  PROPOSAL_STATUS_LABELS,
+  formatDate,
 } from '../../services/crm';
 
 export default function AdminLeadDetail() {
@@ -27,6 +30,7 @@ export default function AdminLeadDetail() {
   const [notes, setNotes] = useState([]);
   const [history, setHistory] = useState([]);
   const [sourceHistory, setSourceHistory] = useState([]);
+  const [proposals, setProposals] = useState([]);
   const [noteText, setNoteText] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,11 +48,12 @@ export default function AdminLeadDetail() {
   async function load() {
     setLoading(true);
 
-    const [leadResult, notesResult, historyResult, sourceHistoryResult] = await Promise.all([
+    const [leadResult, notesResult, historyResult, sourceHistoryResult, proposalsResult] = await Promise.all([
       getLeadDetails(id),
       getLeadNotes(id),
       getLeadStatusHistory(id),
       getLeadSourceHistory(id),
+      getLeadProposals(id),
     ]);
 
     if (leadResult.error || !leadResult.data) {
@@ -63,6 +68,7 @@ export default function AdminLeadDetail() {
     setNotes(notesResult.data || []);
     setHistory(historyResult.data || []);
     setSourceHistory(sourceHistoryResult.data || []);
+    setProposals(proposalsResult.data || []);
 
     setForm({
       status: data.status || 'new',
@@ -243,6 +249,37 @@ export default function AdminLeadDetail() {
               </div>
             </section>
           )}
+
+          <section className="admin-panel">
+            <div className="panel-title-row">
+              <div>
+                <h2>Propostas comerciais</h2>
+                <p>Acompanhe valor, validade e retorno sem sair da ficha do cliente.</p>
+              </div>
+              <Link className="admin-link-button" to={`/admin/propostas/nova?lead=${lead.id}`}>
+                Nova proposta
+              </Link>
+            </div>
+
+            {proposals.length === 0 ? (
+              <p>Nenhuma proposta cadastrada para este cliente.</p>
+            ) : (
+              <div className="lead-proposal-list">
+                {proposals.map((proposal) => (
+                  <Link to={`/admin/propostas/${proposal.id}`} key={proposal.id}>
+                    <div>
+                      <strong>{proposal.code}</strong>
+                      <span>{PROPOSAL_STATUS_LABELS[proposal.status] || proposal.status}</span>
+                    </div>
+                    <div>
+                      <b>{formatCurrency(proposal.proposal_value)}</b>
+                      <small>Validade: {formatDate(proposal.valid_until)}</small>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
 
           <section className="admin-panel">
             <h2>Origem do cliente</h2>

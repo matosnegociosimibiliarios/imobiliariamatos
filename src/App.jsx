@@ -27,6 +27,8 @@ import AdminCaptureDetail from './pages/admin/AdminCaptureDetail';
 import AdminIntegrations from './pages/admin/AdminIntegrations';
 import AdminInstagramInbox from './pages/admin/AdminInstagramInbox';
 import AdminWhatsAppInbox from './pages/admin/AdminWhatsAppInbox';
+import AdminProposals from './pages/admin/AdminProposals';
+import AdminProposalForm from './pages/admin/AdminProposalForm';
 
 export default function App() {
   return (
@@ -62,6 +64,9 @@ export default function App() {
           <Route path="/admin/leads" element={<AdminLeads />} />
           <Route path="/admin/leads/:id" element={<AdminLeadDetail />} />
           <Route path="/admin/acoes" element={<AdminActions />} />
+          <Route path="/admin/propostas" element={<AdminProposals />} />
+          <Route path="/admin/propostas/nova" element={<AdminProposalForm />} />
+          <Route path="/admin/propostas/:id" element={<AdminProposalForm />} />
           <Route path="/admin/agendamentos" element={<AdminAppointments />} />
           <Route path="/admin/captacoes" element={<AdminCaptures />} />
           <Route path="/admin/captacoes/:id" element={<AdminCaptureDetail />} />

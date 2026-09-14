@@ -7,11 +7,16 @@ import {
   rescheduleCaptureNextAction,
   rescheduleLeadNextAction,
   updateAppointment,
+  updateProposal,
 } from '../../services/admin';
 import {
   STATUS_LABELS,
+  PROPOSAL_STATUS_LABELS,
+  formatCurrency,
+  formatDate,
   formatDateTime,
   makeWhatsAppUrl,
+  proposalValidityLabel,
 } from '../../services/crm';
 import { buildRoutine, nextBusinessMoment } from '../../services/routine';
 
@@ -33,7 +38,7 @@ const APPOINTMENT_STATUS_LABELS = {
 };
 
 export default function AdminActions() {
-  const [rawData, setRawData] = useState({ leads: [], captures: [], appointments: [] });
+  const [rawData, setRawData] = useState({ leads: [], captures: [], appointments: [], proposals: [] });
   const [loading, setLoading] = useState(true);
   const [busyKey, setBusyKey] = useState('');
   const [message, setMessage] = useState('');
@@ -43,7 +48,7 @@ export default function AdminActions() {
     setLoading(true);
     const { data, error } = await getDailyRoutineData();
     if (error) setMessage('Não foi possível carregar toda a rotina. Atualize a página e tente novamente.');
-    setRawData(data || { leads: [], captures: [], appointments: [] });
+    setRawData(data || { leads: [], captures: [], appointments: [], proposals: [] });
     setLoading(false);
   }
 
@@ -109,6 +114,50 @@ export default function AdminActions() {
       await load();
     }
     setBusyKey('');
+  }
+
+  async function postponeProposal(item, days) {
+    const key = `proposal-${item.id}-postpone-${days}`;
+    setBusyKey(key);
+    setMessage('');
+    const { error } = await updateProposal(item.id, {
+      next_follow_up_text: item.next_follow_up_text || 'Retornar sobre a proposta',
+      next_follow_up_at: nextBusinessMoment(days),
+    });
+    if (error) {
+      setMessage(error.message || 'Não foi possível reagendar o retorno da proposta.');
+    } else {
+      setMessage(days === 1 ? 'Retorno da proposta reagendado para amanhã às 9h.' : 'Retorno da proposta reagendado para daqui a 7 dias às 9h.');
+      await load();
+    }
+    setBusyKey('');
+  }
+
+  function proposalCard(item, tone = '') {
+    const lead = item.lead || {};
+    const whatsappUrl = makeWhatsAppUrl(lead.whatsapp, lead.name);
+    return (
+      <article className={`routine-card proposal ${tone}`} key={`proposal-${item.id}`}>
+        <div className="routine-card-main">
+          <div className="routine-card-topline">
+            <span className="routine-kind proposal">Proposta</span>
+            <small>{PROPOSAL_STATUS_LABELS[item.status] || item.status}</small>
+          </div>
+          <h3>{lead.name || 'Cliente'}</h3>
+          <p>{item.property ? `${item.property.code} — ${item.property.title}` : 'Imóvel não informado'}</p>
+          <strong>{formatCurrency(item.proposal_value)}</strong>
+          {item.next_follow_up_at && <span className="routine-property">Retorno: {formatDateTime(item.next_follow_up_at)}</span>}
+          {item.valid_until && <span className="routine-property">Validade: {formatDate(item.valid_until)} · {proposalValidityLabel(item.valid_until)}</span>}
+        </div>
+        <div className="routine-card-actions">
+          <Link to={`/admin/propostas/${item.id}`}>Abrir proposta</Link>
+          {lead.id && <Link to={`/admin/leads/${lead.id}`}>Cliente</Link>}
+          {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>}
+          <button type="button" className="secondary" onClick={() => postponeProposal(item, 1)} disabled={busyKey.startsWith(`proposal-${item.id}`)}>Amanhã 9h</button>
+          <button type="button" className="secondary" onClick={() => postponeProposal(item, 7)} disabled={busyKey.startsWith(`proposal-${item.id}`)}>+7 dias</button>
+        </div>
+      </article>
+    );
   }
 
   function itemLink(item) {
@@ -269,6 +318,12 @@ export default function AdminActions() {
             <button type="button" onClick={() => document.getElementById('propostas')?.scrollIntoView({ behavior: 'smooth' })}>
               <span>Propostas abertas</span><strong>{routine.counts.proposals}</strong>
             </button>
+            <button type="button" onClick={() => document.getElementById('retornos-propostas')?.scrollIntoView({ behavior: 'smooth' })}>
+              <span>Retornos de propostas</span><strong>{routine.counts.proposal_followups}</strong>
+            </button>
+            <button type="button" onClick={() => document.getElementById('propostas-vencendo')?.scrollIntoView({ behavior: 'smooth' })}>
+              <span>Vencem em 3 dias</span><strong>{routine.counts.proposal_expiring}</strong>
+            </button>
           </div>
 
           <div className="routine-filter-row">
@@ -307,28 +362,25 @@ export default function AdminActions() {
             </div>
           </section>
 
+          <section className="admin-panel routine-section" id="retornos-propostas">
+            <div className="action-section-title"><div><span className="eyebrow">Acompanhamento</span><h2>Retornos de propostas</h2></div><span>{routine.proposalFollowUps.length}</span></div>
+            <p className="routine-section-help">Propostas com retorno marcado para hoje ou já atrasado.</p>
+            <div className="routine-list">
+              {routine.proposalFollowUps.length === 0 ? <p>Nenhum retorno de proposta pendente para hoje.</p> : routine.proposalFollowUps.map((item) => proposalCard(item, 'today'))}
+            </div>
+          </section>
+
+          <section className="admin-panel routine-section" id="propostas-vencendo">
+            <div className="action-section-title"><div><span className="eyebrow">Prazo</span><h2>Propostas vencendo em até 3 dias</h2></div><span>{routine.proposalExpiring.length}</span></div>
+            <div className="routine-list">
+              {routine.proposalExpiring.length === 0 ? <p>Nenhuma proposta perto do vencimento.</p> : routine.proposalExpiring.map((item) => proposalCard(item, 'overdue'))}
+            </div>
+          </section>
+
           <section className="admin-panel routine-section" id="propostas">
             <div className="action-section-title"><div><span className="eyebrow">Negócios quentes</span><h2>Propostas em aberto</h2></div><span>{routine.proposals.length}</span></div>
             <div className="routine-list">
-              {routine.proposals.length === 0 ? (
-                <p>Nenhuma proposta aberta no momento.</p>
-              ) : routine.proposals.map((item) => {
-                const whatsappUrl = makeWhatsAppUrl(item.whatsapp, item.name);
-                return (
-                  <article className="routine-card proposal" key={`proposal-${item.id}`}>
-                    <div className="routine-card-main">
-                      <div className="routine-card-topline"><span className="routine-kind lead">Cliente</span><small>Proposta</small></div>
-                      <h3>{item.name}</h3>
-                      <p>{item.property ? `${item.property.code} — ${item.property.title}` : 'Imóvel não informado'}</p>
-                      <strong>{item.next_action_at ? `Próximo passo: ${formatDateTime(item.next_action_at)}` : 'Sem próximo passo definido'}</strong>
-                    </div>
-                    <div className="routine-card-actions">
-                      <Link to={`/admin/leads/${item.id}`}>Abrir proposta</Link>
-                      {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>}
-                    </div>
-                  </article>
-                );
-              })}
+              {routine.proposals.length === 0 ? <p>Nenhuma proposta aberta no momento.</p> : routine.proposals.map((item) => proposalCard(item))}
             </div>
           </section>
 

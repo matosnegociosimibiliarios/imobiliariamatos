@@ -13,6 +13,12 @@ const ACTIVE_CAPTURE_STATUSES = new Set([
   'authorized',
 ]);
 
+const ACTIVE_PROPOSAL_STATUSES = new Set([
+  'draft',
+  'sent',
+  'negotiation',
+]);
+
 function startOfDay(date = new Date()) {
   const value = new Date(date);
   value.setHours(0, 0, 0, 0);
@@ -28,6 +34,12 @@ function addDays(date, days) {
 function validDate(value) {
   if (!value) return null;
   const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function validityDate(value) {
+  if (!value) return null;
+  const date = new Date(`${value}T23:59:59`);
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
@@ -67,9 +79,11 @@ export function buildRoutine(data = {}, nowValue = new Date()) {
   const leads = data.leads || [];
   const captures = data.captures || [];
   const appointments = data.appointments || [];
+  const proposals = data.proposals || [];
   const now = new Date(nowValue);
   const today = startOfDay(now);
   const tomorrow = addDays(today, 1);
+  const fourDays = addDays(today, 4);
   const eightDays = addDays(today, 8);
 
   const actionItems = [
@@ -129,13 +143,26 @@ export function buildRoutine(data = {}, nowValue = new Date()) {
     .filter((item) => item.routine_date && item.routine_date >= tomorrow && item.routine_date < eightDays)
     .sort((a, b) => a.routine_date - b.routine_date);
 
-  const proposals = leads
-    .filter((item) => item.status === 'proposal')
+  const openProposals = proposals
+    .filter((item) => ACTIVE_PROPOSAL_STATUSES.has(item.status))
     .sort((a, b) => {
-      const left = latestLeadActivity(a)?.getTime() || 0;
-      const right = latestLeadActivity(b)?.getTime() || 0;
+      const left = validDate(a.next_follow_up_at)?.getTime() || validDate(a.updated_at)?.getTime() || 0;
+      const right = validDate(b.next_follow_up_at)?.getTime() || validDate(b.updated_at)?.getTime() || 0;
       return left - right;
     });
+
+  const proposalFollowUps = openProposals
+    .filter((item) => {
+      const due = validDate(item.next_follow_up_at);
+      return due && due < tomorrow;
+    })
+    .sort((a, b) => new Date(a.next_follow_up_at) - new Date(b.next_follow_up_at));
+
+  const proposalExpiring = openProposals
+    .filter((item) => ['sent', 'negotiation'].includes(item.status))
+    .map((item) => ({ ...item, validity_date: validityDate(item.valid_until) }))
+    .filter((item) => item.validity_date && item.validity_date >= today && item.validity_date < fourDays)
+    .sort((a, b) => a.validity_date - b.validity_date);
 
   return {
     overdue,
@@ -145,14 +172,18 @@ export function buildRoutine(data = {}, nowValue = new Date()) {
     stale,
     visitsToday,
     upcomingVisits,
-    proposals,
+    proposals: openProposals,
+    proposalFollowUps,
+    proposalExpiring,
     counts: {
       overdue: overdue.length,
       today: todayActions.length,
       visits: visitsToday.length,
       stale: stale.length,
       no_next_action: noNextAction.length,
-      proposals: proposals.length,
+      proposals: openProposals.length,
+      proposal_followups: proposalFollowUps.length,
+      proposal_expiring: proposalExpiring.length,
     },
   };
 }

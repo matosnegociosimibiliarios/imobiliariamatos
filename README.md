@@ -1,3 +1,40 @@
+# Matos Negócios Imobiliários — V10.6
+
+## V10.6 — Propostas e acompanhamento comercial
+
+Esta versão cria um controle próprio de propostas dentro do CRM, ligado ao cliente e ao imóvel.
+
+### O que foi acrescentado
+
+- nova área **Propostas** no menu administrativo;
+- proposta vinculada ao **cliente** e ao **imóvel**;
+- código automático `PROP-0001`, `PROP-0002`...;
+- valor proposto, forma de pagamento, condições e validade;
+- etapas **Rascunho → Enviada → Em negociação → Aceita → Recusada → Expirada**;
+- próximo retorno da proposta com data e hora;
+- motivo de recusa;
+- histórico automático das mudanças de situação;
+- propostas aceitas podem ser transformadas em **negócio fechado** com um clique;
+- propostas aparecem também dentro da ficha do cliente;
+- painel de propostas com valor em aberto, taxa de aceite e conversão de proposta em venda;
+- propostas vencidas são atualizadas automaticamente ao abrir o CRM;
+- **Rotina de hoje** passa a alertar sobre retornos de propostas e propostas que vencem em até 3 dias;
+- Visão geral passa a mostrar propostas abertas e alertas comerciais.
+
+### Instalação
+
+Antes de publicar os arquivos da V10.6, execute no Supabase:
+
+`SUPABASE_V10_6_SETUP.sql`
+
+Depois publique normalmente no GitHub/Vercel e faça `Ctrl + F5` no painel.
+
+### Variáveis de ambiente
+
+Nenhuma variável nova na Vercel é necessária para esta versão.
+
+---
+
 # Matos Negócios Imobiliários — V10.5
 
 ## V10.5 — Gestão diária do CRM

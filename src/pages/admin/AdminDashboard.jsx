@@ -67,7 +67,7 @@ export default function AdminDashboard() {
         ['Visitantes únicos', metrics.unique_visitors],
         ['Leads', metrics.leads],
         ['Agendamentos', metrics.appointments],
-        ['Propostas', metrics.proposals],
+        ['Propostas em aberto', routineSummary?.proposals || 0],
         ['Fechados', metrics.won],
         ['Lead → venda', `${metrics.lead_to_won_rate}%`],
         ['Valor fechado', formatCurrency(metrics.won_value)],
@@ -206,6 +206,8 @@ export default function AdminDashboard() {
           <Link to="/admin/acoes#visitas"><span>Visitas hoje</span><strong>{routineSummary?.visits || 0}</strong></Link>
           <Link to="/admin/acoes#sem-acao"><span>Sem próxima ação</span><strong>{routineSummary?.no_next_action || 0}</strong></Link>
           <Link to="/admin/acoes#propostas"><span>Propostas abertas</span><strong>{routineSummary?.proposals || 0}</strong></Link>
+          <Link to="/admin/acoes#retornos-propostas"><span>Retornos de propostas</span><strong>{routineSummary?.proposal_followups || 0}</strong></Link>
+          <Link to="/admin/acoes#propostas-vencendo"><span>Propostas vencendo</span><strong>{routineSummary?.proposal_expiring || 0}</strong></Link>
         </div>
       </section>
 
@@ -267,6 +269,7 @@ export default function AdminDashboard() {
           <Link to="/admin/mensagens">Mensagens Instagram</Link>
           <Link to="/admin/leads">Abrir funil</Link>
           <Link to="/admin/acoes">Rotina de hoje</Link>
+          <Link to="/admin/propostas">Propostas</Link>
           <Link to="/admin/agendamentos">Agendamentos</Link>
           <Link to="/admin/captacoes">Captações</Link>
           <Link to="/admin/imoveis">Imóveis</Link>

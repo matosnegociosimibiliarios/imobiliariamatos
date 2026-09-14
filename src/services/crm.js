@@ -87,3 +87,37 @@ export function originLabel(platform, channel, detail = null) {
   if (detail && detail !== c) return `${p} · ${c || detail}`;
   return c ? `${p} · ${c}` : p;
 }
+
+export const PROPOSAL_STATUSES = [
+  { value: 'draft', label: 'Rascunho' },
+  { value: 'sent', label: 'Enviada' },
+  { value: 'negotiation', label: 'Em negociação' },
+  { value: 'accepted', label: 'Aceita' },
+  { value: 'rejected', label: 'Recusada' },
+  { value: 'expired', label: 'Expirada' },
+];
+
+export const PROPOSAL_STATUS_LABELS = Object.fromEntries(
+  PROPOSAL_STATUSES.map((item) => [item.value, item.label])
+);
+
+export function formatDate(value) {
+  if (!value) return '—';
+
+  return new Date(`${value}T12:00:00`).toLocaleDateString('pt-BR');
+}
+
+export function proposalValidityLabel(validUntil) {
+  if (!validUntil) return 'Sem validade definida';
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const end = new Date(`${validUntil}T00:00:00`);
+  const days = Math.ceil((end.getTime() - today.getTime()) / 86400000);
+
+  if (days < 0) return `Venceu há ${Math.abs(days)} dia${Math.abs(days) === 1 ? '' : 's'}`;
+  if (days === 0) return 'Vence hoje';
+  if (days === 1) return 'Vence amanhã';
+  return `Vence em ${days} dias`;
+}

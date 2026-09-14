@@ -741,10 +741,11 @@ export async function getChannelPerformance(daysBack = 30) {
 }
 
 export async function getDailyRoutineData() {
-  const [leadsResult, capturesResult, appointmentsResult] = await Promise.all([
+  const [leadsResult, capturesResult, appointmentsResult, proposalsResult] = await Promise.all([
     getLeads(),
     getOwnerCaptures(),
     getAppointments(),
+    getProposals(),
   ]);
 
   return {
@@ -752,8 +753,9 @@ export async function getDailyRoutineData() {
       leads: leadsResult.data || [],
       captures: capturesResult.data || [],
       appointments: appointmentsResult.data || [],
+      proposals: proposalsResult.data || [],
     },
-    error: leadsResult.error || capturesResult.error || appointmentsResult.error || null,
+    error: leadsResult.error || capturesResult.error || appointmentsResult.error || proposalsResult.error || null,
   };
 }
 
@@ -791,4 +793,140 @@ export async function rescheduleCaptureNextAction(item, nextActionAt) {
   return updateOwnerCapture(item.id, {
     next_action_at: nextActionAt,
   });
+}
+
+export async function refreshExpiredProposals() {
+  return supabase.rpc('admin_refresh_expired_proposals');
+}
+
+export async function getProposals() {
+  await refreshExpiredProposals();
+
+  return supabase
+    .from('proposals')
+    .select(`
+      *,
+      lead:leads(id,name,whatsapp,email,status,source_platform,source_channel),
+      property:properties(id,code,title,slug,public_location_text,status,sale_price,rent_price)
+    `)
+    .order('updated_at', { ascending: false });
+}
+
+export async function getProposal(id) {
+  await refreshExpiredProposals();
+
+  return supabase
+    .from('proposals')
+    .select(`
+      *,
+      lead:leads(id,name,whatsapp,email,status,property_id),
+      property:properties(id,code,title,slug,public_location_text,status,sale_price,rent_price)
+    `)
+    .eq('id', id)
+    .maybeSingle();
+}
+
+export async function getLeadProposals(leadId) {
+  await refreshExpiredProposals();
+
+  return supabase
+    .from('proposals')
+    .select(`
+      *,
+      property:properties(id,code,title,slug,public_location_text)
+    `)
+    .eq('lead_id', leadId)
+    .order('created_at', { ascending: false });
+}
+
+export async function createProposal(payload) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return supabase
+    .from('proposals')
+    .insert({
+      ...payload,
+      created_by: user?.id || null,
+    })
+    .select(`
+      *,
+      lead:leads(id,name,whatsapp,email,status),
+      property:properties(id,code,title,slug)
+    `)
+    .single();
+}
+
+export async function updateProposal(id, payload) {
+  return supabase
+    .from('proposals')
+    .update(payload)
+    .eq('id', id)
+    .select(`
+      *,
+      lead:leads(id,name,whatsapp,email,status),
+      property:properties(id,code,title,slug)
+    `)
+    .single();
+}
+
+export async function deleteProposal(id) {
+  return supabase.from('proposals').delete().eq('id', id);
+}
+
+export async function getProposalStatusHistory(proposalId) {
+  return supabase
+    .from('proposal_status_history')
+    .select('*')
+    .eq('proposal_id', proposalId)
+    .order('created_at', { ascending: false });
+}
+
+export async function getProposalMetrics(daysBack = 90) {
+  await refreshExpiredProposals();
+  return supabase.rpc('admin_proposal_metrics', { days_back: daysBack });
+}
+
+export async function getProposalFormOptions() {
+  const [leadsResult, propertiesResult] = await Promise.all([
+    supabase
+      .from('leads')
+      .select('id,name,whatsapp,email,status,property_id')
+      .not('status', 'eq', 'lost')
+      .order('name', { ascending: true }),
+    supabase
+      .from('properties')
+      .select('id,code,title,slug,status,sale_price,rent_price,public_location_text')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false }),
+  ]);
+
+  return {
+    data: {
+      leads: leadsResult.data || [],
+      properties: propertiesResult.data || [],
+    },
+    error: leadsResult.error || propertiesResult.error || null,
+  };
+}
+
+export async function closeLeadFromProposal(proposal) {
+  if (!proposal?.lead_id) {
+    return { data: null, error: new Error('Cliente não informado na proposta.') };
+  }
+
+  const result = await updateLead(proposal.lead_id, {
+    status: 'won',
+    deal_value: proposal.proposal_value ?? null,
+  });
+
+  if (result.error) return result;
+
+  await addLeadNote(
+    proposal.lead_id,
+    `Negócio fechado a partir da proposta ${proposal.code || ''}${proposal.proposal_value ? ` no valor de R$ ${Number(proposal.proposal_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : ''}.`
+  );
+
+  return result;
 }
