@@ -1,5 +1,19 @@
 import { supabase } from '../lib/supabase';
 
+const wait = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+async function withSupabaseRetry(operation, attempts = 3) {
+  let lastResult = null;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    lastResult = await operation();
+    const status = Number(lastResult?.status || 0);
+    const retryable = Boolean(lastResult?.error) && [429, 502, 503, 504].includes(status);
+    if (!retryable || attempt === attempts) return lastResult;
+    await wait(250 * attempt);
+  }
+  return lastResult;
+}
+
 export const ROLE_LABELS = {
   owner: 'Proprietário',
   admin: 'Administrador',
@@ -41,37 +55,22 @@ export const PERMISSION_CATALOG = [
 ];
 
 export async function getAccessContext() {
-  const { data, error } = await supabase.rpc('current_access_context');
-  return { data: data || null, error };
+  const result = await withSupabaseRetry(() => supabase.rpc('current_access_context'));
+  return { data: result?.data || null, error: result?.error || null, status: result?.status };
 }
 
 export function can(access, permission) {
+  if (access?.role === 'owner') return true;
   return Boolean(access?.permissions?.[permission]);
 }
 
 export async function getTeamMembers() {
-  const accessResult = await getAccessContext();
-  if (accessResult.error || !accessResult.data?.organization_id) {
-    return { data: [], error: accessResult.error || new Error('Organização não encontrada.') };
-  }
-
-  return supabase
-    .from('organization_members')
-    .select(`
-      id,
-      organization_id,
-      user_id,
-      role,
-      status,
-      permissions,
-      invited_at,
-      joined_at,
-      created_at,
-      updated_at,
-      profile:profiles(id,full_name,email,last_seen_at)
-    `)
-    .eq('organization_id', accessResult.data.organization_id)
-    .order('created_at', { ascending: true });
+  const result = await withSupabaseRetry(() => supabase.rpc('organization_team_members'));
+  return {
+    data: Array.isArray(result?.data) ? result.data : [],
+    error: result?.error || null,
+    status: result?.status,
+  };
 }
 
 export async function getAssignableMembers() {
@@ -117,14 +116,14 @@ export async function updateTeamMember(memberId, payload) {
 }
 
 export async function getRecentTeamActivity(limit = 80) {
-  return supabase
+  return withSupabaseRetry(() => supabase
     .from('team_activity_log')
     .select(`
       id,table_name,record_id,action,changed_fields,created_at,actor_user_id,
       actor:profiles!team_activity_log_actor_user_id_fkey(id,full_name,email)
     `)
     .order('created_at', { ascending: false })
-    .limit(limit);
+    .limit(limit));
 }
 
 export async function assignRecord(table, id, userId) {

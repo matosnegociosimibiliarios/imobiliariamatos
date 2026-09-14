@@ -429,3 +429,15 @@ Esta versão **ainda não transforma o CRM em multiempresa**. Os dados atuais co
 - Repete chamadas REST administrativas do Supabase usadas no convite quando o gateway oscila.
 - Exibe mensagem amigável de indisponibilidade temporária em vez de mostrar o erro bruto do gateway.
 - Não exige novo SQL nem novas variáveis de ambiente.
+
+
+## Versão 10.14.2 — restauração do proprietário e lista da equipe
+
+Correções:
+- o perfil Proprietário volta a ter acesso garantido a Integrações e Saúde do sistema;
+- remove bloqueios personalizados acidentais do proprietário;
+- a lista de usuários passa a ser carregada por uma função segura do banco, evitando falhas no relacionamento entre equipe e perfis;
+- o usuário convidado aparece normalmente em Equipe e permissões depois do convite/ativação;
+- mantém a 10.14.1, o convite, a auditoria e as permissões por função.
+
+Antes de publicar esta versão, execute `SUPABASE_V10_14_2_FIX.sql` no Supabase.

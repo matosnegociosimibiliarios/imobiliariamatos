@@ -163,6 +163,16 @@ export default function AdminTeam() {
     if (accessResult.data) setAccess(accessResult.data);
     if (!membersResult.error) setMembers(membersResult.data || []);
     if (!activityResult.error) setActivity(activityResult.data || []);
+
+    const loadError = membersResult.error || activityResult.error || accessResult.error;
+    if (loadError) {
+      const text = String(loadError.message || '');
+      setMessage(text.includes('502') || text.includes('Bad Gateway')
+        ? 'O Supabase oscilou ao carregar a equipe. Atualize a página ou tente novamente em alguns segundos.'
+        : `Não foi possível carregar toda a equipe: ${text || 'erro desconhecido'}`);
+    } else {
+      setMessage((current) => current.startsWith('O Supabase oscilou') || current.startsWith('Não foi possível carregar') ? '' : current);
+    }
     setLoading(false);
   }
 
@@ -196,7 +206,7 @@ export default function AdminTeam() {
     <div className="admin-page team-page">
       <div className="admin-page-header">
         <div>
-          <span className="eyebrow">Versão 10.14 · Base SaaS</span>
+          <span className="eyebrow">Versão 10.14.2 · Base SaaS</span>
           <h1>Equipe e permissões</h1>
           <p>Controle quem entra no CRM, o que cada pessoa pode acessar e quem fez cada alteração.</p>
         </div>
