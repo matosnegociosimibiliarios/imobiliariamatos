@@ -1,36 +1,3 @@
-# Matos Negócios Imobiliários — V10.15
-
-## V10.15 — Transferência de carteira
-
-Esta versão acrescenta a transferência de carteira entre usuários da equipe, preparada para o uso atual da Matos e para a futura evolução SaaS.
-
-### O que foi acrescentado
-
-- nova área **Transferir carteira** dentro de **Equipe e permissões**;
-- escolha de quem entrega e quem recebe a carteira;
-- transferência seletiva de **Clientes, Imóveis, Agendamentos, Captações, Propostas e Negócios fechados**;
-- contador da quantidade de registros de cada tipo antes da transferência;
-- opção de transferir tudo ou somente tipos específicos;
-- o usuário de destino precisa estar **Ativo**;
-- usuários desativados podem continuar como origem para facilitar desligamentos;
-- o histórico dos registros é preservado;
-- a auditoria existente registra a mudança de responsável;
-- somente **Proprietário** e **Administrador** podem executar a transferência.
-
-### Instalação
-
-Antes de publicar os arquivos da V10.15, execute no Supabase:
-
-`SUPABASE_V10_15_SETUP.sql`
-
-Depois publique os arquivos no GitHub/Vercel e faça `Ctrl + F5`.
-
-### Variáveis de ambiente
-
-Nenhuma variável nova na Vercel é necessária.
-
----
-
 # Matos Negócios Imobiliários — V10.7
 
 ## V10.6 — Propostas e acompanhamento comercial
@@ -474,3 +441,41 @@ Correções:
 - mantém a 10.14.1, o convite, a auditoria e as permissões por função.
 
 Antes de publicar esta versão, execute `SUPABASE_V10_14_2_FIX.sql` no Supabase.
+
+---
+
+# Versão 10.15 — Organização do menu por área
+
+Esta versão reorganiza o menu administrativo antes da construção do módulo de locação.
+
+## Nova estrutura do menu
+
+- **Geral**
+  - Visão geral
+  - Painel gerencial
+  - Relatórios
+  - Equipe e permissões
+  - Integrações
+  - Saúde do sistema
+- **Compra**
+  - Imóveis e novo imóvel
+  - Captações
+  - Funil de clientes
+  - Instagram e WhatsApp
+  - Rotina de hoje
+  - Agendamentos
+  - Propostas
+  - Negócios fechados
+  - Documentos
+- **Locação**
+  - Painel de locação reservado para a próxima etapa
+- **Financeiro**
+  - Financeiro da empresa reservado para desenvolvimento futuro
+
+Os grupos são recolhíveis para diminuir o tamanho visual do menu. A seção correspondente à página atual abre automaticamente.
+
+## Banco e Vercel
+
+- Não exige SQL novo.
+- Não exige variável de ambiente nova.
+- Não altera dados existentes.

@@ -6,8 +6,6 @@ import {
   getAccessContext,
   getRecentTeamActivity,
   getTeamMembers,
-  getPortfolioSummary,
-  transferTeamPortfolio,
   inviteTeamMember,
   updateTeamMember,
 } from '../../services/team';
@@ -146,192 +144,6 @@ function MemberCard({ member, currentAccess, onSaved }) {
   );
 }
 
-
-const PORTFOLIO_TYPES = [
-  { key: 'leads', label: 'Clientes' },
-  { key: 'properties', label: 'Imóveis' },
-  { key: 'appointments', label: 'Agendamentos' },
-  { key: 'captures', label: 'Captações' },
-  { key: 'proposals', label: 'Propostas' },
-  { key: 'deals', label: 'Negócios fechados' },
-];
-
-function TransferPortfolioPanel({ members, access, onTransferred }) {
-  const eligibleSources = members.filter((member) => member.user_id && member.status !== 'invited');
-  const activeTargets = members.filter((member) => member.user_id && member.status === 'active');
-  const [fromUserId, setFromUserId] = useState('');
-  const [toUserId, setToUserId] = useState('');
-  const [summary, setSummary] = useState(null);
-  const [loadingSummary, setLoadingSummary] = useState(false);
-  const [transferring, setTransferring] = useState(false);
-  const [message, setMessage] = useState('');
-  const [resources, setResources] = useState({
-    leads: true,
-    properties: true,
-    appointments: true,
-    captures: true,
-    proposals: true,
-    deals: true,
-  });
-
-  const fromMember = members.find((member) => member.user_id === fromUserId);
-  const toMember = members.find((member) => member.user_id === toUserId);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadSummary() {
-      setMessage('');
-      setSummary(null);
-      if (!fromUserId) return;
-      setLoadingSummary(true);
-      const result = await getPortfolioSummary(fromUserId);
-      if (!cancelled) {
-        if (result.error) setMessage(result.error.message || 'Não foi possível consultar a carteira.');
-        else setSummary(result.data || {});
-        setLoadingSummary(false);
-      }
-    }
-    loadSummary();
-    return () => { cancelled = true; };
-  }, [fromUserId]);
-
-  if (!['owner', 'admin'].includes(access?.role)) return null;
-
-  const selectedCount = PORTFOLIO_TYPES.filter((item) => resources[item.key]).length;
-  const estimatedTotal = PORTFOLIO_TYPES.reduce((sum, item) => {
-    if (!resources[item.key]) return sum;
-    return sum + Number(summary?.[item.key] || 0);
-  }, 0);
-
-  function toggleAll(value) {
-    setResources(Object.fromEntries(PORTFOLIO_TYPES.map((item) => [item.key, value])));
-  }
-
-  async function transfer() {
-    setMessage('');
-    if (!fromUserId || !toUserId) {
-      setMessage('Escolha quem entrega a carteira e quem vai receber.');
-      return;
-    }
-    if (fromUserId === toUserId) {
-      setMessage('Escolha usuários diferentes para origem e destino.');
-      return;
-    }
-    if (!selectedCount) {
-      setMessage('Selecione pelo menos um tipo de carteira.');
-      return;
-    }
-
-    const sourceName = fromMember?.profile?.full_name || fromMember?.profile?.email || 'usuário de origem';
-    const targetName = toMember?.profile?.full_name || toMember?.profile?.email || 'usuário de destino';
-    const confirmation = window.confirm(
-      `Transferir ${estimatedTotal} registro(s) selecionado(s) de ${sourceName} para ${targetName}?\n\nO histórico será preservado.`
-    );
-    if (!confirmation) return;
-
-    setTransferring(true);
-    const result = await transferTeamPortfolio({ fromUserId, toUserId, resources });
-    if (result.error) {
-      setMessage(result.error.message || 'Não foi possível transferir a carteira.');
-      setTransferring(false);
-      return;
-    }
-
-    const total = Number(result.data?.total || 0);
-    setMessage(total
-      ? `Carteira transferida: ${total} registro(s) movido(s).`
-      : 'Transferência concluída. Não havia registros nos tipos selecionados.');
-
-    const refreshed = await getPortfolioSummary(fromUserId);
-    if (!refreshed.error) setSummary(refreshed.data || {});
-    setTransferring(false);
-    onTransferred?.();
-  }
-
-  return (
-    <section className="admin-card portfolio-transfer-panel">
-      <div className="panel-title-row">
-        <div>
-          <span className="eyebrow">Gestão da equipe</span>
-          <h2>Transferir carteira</h2>
-          <p>Mova clientes, imóveis e outros registros de um corretor para outro sem perder o histórico.</p>
-        </div>
-      </div>
-
-      <div className="portfolio-transfer-users">
-        <label>Quem entrega a carteira
-          <select value={fromUserId} onChange={(e) => {
-            setFromUserId(e.target.value);
-            if (e.target.value === toUserId) setToUserId('');
-          }}>
-            <option value="">Selecione o usuário</option>
-            {eligibleSources.map((member) => (
-              <option key={member.id} value={member.user_id}>
-                {member.profile?.full_name || member.profile?.email || 'Usuário'} · {ROLE_LABELS[member.role] || member.role}
-                {member.status === 'disabled' ? ' · Desativado' : ''}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="portfolio-transfer-arrow" aria-hidden="true">→</div>
-
-        <label>Quem recebe a carteira
-          <select value={toUserId} onChange={(e) => setToUserId(e.target.value)}>
-            <option value="">Selecione o usuário</option>
-            {activeTargets.filter((member) => member.user_id !== fromUserId).map((member) => (
-              <option key={member.id} value={member.user_id}>
-                {member.profile?.full_name || member.profile?.email || 'Usuário'} · {ROLE_LABELS[member.role] || member.role}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      {fromUserId && (
-        <div className="portfolio-transfer-body">
-          <div className="portfolio-transfer-headline">
-            <strong>O que será transferido</strong>
-            <div>
-              <button type="button" className="text-button" onClick={() => toggleAll(true)}>Selecionar tudo</button>
-              <button type="button" className="text-button" onClick={() => toggleAll(false)}>Limpar</button>
-            </div>
-          </div>
-
-          {loadingSummary ? (
-            <p>Consultando carteira...</p>
-          ) : (
-            <div className="portfolio-transfer-grid">
-              {PORTFOLIO_TYPES.map((item) => (
-                <label key={item.key} className={`portfolio-transfer-item ${resources[item.key] ? 'selected' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(resources[item.key])}
-                    onChange={(e) => setResources((current) => ({ ...current, [item.key]: e.target.checked }))}
-                  />
-                  <span>{item.label}</span>
-                  <strong>{Number(summary?.[item.key] || 0)}</strong>
-                </label>
-              ))}
-            </div>
-          )}
-
-          <div className="portfolio-transfer-footer">
-            <div>
-              <span>{estimatedTotal} registro(s) selecionado(s)</span>
-              <small>A transferência troca apenas o responsável. Clientes, imóveis e históricos continuam intactos.</small>
-            </div>
-            <button type="button" className="button" onClick={transfer} disabled={transferring || loadingSummary || !fromUserId || !toUserId || !selectedCount}>
-              {transferring ? 'Transferindo...' : 'Transferir carteira'}
-            </button>
-          </div>
-          {message && <div className="admin-message compact">{message}</div>}
-        </div>
-      )}
-    </section>
-  );
-}
-
 export default function AdminTeam() {
   const [access, setAccess] = useState(null);
   const [members, setMembers] = useState([]);
@@ -394,7 +206,7 @@ export default function AdminTeam() {
     <div className="admin-page team-page">
       <div className="admin-page-header">
         <div>
-          <span className="eyebrow">Versão 10.15 · Gestão da equipe</span>
+          <span className="eyebrow">Versão 10.14.2 · Base SaaS</span>
           <h1>Equipe e permissões</h1>
           <p>Controle quem entra no CRM, o que cada pessoa pode acessar e quem fez cada alteração.</p>
         </div>
@@ -439,8 +251,6 @@ export default function AdminTeam() {
           ))}
         </div>
       </section>
-
-      <TransferPortfolioPanel members={members} access={access} onTransferred={load} />
 
       <section className="admin-card team-role-help">
         <h2>Funções padrão</h2>

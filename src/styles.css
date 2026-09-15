@@ -5096,37 +5096,103 @@ button, input, select { font: inherit; }
   .responsible-select.compact { min-width: 0; width: 100%; }
 }
 
-/* V10.15 — Transferência de carteira */
-.portfolio-transfer-panel { display: grid; gap: 18px; }
-.portfolio-transfer-panel .panel-title-row p { margin: 6px 0 0; color: #607066; max-width: 760px; }
-.portfolio-transfer-users { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 14px; align-items: end; }
-.portfolio-transfer-users label { display: grid; gap: 7px; font-weight: 800; color: #26332b; }
-.portfolio-transfer-users select { width: 100%; padding: 11px 12px; border: 1px solid #d6ddd8; border-radius: 10px; background: #fff; color: #172019; }
-.portfolio-transfer-arrow { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: #edf4ef; color: #184d2f; font-size: 22px; font-weight: 900; }
-.portfolio-transfer-body { display: grid; gap: 14px; padding-top: 2px; }
-.portfolio-transfer-headline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.portfolio-transfer-headline > div { display: flex; gap: 10px; flex-wrap: wrap; }
-.text-button { border: 0; background: transparent; color: #185633; font-weight: 800; padding: 4px 0; cursor: pointer; }
-.portfolio-transfer-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
-.portfolio-transfer-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 13px 14px; border: 1px solid #dbe3de; border-radius: 12px; background: #fff; cursor: pointer; }
-.portfolio-transfer-item.selected { border-color: #9db9a7; background: #f3f8f4; }
-.portfolio-transfer-item input { width: 17px; height: 17px; accent-color: #1d5a37; }
-.portfolio-transfer-item span { font-weight: 800; }
-.portfolio-transfer-item strong { min-width: 30px; text-align: center; padding: 4px 8px; border-radius: 999px; background: #edf4ef; color: #184d2f; }
-.portfolio-transfer-footer { display: flex; justify-content: space-between; gap: 18px; align-items: center; padding-top: 4px; }
-.portfolio-transfer-footer > div { display: grid; gap: 3px; }
-.portfolio-transfer-footer span { font-weight: 900; color: #172019; }
-.portfolio-transfer-footer small { color: #607066; }
-.admin-message.compact { margin: 0; padding: 10px 12px; }
-
-@media (max-width: 900px) {
-  .portfolio-transfer-users { grid-template-columns: 1fr; }
-  .portfolio-transfer-arrow { transform: rotate(90deg); margin: 0 auto; }
-  .portfolio-transfer-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .portfolio-transfer-footer { align-items: stretch; flex-direction: column; }
-  .portfolio-transfer-footer .button { width: 100%; }
+/* =========================================================
+   V10.15 - MENU ORGANIZADO POR ÁREA
+   ========================================================= */
+.admin-nav {
+  display: block;
 }
 
-@media (max-width: 560px) {
-  .portfolio-transfer-grid { grid-template-columns: 1fr; }
+.admin-nav-section {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.admin-nav-section-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid #2d3b32;
+  border-radius: 11px;
+  background: #151f18;
+  color: #edf4ef;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-nav-section-button > span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.admin-nav-section-button strong {
+  font-size: 14px;
+  letter-spacing: .02em;
+}
+
+.admin-nav-section-button small {
+  color: #8fa096;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.admin-nav-section-button > b {
+  flex: 0 0 auto;
+  font-size: 20px;
+  line-height: 1;
+  color: #9eb3a4;
+}
+
+.admin-nav-section.is-active > .admin-nav-section-button,
+.admin-nav-section-button:hover {
+  border-color: #496151;
+  background: #1b2a20;
+}
+
+.admin-nav-section-items {
+  display: grid;
+  gap: 4px;
+  padding: 2px 0 5px 9px;
+}
+
+.admin-nav-section-items a {
+  padding: 10px 12px;
+  border-left: 2px solid #314238;
+  border-radius: 0 9px 9px 0;
+}
+
+.admin-nav-section-items a.active,
+.admin-nav-section-items a:hover {
+  border-left-color: #8fb89b;
+}
+
+.admin-placeholder-card {
+  max-width: 840px;
+  display: grid;
+  gap: 12px;
+}
+
+.admin-placeholder-card h2,
+.admin-placeholder-card p {
+  margin: 0;
+}
+
+.admin-placeholder-card p {
+  color: #5e6c62;
+  line-height: 1.7;
+}
+
+@media (max-width: 800px) {
+  .admin-nav-section-button small {
+    display: none;
+  }
+
+  .admin-nav-section-items {
+    padding-left: 5px;
+  }
 }

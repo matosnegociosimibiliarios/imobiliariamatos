@@ -39,6 +39,8 @@ import AdminManagement from './pages/admin/AdminManagement';
 import AdminReports from './pages/admin/AdminReports';
 import AdminHealth from './pages/admin/AdminHealth';
 import AdminTeam from './pages/admin/AdminTeam';
+import AdminRentals from './pages/admin/AdminRentals';
+import AdminFinance from './pages/admin/AdminFinance';
 
 export default function App() {
   return (
@@ -84,6 +86,8 @@ export default function App() {
           <Route path="/admin/gestao" element={<PermissionRoute permission="management.view"><AdminManagement /></PermissionRoute>} />
           <Route path="/admin/relatorios" element={<PermissionRoute permission="reports.view"><AdminReports /></PermissionRoute>} />
           <Route path="/admin/saude" element={<PermissionRoute permission="health.view"><AdminHealth /></PermissionRoute>} />
+          <Route path="/admin/locacao" element={<PermissionRoute permission="properties.view"><AdminRentals /></PermissionRoute>} />
+          <Route path="/admin/financeiro" element={<PermissionRoute permission="financial.view"><AdminFinance /></PermissionRoute>} />
           <Route path="/admin/agendamentos" element={<PermissionRoute permission="appointments.view"><AdminAppointments /></PermissionRoute>} />
           <Route path="/admin/captacoes" element={<PermissionRoute permission="captures.view"><AdminCaptures /></PermissionRoute>} />
           <Route path="/admin/captacoes/:id" element={<PermissionRoute permission="captures.view"><AdminCaptureDetail /></PermissionRoute>} />
