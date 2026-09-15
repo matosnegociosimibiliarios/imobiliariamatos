@@ -442,40 +442,25 @@ Correções:
 
 Antes de publicar esta versão, execute `SUPABASE_V10_14_2_FIX.sql` no Supabase.
 
----
+## Versão 10.15 — Gestão de locações
 
-# Versão 10.15 — Organização do menu por área
+A versão 10.15 acrescenta uma área completa de locações ao CRM:
 
-Esta versão reorganiza o menu administrativo antes da construção do módulo de locação.
+- contratos de locação vinculados a imóvel e cliente;
+- responsável interno pelo contrato;
+- locatário, proprietário, garantia, reajuste, condomínio e IPTU;
+- geração automática das cobranças mensais;
+- controle de pagamento, taxa de administração e líquido do proprietário;
+- vistorias de entrada, periódicas e de saída;
+- chamados de manutenção com responsabilidade e custos;
+- checklist documental da locação integrado à Central de Documentos;
+- histórico de status do contrato;
+- indicadores de contratos ativos, recebimentos, atrasos e manutenções;
+- permissões `rentals.view` e `rentals.manage`, já preparadas por organização para futura evolução SaaS.
 
-## Nova estrutura do menu
+### Instalação
 
-- **Geral**
-  - Visão geral
-  - Painel gerencial
-  - Relatórios
-  - Equipe e permissões
-  - Integrações
-  - Saúde do sistema
-- **Compra**
-  - Imóveis e novo imóvel
-  - Captações
-  - Funil de clientes
-  - Instagram e WhatsApp
-  - Rotina de hoje
-  - Agendamentos
-  - Propostas
-  - Negócios fechados
-  - Documentos
-- **Locação**
-  - Painel de locação reservado para a próxima etapa
-- **Financeiro**
-  - Financeiro da empresa reservado para desenvolvimento futuro
-
-Os grupos são recolhíveis para diminuir o tamanho visual do menu. A seção correspondente à página atual abre automaticamente.
-
-## Banco e Vercel
-
-- Não exige SQL novo.
-- Não exige variável de ambiente nova.
-- Não altera dados existentes.
+1. Execute `SUPABASE_V10_15_SETUP.sql` no Supabase.
+2. Publique o conteúdo deste pacote no GitHub/Vercel.
+3. Faça `Ctrl + F5` no painel.
+4. Abra **Locações** no menu administrativo.

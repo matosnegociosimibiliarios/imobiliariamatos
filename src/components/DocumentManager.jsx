@@ -14,8 +14,8 @@ import { formatDateTime } from '../services/crm';
 
 function checklistLabel(item) {
   if (item.party) {
-    const party = item.party === 'buyer' ? 'Comprador' : item.party === 'seller' ? 'Vendedor' : 'Negócio';
-    return `${party} — ${item.label}`;
+    const labels = { buyer: 'Comprador', seller: 'Vendedor', tenant: 'Locatário', guarantee: 'Garantia', owner: 'Proprietário', contract: 'Contrato', inspection: 'Vistoria' };
+    return `${labels[item.party] || 'Documento'} — ${item.label}`;
   }
   return item.label;
 }
@@ -30,7 +30,7 @@ export default function DocumentManager({ contextType, contextId, contextLabel }
   const [files, setFiles] = useState([]);
   const [form, setForm] = useState({
     title: '',
-    category: contextType === 'property' ? 'property' : contextType === 'deal' ? 'contract' : 'other',
+    category: contextType === 'property' ? 'property' : contextType === 'deal' ? 'contract' : contextType === 'rental' ? 'rental' : 'other',
     checklistId: '',
     issuedAt: '',
     expiresAt: '',

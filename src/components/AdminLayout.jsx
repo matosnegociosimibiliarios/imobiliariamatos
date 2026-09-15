@@ -1,75 +1,35 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { signOut } from '../services/auth';
 import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/admin';
 import { ROLE_LABELS, can, getAccessContext } from '../services/team';
 
-const NAV_SECTIONS = [
-  {
-    key: 'general',
-    label: 'Geral',
-    description: 'Configurações e visão da empresa',
-    items: [
-      { to: '/admin', end: true, label: 'Visão geral', permission: 'dashboard.view' },
-      { to: '/admin/gestao', label: 'Painel gerencial', permission: 'management.view' },
-      { to: '/admin/relatorios', label: 'Relatórios', permission: 'reports.view' },
-      { to: '/admin/equipe', label: 'Equipe e permissões', permission: 'team.view' },
-      { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage' },
-      { to: '/admin/saude', label: 'Saúde do sistema', permission: 'health.view' },
-    ],
-  },
-  {
-    key: 'purchase',
-    label: 'Compra',
-    description: 'Captação, atendimento e vendas',
-    items: [
-      { to: '/admin/imoveis', label: 'Imóveis', permission: 'properties.view' },
-      { to: '/admin/imoveis/novo', label: 'Novo imóvel', permission: 'properties.manage' },
-      { to: '/admin/captacoes', label: 'Captações', permission: 'captures.view' },
-      { to: '/admin/leads', label: 'Funil de clientes', permission: 'leads.view' },
-      { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', badge: 'instagram' },
-      { to: '/admin/whatsapp', label: 'Mensagens WhatsApp', permission: 'messages.view', badge: 'whatsapp' },
-      { to: '/admin/acoes', label: 'Rotina de hoje', permission: 'leads.view' },
-      { to: '/admin/agendamentos', label: 'Agendamentos', permission: 'appointments.view' },
-      { to: '/admin/propostas', label: 'Propostas', permission: 'proposals.view' },
-      { to: '/admin/negocios', label: 'Negócios fechados', permission: 'deals.view' },
-      { to: '/admin/documentos', label: 'Documentos', permission: 'documents.view' },
-    ],
-  },
-  {
-    key: 'rentals',
-    label: 'Locação',
-    description: 'Área reservada para a próxima etapa',
-    items: [
-      { to: '/admin/locacao', label: 'Painel de locação', permission: 'properties.view' },
-    ],
-  },
-  {
-    key: 'finance',
-    label: 'Financeiro',
-    description: 'Financeiro da empresa',
-    items: [
-      { to: '/admin/financeiro', label: 'Financeiro da empresa', permission: 'financial.view' },
-    ],
-  },
+const NAV_ITEMS = [
+  { to: '/admin', end: true, label: 'Visão geral', permission: 'dashboard.view' },
+  { to: '/admin/gestao', label: 'Painel gerencial', permission: 'management.view' },
+  { to: '/admin/relatorios', label: 'Relatórios', permission: 'reports.view' },
+  { to: '/admin/imoveis', label: 'Imóveis', permission: 'properties.view' },
+  { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', badge: 'instagram' },
+  { to: '/admin/whatsapp', label: 'Mensagens WhatsApp', permission: 'messages.view', badge: 'whatsapp' },
+  { to: '/admin/leads', label: 'Funil de clientes', permission: 'leads.view' },
+  { to: '/admin/propostas', label: 'Propostas', permission: 'proposals.view' },
+  { to: '/admin/negocios', label: 'Negócios fechados', permission: 'deals.view' },
+  { to: '/admin/locacoes', label: 'Locações', permission: 'rentals.view' },
+  { to: '/admin/documentos', label: 'Documentos', permission: 'documents.view' },
+  { to: '/admin/acoes', label: 'Rotina de hoje', permission: 'leads.view' },
+  { to: '/admin/agendamentos', label: 'Agendamentos', permission: 'appointments.view' },
+  { to: '/admin/captacoes', label: 'Captações', permission: 'captures.view' },
+  { to: '/admin/equipe', label: 'Equipe e permissões', permission: 'team.view' },
+  { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage' },
+  { to: '/admin/saude', label: 'Saúde do sistema', permission: 'health.view' },
+  { to: '/admin/imoveis/novo', label: 'Novo imóvel', permission: 'properties.manage' },
 ];
-
-function pathMatchesItem(pathname, item) {
-  if (item.to === '/admin') return pathname === '/admin';
-  return pathname === item.to || pathname.startsWith(`${item.to}/`);
-}
-
-function sectionForPath(pathname, sections) {
-  return sections.find((section) => section.items.some((item) => pathMatchesItem(pathname, item)))?.key || 'general';
-}
 
 export default function AdminLayout() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [unreadInstagram, setUnreadInstagram] = useState(0);
   const [unreadWhatsApp, setUnreadWhatsApp] = useState(0);
   const [access, setAccess] = useState(null);
-  const [openSection, setOpenSection] = useState('general');
 
   useEffect(() => {
     let active = true;
@@ -119,20 +79,10 @@ export default function AdminLayout() {
     navigate('/login', { replace: true });
   }
 
-  const visibleSections = useMemo(
-    () => NAV_SECTIONS
-      .map((section) => ({
-        ...section,
-        items: section.items.filter((item) => access && can(access, item.permission)),
-      }))
-      .filter((section) => section.items.length > 0),
+  const visibleNav = useMemo(
+    () => NAV_ITEMS.filter((item) => access && can(access, item.permission)),
     [access]
   );
-
-  useEffect(() => {
-    if (!visibleSections.length) return;
-    setOpenSection(sectionForPath(location.pathname, visibleSections));
-  }, [location.pathname, visibleSections]);
 
   function badgeValue(type) {
     const value = type === 'instagram' ? unreadInstagram : type === 'whatsapp' ? unreadWhatsApp : 0;
@@ -151,44 +101,18 @@ export default function AdminLayout() {
           </div>
         </div>
 
-        <nav className="admin-nav" aria-label="Menu administrativo">
-          {visibleSections.map((section) => {
-            const isOpen = openSection === section.key;
-            const hasActiveItem = section.items.some((item) => pathMatchesItem(location.pathname, item));
-
-            return (
-              <section className={`admin-nav-section${hasActiveItem ? ' is-active' : ''}`} key={section.key}>
-                <button
-                  type="button"
-                  className="admin-nav-section-button"
-                  onClick={() => setOpenSection(isOpen ? '' : section.key)}
-                  aria-expanded={isOpen}
-                >
-                  <span>
-                    <strong>{section.label}</strong>
-                    <small>{section.description}</small>
-                  </span>
-                  <b aria-hidden="true">{isOpen ? '−' : '+'}</b>
-                </button>
-
-                {isOpen && (
-                  <div className="admin-nav-section-items">
-                    {section.items.map((item) => (
-                      <NavLink
-                        key={item.to}
-                        end={item.end}
-                        to={item.to}
-                        className={item.badge ? 'admin-nav-with-badge' : undefined}
-                      >
-                        <span>{item.label}</span>
-                        {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
-                      </NavLink>
-                    ))}
-                  </div>
-                )}
-              </section>
-            );
-          })}
+        <nav className="admin-nav">
+          {visibleNav.map((item) => (
+            <NavLink
+              key={item.to}
+              end={item.end}
+              to={item.to}
+              className={item.badge ? 'admin-nav-with-badge' : undefined}
+            >
+              <span>{item.label}</span>
+              {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="admin-sidebar-bottom">
