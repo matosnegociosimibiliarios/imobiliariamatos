@@ -1,0 +1,33 @@
+CREATE TRIGGER trg_rental_adjustments_activity_log AFTER INSERT OR DELETE OR UPDATE ON public.rental_adjustments FOR EACH ROW EXECUTE FUNCTION public.log_team_activity();
+CREATE TRIGGER rental_cases_apply_rules BEFORE UPDATE ON public.rental_cases FOR EACH ROW EXECUTE FUNCTION public.apply_rental_case_rules();
+CREATE TRIGGER rental_cases_log_insert AFTER INSERT ON public.rental_cases FOR EACH ROW EXECUTE FUNCTION public.log_new_rental_case();
+CREATE TRIGGER trg_rental_charges_activity_log AFTER INSERT OR DELETE OR UPDATE ON public.rental_charges FOR EACH ROW EXECUTE FUNCTION public.log_team_activity();
+CREATE TRIGGER trg_rental_charges_touch_updated_at BEFORE UPDATE ON public.rental_charges FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+
+CREATE TRIGGER rental_contract_code BEFORE INSERT ON public.rental_contracts FOR EACH ROW EXECUTE FUNCTION public.ensure_rental_contract_code();
+CREATE TRIGGER rental_contracts_seed_documents AFTER INSERT ON public.rental_contracts FOR EACH ROW EXECUTE FUNCTION public.seed_rental_documents();
+CREATE TRIGGER rental_contracts_status_history AFTER INSERT OR UPDATE OF status ON public.rental_contracts FOR EACH ROW EXECUTE FUNCTION public.track_rental_status_change();
+CREATE TRIGGER rental_contracts_sync_property_status AFTER INSERT OR UPDATE OF status ON public.rental_contracts FOR EACH ROW EXECUTE FUNCTION public.sync_rental_property_status();
+CREATE TRIGGER rental_contracts_touch_updated_at BEFORE UPDATE ON public.rental_contracts FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+CREATE TRIGGER trg_rental_contracts_activity_log AFTER INSERT OR DELETE OR UPDATE ON public.rental_contracts FOR EACH ROW EXECUTE FUNCTION public.log_team_activity();
+CREATE TRIGGER trg_rental_contracts_assignment BEFORE INSERT OR UPDATE ON public.rental_contracts FOR EACH ROW EXECUTE FUNCTION public.stamp_assignment();
+CREATE TRIGGER trg_rental_contracts_touch_updated_at BEFORE UPDATE ON public.rental_contracts FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+
+CREATE TRIGGER rental_documents_business_rules BEFORE UPDATE ON public.rental_documents FOR EACH ROW EXECUTE FUNCTION public.apply_rental_document_rules();
+CREATE TRIGGER rental_documents_touch_updated_at BEFORE UPDATE ON public.rental_documents FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+CREATE TRIGGER trg_rental_documents_activity_log AFTER INSERT OR DELETE OR UPDATE ON public.rental_documents FOR EACH ROW EXECUTE FUNCTION public.log_team_activity();
+CREATE TRIGGER trg_rental_guarantees_activity_log AFTER INSERT OR DELETE OR UPDATE ON public.rental_guarantees FOR EACH ROW EXECUTE FUNCTION public.log_team_activity();
+CREATE TRIGGER trg_rental_guarantees_touch_updated_at BEFORE UPDATE ON public.rental_guarantees FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+CREATE TRIGGER rental_inspections_touch_updated_at BEFORE UPDATE ON public.rental_inspections FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+CREATE TRIGGER trg_rental_inspections_activity_log AFTER INSERT OR DELETE OR UPDATE ON public.rental_inspections FOR EACH ROW EXECUTE FUNCTION public.log_team_activity();
+CREATE TRIGGER rental_maintenance_touch_updated_at BEFORE UPDATE ON public.rental_maintenance FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+CREATE TRIGGER trg_rental_maintenance_activity_log AFTER INSERT OR DELETE OR UPDATE ON public.rental_maintenance FOR EACH ROW EXECUTE FUNCTION public.log_team_activity();
+CREATE TRIGGER rental_payments_business_rules BEFORE INSERT OR UPDATE ON public.rental_payments FOR EACH ROW EXECUTE FUNCTION public.apply_rental_payment_rules();
+CREATE TRIGGER rental_payments_touch_updated_at BEFORE UPDATE ON public.rental_payments FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+CREATE TRIGGER trg_rental_payments_activity_log AFTER INSERT OR DELETE OR UPDATE ON public.rental_payments FOR EACH ROW EXECUTE FUNCTION public.log_team_activity();
+CREATE TRIGGER trg_rental_processes_activity_log AFTER INSERT OR DELETE OR UPDATE ON public.rental_processes FOR EACH ROW EXECUTE FUNCTION public.log_team_activity();
+CREATE TRIGGER trg_rental_processes_touch_updated_at BEFORE UPDATE ON public.rental_processes FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+CREATE TRIGGER trg_rental_tenants_activity_log AFTER INSERT OR DELETE OR UPDATE ON public.rental_tenants FOR EACH ROW EXECUTE FUNCTION public.log_team_activity();
+CREATE TRIGGER trg_rental_tenants_touch_updated_at BEFORE UPDATE ON public.rental_tenants FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+CREATE TRIGGER trg_rental_transfers_activity_log AFTER INSERT OR DELETE OR UPDATE ON public.rental_transfers FOR EACH ROW EXECUTE FUNCTION public.log_team_activity();
+CREATE TRIGGER trg_rental_transfers_touch_updated_at BEFORE UPDATE ON public.rental_transfers FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();;
