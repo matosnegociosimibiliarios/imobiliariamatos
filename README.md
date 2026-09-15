@@ -459,3 +459,4 @@ A opção "Novo Imóvel" foi retirada do menu lateral. O cadastro passa a ser in
 O botão de assinatura já está reservado no menu, mas o checkout ainda não está conectado, pois planos/preços/meio de pagamento serão definidos na fase comercial/SaaS.
 
 Esta versão não exige SQL novo. O arquivo `SUPABASE_V10_14_3_FIX.sql` foi mantido apenas para histórico/continuidade da versão anterior.
+Ambiente de desenvolvimento configurado.
