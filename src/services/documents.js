@@ -20,9 +20,6 @@ export const DOCUMENT_CATEGORY_LABELS = {
   finance: 'Financeiro',
   personal: 'Documento pessoal',
   proof: 'Comprovante',
-  tenant: 'Locatário',
-  rental: 'Locação',
-  inspection: 'Vistoria',
   other: 'Outro',
 };
 
@@ -33,7 +30,6 @@ export const DOCUMENT_CONTEXT_LABELS = {
   capture: 'Captação',
   proposal: 'Proposta',
   deal: 'Negócio fechado',
-  rental: 'Locação',
 };
 
 const CONTEXT_COLUMN = {
@@ -42,14 +38,12 @@ const CONTEXT_COLUMN = {
   capture: 'capture_id',
   proposal: 'proposal_id',
   deal: 'deal_id',
-  rental: 'rental_contract_id',
 };
 
 const CHECKLIST_COLUMN = {
   property: 'property_document_id',
   capture: 'capture_document_id',
   deal: 'deal_document_id',
-  rental: 'rental_document_id',
 };
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
@@ -90,7 +84,6 @@ function contextPayload(contextType, contextId) {
     capture_id: null,
     proposal_id: null,
     deal_id: null,
-    rental_contract_id: null,
   };
 
   const column = CONTEXT_COLUMN[contextType];
@@ -103,7 +96,6 @@ function checklistPayload(contextType, checklistId) {
     property_document_id: null,
     capture_document_id: null,
     deal_document_id: null,
-    rental_document_id: null,
   };
 
   const column = CHECKLIST_COLUMN[contextType];
@@ -183,8 +175,7 @@ export async function getDocuments(options = {}) {
       lead:leads(id,name,whatsapp,email),
       capture:owner_captures(id,owner_name,whatsapp,city_name,property_type),
       proposal:proposals(id,code,status,lead_id,property_id),
-      deal:deals(id,code,status,lead_id,property_id),
-      rental:rental_contracts(id,code,status,tenant_name,property_id)
+      deal:deals(id,code,status,lead_id,property_id)
     `)
     .order('created_at', { ascending: false });
 
@@ -238,16 +229,15 @@ export async function downloadCrmDocument(document) {
 }
 
 export async function getDocumentTargets() {
-  const [properties, leads, captures, proposals, deals, rentals] = await Promise.all([
+  const [properties, leads, captures, proposals, deals] = await Promise.all([
     supabase.from('properties').select('id,code,title').is('deleted_at', null).order('created_at', { ascending: false }),
     supabase.from('leads').select('id,name,whatsapp,email').order('created_at', { ascending: false }).limit(500),
     supabase.from('owner_captures').select('id,owner_name,city_name,property_type').order('created_at', { ascending: false }).limit(500),
     supabase.from('proposals').select('id,code,status,lead:leads(name),property:properties(code,title)').order('created_at', { ascending: false }).limit(500),
     supabase.from('deals').select('id,code,status,lead:leads(name),property:properties(code,title)').order('created_at', { ascending: false }).limit(500),
-    supabase.from('rental_contracts').select('id,code,status,tenant_name,property:properties(code,title)').order('created_at', { ascending: false }).limit(500),
   ]);
 
-  const error = properties.error || leads.error || captures.error || proposals.error || deals.error || rentals.error;
+  const error = properties.error || leads.error || captures.error || proposals.error || deals.error;
   if (error) return { data: null, error };
 
   return {
@@ -265,10 +255,6 @@ export async function getDocumentTargets() {
       deal: (deals.data || []).map((item) => ({
         id: item.id,
         label: `${item.code} — ${item.lead?.name || 'Cliente'}${item.property ? ` — ${item.property.code}` : ''}`,
-      })),
-      rental: (rentals.data || []).map((item) => ({
-        id: item.id,
-        label: `${item.code} — ${item.tenant_name || 'Locatário'}${item.property ? ` — ${item.property.code}` : ''}`,
       })),
     },
     error: null,
@@ -303,20 +289,11 @@ export async function getContextChecklist(contextType, contextId) {
       .order('display_order');
   }
 
-  if (contextType === 'rental') {
-    return supabase
-      .from('rental_documents')
-      .select('id,label,status,party,doc_key,display_order')
-      .eq('contract_id', contextId)
-      .order('party')
-      .order('display_order');
-  }
-
   return { data: [], error: null };
 }
 
 export async function getChecklistPendencies() {
-  const [properties, captures, deals, rentals] = await Promise.all([
+  const [properties, captures, deals] = await Promise.all([
     supabase
       .from('property_documents')
       .select('id,label,status,property_id,property:properties(id,code,title)')
@@ -332,14 +309,9 @@ export async function getChecklistPendencies() {
       .select('id,label,status,party,deal_id,deal:deals(id,code,lead:leads(name),property:properties(code,title))')
       .eq('status', 'pending')
       .limit(300),
-    supabase
-      .from('rental_documents')
-      .select('id,label,status,party,contract_id,rental:rental_contracts(id,code,tenant_name)')
-      .eq('status', 'pending')
-      .limit(300),
   ]);
 
-  const error = properties.error || captures.error || deals.error || rentals.error;
+  const error = properties.error || captures.error || deals.error;
   if (error) return { data: [], error };
 
   const data = [
@@ -367,14 +339,6 @@ export async function getChecklistPendencies() {
       context_label: item.deal ? `${item.deal.code} — ${item.deal.lead?.name || 'Cliente'}` : 'Negócio',
       href: `/admin/negocios/${item.deal_id}`,
     })),
-    ...(rentals.data || []).map((item) => ({
-      id: `rental-${item.id}`,
-      kind: 'rental',
-      context_id: item.contract_id,
-      label: item.label,
-      context_label: item.rental ? `${item.rental.code} — ${item.rental.tenant_name || 'Locatário'}` : 'Locação',
-      href: `/admin/locacoes/${item.contract_id}`,
-    })),
   ];
 
   return { data, error: null };
@@ -394,8 +358,7 @@ export async function getDocumentAlerts(daysAhead = 30) {
       lead:leads(id,name),
       capture:owner_captures(id,owner_name),
       proposal:proposals(id,code),
-      deal:deals(id,code),
-      rental:rental_contracts(id,code,tenant_name)
+      deal:deals(id,code)
     `)
     .or(`expires_at.lte.${future.toISOString().slice(0, 10)},status.eq.rejected`)
     .order('expires_at', { ascending: true, nullsFirst: false });
@@ -445,9 +408,6 @@ export function documentContext(document) {
   }
   if (document.deal_id) {
     return { type: 'deal', label: document.deal?.code || 'Negócio fechado', href: `/admin/negocios/${document.deal_id}` };
-  }
-  if (document.rental_contract_id) {
-    return { type: 'rental', label: document.rental ? `${document.rental.code} — ${document.rental.tenant_name || 'Locatário'}` : 'Locação', href: `/admin/locacoes/${document.rental_contract_id}` };
   }
   return { type: 'general', label: 'Arquivo geral', href: '/admin/documentos' };
 }

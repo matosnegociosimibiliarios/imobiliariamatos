@@ -39,9 +39,6 @@ import AdminManagement from './pages/admin/AdminManagement';
 import AdminReports from './pages/admin/AdminReports';
 import AdminHealth from './pages/admin/AdminHealth';
 import AdminTeam from './pages/admin/AdminTeam';
-import AdminRentals from './pages/admin/AdminRentals';
-import AdminRentalForm from './pages/admin/AdminRentalForm';
-import AdminRentalDetail from './pages/admin/AdminRentalDetail';
 
 export default function App() {
   return (
@@ -90,10 +87,6 @@ export default function App() {
           <Route path="/admin/agendamentos" element={<PermissionRoute permission="appointments.view"><AdminAppointments /></PermissionRoute>} />
           <Route path="/admin/captacoes" element={<PermissionRoute permission="captures.view"><AdminCaptures /></PermissionRoute>} />
           <Route path="/admin/captacoes/:id" element={<PermissionRoute permission="captures.view"><AdminCaptureDetail /></PermissionRoute>} />
-          <Route path="/admin/locacoes" element={<PermissionRoute permission="rentals.view"><AdminRentals /></PermissionRoute>} />
-          <Route path="/admin/locacoes/nova" element={<PermissionRoute permission="rentals.manage"><AdminRentalForm /></PermissionRoute>} />
-          <Route path="/admin/locacoes/:id" element={<PermissionRoute permission="rentals.view"><AdminRentalDetail /></PermissionRoute>} />
-          <Route path="/admin/locacoes/:id/editar" element={<PermissionRoute permission="rentals.manage"><AdminRentalForm /></PermissionRoute>} />
           <Route path="/admin/equipe" element={<PermissionRoute permission="team.view"><AdminTeam /></PermissionRoute>} />
           <Route path="/admin/integracoes" element={<PermissionRoute permission="integrations.manage"><AdminIntegrations /></PermissionRoute>} />
           <Route path="/admin/mensagens" element={<PermissionRoute permission="messages.view"><AdminInstagramInbox /></PermissionRoute>} />

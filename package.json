@@ -1,7 +1,7 @@
 {
   "name": "matos-negocios-imobiliarios",
   "private": true,
-  "version": "0.10.15.0",
+  "version": "0.10.14.4",
   "type": "module",
   "scripts": {
     "dev": "vite",

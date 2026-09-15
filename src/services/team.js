@@ -44,8 +44,6 @@ export const PERMISSION_CATALOG = [
   { key: 'deals.view', label: 'Ver negócios fechados', group: 'Comercial' },
   { key: 'deals.manage', label: 'Editar negócios fechados', group: 'Comercial' },
   { key: 'financial.view', label: 'Ver comissões e valores financeiros', group: 'Financeiro' },
-  { key: 'rentals.view', label: 'Ver locações', group: 'Locações' },
-  { key: 'rentals.manage', label: 'Gerenciar contratos, cobranças e vistorias', group: 'Locações' },
   { key: 'documents.view', label: 'Ver documentos', group: 'Documentos' },
   { key: 'documents.manage', label: 'Enviar e editar documentos', group: 'Documentos' },
   { key: 'messages.view', label: 'Ver mensagens', group: 'Atendimento' },
@@ -129,7 +127,7 @@ export async function getRecentTeamActivity(limit = 80) {
 }
 
 export async function assignRecord(table, id, userId) {
-  const allowed = new Set(['leads', 'properties', 'appointments', 'owner_captures', 'proposals', 'deals', 'rental_contracts']);
+  const allowed = new Set(['leads', 'properties', 'appointments', 'owner_captures', 'proposals', 'deals']);
   if (!allowed.has(table)) throw new Error('Tipo de registro inválido.');
 
   return supabase

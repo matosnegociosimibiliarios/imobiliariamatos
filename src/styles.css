@@ -5096,142 +5096,34 @@ button, input, select { font: inherit; }
   .responsible-select.compact { min-width: 0; width: 100%; }
 }
 
-/* =========================================================
-   V10.15 - GESTÃO DE LOCAÇÕES
-   ========================================================= */
-.rental-metrics-grid,
-.rental-detail-metrics {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 18px;
+/* V10.14.4 — menu administrativo separado por áreas */
+.admin-nav-grouped {
+  display: block;
 }
-.rental-metrics-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
-.rental-metrics-grid article,
-.rental-detail-metrics article {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-  padding: 16px;
-  border: 1px solid #dce4de;
-  border-radius: 14px;
-  background: #fff;
-}
-.rental-metrics-grid article.attention,
-.rental-detail-metrics article.attention { border-color: #efd0c8; background: #fff8f6; }
-.rental-metrics-grid span,
-.rental-detail-metrics span { color: #66736b; font-size: 12px; }
-.rental-metrics-grid strong,
-.rental-detail-metrics strong { font-size: 20px; overflow-wrap: anywhere; }
-.rental-metrics-grid small { color: #8b4c3d; }
-.rental-filters { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 12px; }
-.rental-filters input,
-.rental-filters select,
-.rental-form input,
-.rental-form select,
-.rental-form textarea,
-.rental-detail-page input,
-.rental-detail-page select,
-.rental-detail-page textarea {
-  width: 100%;
-  padding: 10px 11px;
-  border: 1px solid #d6ddd8;
-  border-radius: 9px;
-  background: #fff;
-  color: #172019;
-  font: inherit;
-}
-.rental-form label,
-.rental-detail-page label { display: grid; gap: 6px; font-size: 12px; font-weight: 800; color: #4c5a51; }
-.rental-contract-list { display: grid; gap: 12px; }
-.rental-contract-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 18px;
-  align-items: center;
-  padding: 18px;
-  border: 1px solid #dde5df;
-  border-radius: 14px;
-  color: inherit;
-  text-decoration: none;
-  background: #fff;
-}
-.rental-contract-card:hover { border-color: #a9bbae; box-shadow: 0 8px 24px rgba(28,61,40,.06); }
-.rental-contract-card h3 { margin: 7px 0 4px; }
-.rental-contract-card p { margin: 0 0 4px; color: #4f5e54; }
-.rental-contract-card small { color: #7b877f; }
-.rental-contract-topline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.rental-contract-side { display: grid; justify-items: end; gap: 5px; text-align: right; }
-.rental-contract-side strong { font-size: 20px; }
-.rental-contract-side span { color: #59665d; font-size: 13px; }
-.rental-status,
-.rental-payment-status {
-  display: inline-flex;
-  width: fit-content;
-  padding: 5px 9px;
-  border-radius: 999px;
-  background: #eef3ef;
-  color: #33523d;
-  font-size: 11px;
-  font-weight: 900;
-}
-.rental-status.active, .rental-payment-status.paid { background: #e3f4e7; color: #1c6330; }
-.rental-status.awaiting_signature, .rental-status.ending, .rental-payment-status.pending { background: #fff3d9; color: #7b5d14; }
-.rental-status.cancelled, .rental-payment-status.overdue { background: #fee8e4; color: #9b3328; }
-.rental-payment-status.partial { background: #f0ebff; color: #5f46a0; }
-.rental-payment-status.waived { background: #edf0ee; color: #68736c; }
-.rental-overview-grid,
-.rental-parties-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; }
-.rental-overview-grid h2,
-.rental-parties-grid h2 { margin-top: 0; }
-.rental-summary-list { display: grid; gap: 0; margin: 0; }
-.rental-summary-list > div { display: grid; grid-template-columns: 150px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid #e8ece9; }
-.rental-summary-list > div:first-child { border-top: 0; }
-.rental-summary-list dt { color: #707c73; }
-.rental-summary-list dd { margin: 0; font-weight: 700; }
-.rental-payment-table-wrap { width: 100%; overflow-x: auto; }
-.rental-table { width: 100%; min-width: 980px; border-collapse: collapse; }
-.rental-table th,
-.rental-table td { padding: 11px 9px; border-top: 1px solid #e7ece8; text-align: left; vertical-align: middle; font-size: 13px; }
-.rental-table th { color: #59675e; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
-.rental-inline-form { display: grid; grid-template-columns: 150px 220px minmax(0,1fr) auto; gap: 10px; margin-bottom: 14px; }
-.rental-maintenance-form { display: grid; grid-template-columns: 1.4fr .7fr 1fr 1fr .8fr; gap: 10px; margin-bottom: 14px; }
-.rental-maintenance-form textarea { grid-column: 1 / -2; }
-.rental-simple-list { display: grid; gap: 9px; }
-.rental-simple-list article { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 13px 0; border-top: 1px solid #e7ece8; }
-.rental-simple-list article > div { display: grid; gap: 3px; }
-.rental-simple-list span,
-.rental-simple-list small { color: #67746c; }
-.rental-checklist { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
-.rental-checklist article { display: grid; grid-template-columns: minmax(0,1fr) 170px; gap: 10px; align-items: center; padding: 12px; border: 1px solid #e0e7e2; border-radius: 11px; background: #fbfcfb; }
-.rental-checklist article > div { display: grid; gap: 3px; }
-.rental-checklist small { color: #77837b; }
-.rental-history { display: grid; }
-.rental-history > div { display: flex; justify-content: space-between; gap: 14px; padding: 11px 0; border-top: 1px solid #e7ece8; }
-.rental-history > div:first-child { border-top: 0; }
-.rental-history span { color: #77837b; }
-.form-submit-row { display: flex; justify-content: flex-end; margin: 18px 0 34px; }
 
-@media (max-width: 1200px) {
-  .rental-metrics-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
-  .rental-detail-metrics { grid-template-columns: repeat(3,minmax(0,1fr)); }
-  .rental-maintenance-form { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .rental-maintenance-form textarea { grid-column: 1 / -1; }
+.admin-nav-group {
+  margin: 0 0 14px;
 }
-@media (max-width: 760px) {
-  .rental-metrics-grid,
-  .rental-detail-metrics,
-  .rental-filters,
-  .rental-overview-grid,
-  .rental-parties-grid,
-  .rental-checklist,
-  .rental-inline-form,
-  .rental-maintenance-form { grid-template-columns: 1fr; }
-  .rental-contract-card { grid-template-columns: 1fr; }
-  .rental-contract-side { justify-items: start; text-align: left; }
-  .rental-checklist article { grid-template-columns: 1fr; }
-  .rental-simple-list article,
-  .rental-history > div { align-items: stretch; flex-direction: column; }
-  .rental-summary-list > div { grid-template-columns: 1fr; gap: 2px; }
-  .rental-maintenance-form textarea { grid-column: auto; }
+
+.admin-nav-group + .admin-nav-group {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.admin-nav-group-label {
+  padding: 0 14px 7px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.admin-nav-group-items {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-nav-group-items > a {
+  margin: 0;
 }

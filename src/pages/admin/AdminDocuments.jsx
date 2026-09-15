@@ -28,7 +28,7 @@ const EMPTY_FORM = {
 
 export default function AdminDocuments() {
   const [documents, setDocuments] = useState([]);
-  const [targets, setTargets] = useState({ property: [], lead: [], capture: [], proposal: [], deal: [], rental: [] });
+  const [targets, setTargets] = useState({ property: [], lead: [], capture: [], proposal: [], deal: [] });
   const [pendencies, setPendencies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -51,7 +51,7 @@ export default function AdminDocuments() {
     }
 
     setDocuments(docsResult.data || []);
-    setTargets(targetsResult.data || { property: [], lead: [], capture: [], proposal: [], deal: [], rental: [] });
+    setTargets(targetsResult.data || { property: [], lead: [], capture: [], proposal: [], deal: [] });
     setPendencies(pendenciesResult.data || []);
     setLoading(false);
   }
@@ -185,7 +185,7 @@ export default function AdminDocuments() {
         <div>
           <span className="eyebrow">Arquivo digital</span>
           <h1>Central de documentos</h1>
-          <p>Guarde documentos de imóveis, clientes, proprietários, propostas, negócios e locações em um único lugar.</p>
+          <p>Guarde documentos do imóvel, clientes, proprietários, propostas e negócios em um único lugar.</p>
         </div>
       </div>
 
@@ -253,7 +253,7 @@ export default function AdminDocuments() {
           <div><span className="eyebrow">Pendências</span><h2>Documentos ainda faltando</h2></div>
           <span className="document-count-pill">{pendencies.length}</span>
         </div>
-        <p className="routine-section-help">Itens dos checklists de captação, imóvel, fechamento e locação que ainda estão marcados como pendentes.</p>
+        <p className="routine-section-help">Itens dos checklists de captação, imóvel e fechamento que ainda estão marcados como pendentes.</p>
         <div className="document-missing-grid">
           {pendencies.length === 0 ? <p>Nenhum item de checklist está pendente.</p> : pendencies.slice(0, 24).map((item) => (
             <Link to={item.href} key={item.id}>

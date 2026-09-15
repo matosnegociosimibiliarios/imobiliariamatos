@@ -4,25 +4,49 @@ import { signOut } from '../services/auth';
 import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/admin';
 import { ROLE_LABELS, can, getAccessContext } from '../services/team';
 
-const NAV_ITEMS = [
-  { to: '/admin', end: true, label: 'Visão geral', permission: 'dashboard.view' },
-  { to: '/admin/gestao', label: 'Painel gerencial', permission: 'management.view' },
-  { to: '/admin/relatorios', label: 'Relatórios', permission: 'reports.view' },
-  { to: '/admin/imoveis', label: 'Imóveis', permission: 'properties.view' },
-  { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', badge: 'instagram' },
-  { to: '/admin/whatsapp', label: 'Mensagens WhatsApp', permission: 'messages.view', badge: 'whatsapp' },
-  { to: '/admin/leads', label: 'Funil de clientes', permission: 'leads.view' },
-  { to: '/admin/propostas', label: 'Propostas', permission: 'proposals.view' },
-  { to: '/admin/negocios', label: 'Negócios fechados', permission: 'deals.view' },
-  { to: '/admin/locacoes', label: 'Locações', permission: 'rentals.view' },
-  { to: '/admin/documentos', label: 'Documentos', permission: 'documents.view' },
-  { to: '/admin/acoes', label: 'Rotina de hoje', permission: 'leads.view' },
-  { to: '/admin/agendamentos', label: 'Agendamentos', permission: 'appointments.view' },
-  { to: '/admin/captacoes', label: 'Captações', permission: 'captures.view' },
-  { to: '/admin/equipe', label: 'Equipe e permissões', permission: 'team.view' },
-  { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage' },
-  { to: '/admin/saude', label: 'Saúde do sistema', permission: 'health.view' },
-  { to: '/admin/imoveis/novo', label: 'Novo imóvel', permission: 'properties.manage' },
+const NAV_GROUPS = [
+  {
+    label: 'Visão e gestão',
+    items: [
+      { to: '/admin', end: true, label: 'Visão geral', permission: 'dashboard.view' },
+      { to: '/admin/gestao', label: 'Painel gerencial', permission: 'management.view' },
+      { to: '/admin/relatorios', label: 'Relatórios', permission: 'reports.view' },
+    ],
+  },
+  {
+    label: 'Atendimento',
+    items: [
+      { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', badge: 'instagram' },
+      { to: '/admin/whatsapp', label: 'Mensagens WhatsApp', permission: 'messages.view', badge: 'whatsapp' },
+      { to: '/admin/acoes', label: 'Rotina de hoje', permission: 'leads.view' },
+      { to: '/admin/agendamentos', label: 'Agendamentos', permission: 'appointments.view' },
+    ],
+  },
+  {
+    label: 'Comercial',
+    items: [
+      { to: '/admin/leads', label: 'Funil de clientes', permission: 'leads.view' },
+      { to: '/admin/propostas', label: 'Propostas', permission: 'proposals.view' },
+      { to: '/admin/negocios', label: 'Negócios fechados', permission: 'deals.view' },
+    ],
+  },
+  {
+    label: 'Imóveis e captações',
+    items: [
+      { to: '/admin/imoveis', label: 'Imóveis', permission: 'properties.view' },
+      { to: '/admin/imoveis/novo', label: 'Novo imóvel', permission: 'properties.manage' },
+      { to: '/admin/captacoes', label: 'Captações', permission: 'captures.view' },
+      { to: '/admin/documentos', label: 'Documentos', permission: 'documents.view' },
+    ],
+  },
+  {
+    label: 'Administração',
+    items: [
+      { to: '/admin/equipe', label: 'Equipe e permissões', permission: 'team.view' },
+      { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage' },
+      { to: '/admin/saude', label: 'Saúde do sistema', permission: 'health.view' },
+    ],
+  },
 ];
 
 export default function AdminLayout() {
@@ -79,8 +103,13 @@ export default function AdminLayout() {
     navigate('/login', { replace: true });
   }
 
-  const visibleNav = useMemo(
-    () => NAV_ITEMS.filter((item) => access && can(access, item.permission)),
+  const visibleGroups = useMemo(
+    () => NAV_GROUPS
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => access && can(access, item.permission)),
+      }))
+      .filter((group) => group.items.length > 0),
     [access]
   );
 
@@ -101,17 +130,24 @@ export default function AdminLayout() {
           </div>
         </div>
 
-        <nav className="admin-nav">
-          {visibleNav.map((item) => (
-            <NavLink
-              key={item.to}
-              end={item.end}
-              to={item.to}
-              className={item.badge ? 'admin-nav-with-badge' : undefined}
-            >
-              <span>{item.label}</span>
-              {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
-            </NavLink>
+        <nav className="admin-nav admin-nav-grouped">
+          {visibleGroups.map((group) => (
+            <section className="admin-nav-group" key={group.label}>
+              <div className="admin-nav-group-label">{group.label}</div>
+              <div className="admin-nav-group-items">
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    end={item.end}
+                    to={item.to}
+                    className={item.badge ? 'admin-nav-with-badge' : undefined}
+                  >
+                    <span>{item.label}</span>
+                    {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
+                  </NavLink>
+                ))}
+              </div>
+            </section>
           ))}
         </nav>
 
