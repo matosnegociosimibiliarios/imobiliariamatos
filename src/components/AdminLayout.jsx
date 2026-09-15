@@ -4,47 +4,43 @@ import { signOut } from '../services/auth';
 import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/admin';
 import { ROLE_LABELS, can, getAccessContext } from '../services/team';
 
-const NAV_GROUPS = [
+const NAV_SECTIONS = [
   {
-    label: 'Visão e gestão',
+    title: 'Visão Geral',
     items: [
-      { to: '/admin', end: true, label: 'Visão geral', permission: 'dashboard.view' },
-      { to: '/admin/gestao', label: 'Painel gerencial', permission: 'management.view' },
+      { to: '/admin/gestao', label: 'Metas', permission: 'management.view' },
       { to: '/admin/relatorios', label: 'Relatórios', permission: 'reports.view' },
-    ],
-  },
-  {
-    label: 'Atendimento',
-    items: [
-      { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', badge: 'instagram' },
-      { to: '/admin/whatsapp', label: 'Mensagens WhatsApp', permission: 'messages.view', badge: 'whatsapp' },
-      { to: '/admin/acoes', label: 'Rotina de hoje', permission: 'leads.view' },
-      { to: '/admin/agendamentos', label: 'Agendamentos', permission: 'appointments.view' },
-    ],
-  },
-  {
-    label: 'Comercial',
-    items: [
-      { to: '/admin/leads', label: 'Funil de clientes', permission: 'leads.view' },
+      { to: '/admin/leads', label: 'Funil de Clientes', permission: 'leads.view' },
       { to: '/admin/propostas', label: 'Propostas', permission: 'proposals.view' },
-      { to: '/admin/negocios', label: 'Negócios fechados', permission: 'deals.view' },
+      { to: '/admin/negocios', label: 'Negócios Fechados', permission: 'deals.view' },
     ],
   },
   {
-    label: 'Imóveis e captações',
+    title: 'Comercial',
     items: [
+      { to: '/admin/acoes', label: 'Rotina de Hoje', permission: 'leads.view' },
+      { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', badge: 'instagram' },
+      { to: '/admin/whatsapp', label: 'WhatsApp', permission: 'messages.view', badge: 'whatsapp' },
+      { to: '/admin/agendamentos', label: 'Agendamentos', permission: 'appointments.view' },
       { to: '/admin/imoveis', label: 'Imóveis', permission: 'properties.view' },
-      { to: '/admin/imoveis/novo', label: 'Novo imóvel', permission: 'properties.manage' },
-      { to: '/admin/captacoes', label: 'Captações', permission: 'captures.view' },
+      { to: '/admin/captacoes', label: 'Captação', permission: 'captures.view' },
       { to: '/admin/documentos', label: 'Documentos', permission: 'documents.view' },
     ],
   },
   {
-    label: 'Administração',
+    title: 'Locação',
+    comingSoon: true,
+  },
+  {
+    title: 'Financeiro',
+    comingSoon: true,
+  },
+  {
+    title: 'Administração',
     items: [
-      { to: '/admin/equipe', label: 'Equipe e permissões', permission: 'team.view' },
+      { to: '/admin/equipe', label: 'Equipe e Permissões', permission: 'team.view' },
       { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage' },
-      { to: '/admin/saude', label: 'Saúde do sistema', permission: 'health.view' },
+      { to: '/admin/saude', label: 'Saúde do Sistema', permission: 'health.view' },
     ],
   },
 ];
@@ -103,15 +99,20 @@ export default function AdminLayout() {
     navigate('/login', { replace: true });
   }
 
-  const visibleGroups = useMemo(
-    () => NAV_GROUPS
-      .map((group) => ({
-        ...group,
-        items: group.items.filter((item) => access && can(access, item.permission)),
-      }))
-      .filter((group) => group.items.length > 0),
-    [access]
-  );
+  function handleSubscription() {
+    window.alert('A assinatura da versão paga será habilitada na fase comercial do CRM. O botão já está reservado no menu para essa etapa.');
+  }
+
+  const visibleSections = useMemo(() => {
+    if (!access) return [];
+    return NAV_SECTIONS.map((section) => {
+      if (section.comingSoon) return section;
+      return {
+        ...section,
+        items: (section.items || []).filter((item) => can(access, item.permission)),
+      };
+    }).filter((section) => section.comingSoon || (section.items || []).length > 0);
+  }, [access]);
 
   function badgeValue(type) {
     const value = type === 'instagram' ? unreadInstagram : type === 'whatsapp' ? unreadWhatsApp : 0;
@@ -130,23 +131,27 @@ export default function AdminLayout() {
           </div>
         </div>
 
-        <nav className="admin-nav admin-nav-grouped">
-          {visibleGroups.map((group) => (
-            <section className="admin-nav-group" key={group.label}>
-              <div className="admin-nav-group-label">{group.label}</div>
-              <div className="admin-nav-group-items">
-                {group.items.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    end={item.end}
-                    to={item.to}
-                    className={item.badge ? 'admin-nav-with-badge' : undefined}
-                  >
-                    <span>{item.label}</span>
-                    {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
-                  </NavLink>
-                ))}
-              </div>
+        <nav className="admin-nav" aria-label="Menu administrativo">
+          {visibleSections.map((section) => (
+            <section className="admin-nav-section" key={section.title}>
+              <h2 className="admin-nav-section-title">{section.title}</h2>
+              {section.comingSoon ? (
+                <div className="admin-nav-placeholder" aria-disabled="true">Área em breve</div>
+              ) : (
+                <div className="admin-nav-section-items">
+                  {section.items.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      end={item.end}
+                      to={item.to}
+                      className={item.badge ? 'admin-nav-with-badge' : undefined}
+                    >
+                      <span>{item.label}</span>
+                      {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
             </section>
           ))}
         </nav>
@@ -158,7 +163,10 @@ export default function AdminLayout() {
               <small>{ROLE_LABELS[access.role] || access.role}</small>
             </div>
           )}
-          <a href="/" target="_blank" rel="noreferrer">Ver site público</a>
+          <a href="/" target="_blank" rel="noreferrer">Ver Site Público</a>
+          <button type="button" className="admin-subscription-button" onClick={handleSubscription}>
+            Assinar versão paga
+          </button>
           <button type="button" onClick={handleLogout}>Sair</button>
         </div>
       </aside>

@@ -92,7 +92,7 @@ export default function AdminProperties() {
           <h1>Gestão dos imóveis</h1>
           <p>Proprietário, documentação, desempenho, prazo em carteira e alertas em um só lugar.</p>
         </div>
-        <Link className="button" to="/admin/imoveis/novo">Novo imóvel</Link>
+        <Link className="button" to="/admin/imoveis/novo">+ Novo Imóvel</Link>
       </div>
 
       {message && <div className="admin-message">{message}</div>}

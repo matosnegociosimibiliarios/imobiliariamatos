@@ -5096,34 +5096,68 @@ button, input, select { font: inherit; }
   .responsible-select.compact { min-width: 0; width: 100%; }
 }
 
-/* V10.14.4 — menu administrativo separado por áreas */
-.admin-nav-grouped {
-  display: block;
+/* =========================================================
+   V11.0 - MENU ADMINISTRATIVO DEFINITIVO
+   ========================================================= */
+.admin-nav-section {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 16px;
 }
 
-.admin-nav-group {
-  margin: 0 0 14px;
+.admin-nav-section:last-child {
+  margin-bottom: 4px;
 }
 
-.admin-nav-group + .admin-nav-group {
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
-}
-
-.admin-nav-group-label {
-  padding: 0 14px 7px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+.admin-nav-section-title {
+  margin: 0;
+  padding: 0 10px 4px;
+  color: #8fa096;
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: .08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.52);
 }
 
-.admin-nav-group-items {
+.admin-nav-section-items {
   display: grid;
   gap: 4px;
 }
 
-.admin-nav-group-items > a {
-  margin: 0;
+.admin-nav-section .admin-nav-section-items a {
+  padding: 10px 12px;
+}
+
+.admin-nav-placeholder {
+  margin: 0 6px;
+  padding: 9px 10px;
+  border: 1px dashed #324137;
+  border-radius: 9px;
+  color: #6f7e75;
+  font-size: 12px;
+  cursor: default;
+  user-select: none;
+}
+
+.admin-sidebar-bottom .admin-subscription-button {
+  border-color: #4f745c;
+  background: #1d3b27;
+  color: #f2fff5;
+  font-weight: 800;
+}
+
+.admin-sidebar-bottom .admin-subscription-button:hover {
+  background: #285237;
+  border-color: #668d70;
+}
+
+@media (max-width: 800px) {
+  .admin-nav-section {
+    margin-bottom: 12px;
+  }
+
+  .admin-nav-section-title {
+    padding-left: 4px;
+  }
 }

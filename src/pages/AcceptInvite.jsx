@@ -51,7 +51,7 @@ export default function AcceptInvite() {
       return;
     }
     setMessage('Senha criada. Abrindo o CRM...');
-    window.setTimeout(() => navigate('/admin', { replace: true }), 700);
+    window.setTimeout(() => navigate('/admin/gestao', { replace: true }), 700);
   }
 
   if (loading) return <div className="admin-loading">Validando convite...</div>;

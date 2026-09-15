@@ -20,7 +20,7 @@ export default function Login() {
   }, []);
 
   if (alreadyLogged) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/admin/gestao" replace />;
   }
 
   async function handleSubmit(event) {
@@ -36,7 +36,7 @@ export default function Login() {
       return;
     }
 
-    const target = location.state?.from || '/admin';
+    const target = location.state?.from || '/admin/gestao';
     navigate(target, { replace: true });
   }
 
