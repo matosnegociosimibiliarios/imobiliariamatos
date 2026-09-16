@@ -1,3 +1,4 @@
+import AdminRentalHub from "./pages/admin/AdminRentalHub";
 import AdminRentalInterests from "./pages/admin/AdminRentalInterests";
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
@@ -100,7 +101,7 @@ export default function App() {
   path="/admin/locacoes/interessados"
   element={
     <PermissionRoute permission="properties.view">
-      <AdminRentalInterests />
+      <AdminRentalHub />
     </PermissionRoute>
   }
 />
