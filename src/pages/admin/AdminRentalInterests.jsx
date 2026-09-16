@@ -181,13 +181,12 @@ export default function AdminRentalInterests() {
           <p>Pessoas interessadas em alugar imóveis.</p>
         </div>
 
-        <button
-          className="button"
-          type="button"
-          onClick={openNew}
-        >
-          + Novo interessado
-        </button>
+        <a
+  className="button"
+  href="#novo-interessado"
+>
+  + Novo interessado
+</a>
       </div>
 
       <section className="admin-panel">
@@ -301,9 +300,13 @@ export default function AdminRentalInterests() {
         )}
       </section>
 
-      {showForm && (
-  <section
-    id="rental-interest-form"
+      <section
+  id="novo-interessado"
+  className="admin-panel"
+  style={{
+    marginTop: 20,
+  }}
+>
     className="admin-panel"
     style={{
       marginTop: 20,
@@ -464,7 +467,4 @@ export default function AdminRentalInterests() {
             </div>
           </form>
         </section>
-      )}
-    </div>
-  );
-}
+    
