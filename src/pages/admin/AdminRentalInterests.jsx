@@ -76,12 +76,21 @@ export default function AdminRentalInterests() {
     );
   }, [items, search]);
 
-  function openNew() {
-    setEditingId(null);
-    setForm(emptyForm);
-    setMessage("");
-    setShowForm(true);
-  }
+ function openNew() {
+  setEditingId(null);
+  setForm(emptyForm);
+  setMessage("");
+  setShowForm(true);
+
+  setTimeout(() => {
+    document
+      .getElementById("rental-interest-form")
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+  }, 100);
+}
 
   function openEdit(item) {
     setEditingId(item.id);
@@ -98,7 +107,14 @@ export default function AdminRentalInterests() {
 
     setMessage("");
     setShowForm(true);
-  }
+  }setTimeout(() => {
+  document
+    .getElementById("rental-interest-form")
+    ?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+}, 100);
 
   function closeForm() {
     setShowForm(false);
@@ -286,10 +302,9 @@ export default function AdminRentalInterests() {
       </section>
 
       {showForm && (
-        <section
-          className="admin-panel"
-          style={{
-            marginTop: 20,
+  <section
+    id="rental-interest-form"
+    className="admin-panel"
           }}
         >
           <div className="panel-title-row">
