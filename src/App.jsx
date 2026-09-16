@@ -1,3 +1,4 @@
+import AdminRentalInterests from "./pages/admin/AdminRentalInterests";
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import PublicLayout from './components/PublicLayout';
@@ -95,6 +96,14 @@ export default function App() {
           <Route path="/admin/imoveis/:id/editar" element={<PermissionRoute permission="properties.manage"><AdminPropertyForm /></PermissionRoute>} />
           <Route path="/admin/imoveis/:id/gestao" element={<PermissionRoute permission="properties.view"><AdminPropertyManagement /></PermissionRoute>} />
         </Route>
+        <Route
+  path="/admin/locacoes/interessados"
+  element={
+    <PermissionRoute permission="properties.view">
+      <AdminRentalInterests />
+    </PermissionRoute>
+  }
+/>
       </Route>
     </Routes>
   );
