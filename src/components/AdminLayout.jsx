@@ -28,9 +28,38 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    title: 'Locação',
-    comingSoon: true,
-  },
+  title: 'Locação',
+  items: [
+    {
+      to: '/admin/locacoes',
+      label: 'Visão Geral',
+    },
+    {
+      to: '/admin/locacoes?aba=interessados',
+      label: 'Interessados',
+    },
+    {
+      to: '/admin/locacoes?aba=processos',
+      label: 'Processos',
+    },
+    {
+      to: '/admin/locacoes?aba=contratos',
+      label: 'Contratos',
+    },
+    {
+      to: '/admin/locacoes?aba=financeiro',
+      label: 'Financeiro',
+    },
+    {
+      to: '/admin/locacoes?aba=vistorias-manutencao',
+      label: 'Vistorias e Manutenção',
+    },
+    {
+      to: '/admin/locacoes?aba=historico',
+      label: 'Histórico',
+    },
+  ],
+},
   {
     title: 'Financeiro',
     comingSoon: true,
