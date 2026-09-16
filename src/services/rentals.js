@@ -185,12 +185,23 @@ export async function getRentalChecklist(contractId) {
 }
 
 export async function updateRentalChecklistItem(id, payload) {
-  return supabase.from('rental_documents').update(payload).eq('id', id).select().single();
+  return supabase
+    .from('rental_documents')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
 }
 
 export async function getRentalHistory(contractId) {
   return supabase
-    // ============================================================
+    .from('rental_status_history')
+    .select('*')
+    .eq('contract_id', contractId)
+    .order('created_at', { ascending: false });
+}
+
+// ============================================================
 // INTERESSADOS / INQUILINOS
 // ============================================================
 
