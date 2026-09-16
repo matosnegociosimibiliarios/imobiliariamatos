@@ -16,7 +16,9 @@ const emptyForm = {
 };
 
 function formatCurrency(value) {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") {
+    return "—";
+  }
 
   return Number(value).toLocaleString("pt-BR", {
     style: "currency",
@@ -30,14 +32,11 @@ export default function AdminRentalInterests() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-
-  const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
 
   async function loadInterests() {
     setLoading(true);
-    setMessage("");
 
     const { data, error } = await getRentalTenants();
 
@@ -76,23 +75,29 @@ export default function AdminRentalInterests() {
     );
   }, [items, search]);
 
- function openNew() {
-  setEditingId(null);
-  setForm(emptyForm);
-  setMessage("");
-  setShowForm(true);
+  function change(field, value) {
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
 
-  setTimeout(() => {
-    document
-      .getElementById("rental-interest-form")
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-  }, 100);
-}
+  function newInterest() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setMessage("");
 
-  function openEdit(item) {
+    setTimeout(() => {
+      document
+        .getElementById("novo-interessado")
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+    }, 50);
+  }
+
+  function editInterest(item) {
     setEditingId(item.id);
 
     setForm({
@@ -105,28 +110,20 @@ export default function AdminRentalInterests() {
       notes: item.notes || "",
     });
 
-    setMessage("");
-    setShowForm(true);
-  }setTimeout(() => {
-  document
-    .getElementById("rental-interest-form")
-    ?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-}, 100);
-
-  function closeForm() {
-    setShowForm(false);
-    setEditingId(null);
-    setForm(emptyForm);
+    setTimeout(() => {
+      document
+        .getElementById("novo-interessado")
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+    }, 50);
   }
 
-  function change(field, value) {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
+  function cancelEdit() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setMessage("");
   }
 
   async function handleSubmit(event) {
@@ -141,7 +138,6 @@ export default function AdminRentalInterests() {
     setMessage("");
 
     const payload = {
-      ...form,
       full_name: form.full_name.trim(),
       cpf: form.cpf.trim(),
       phone: form.phone.trim(),
@@ -151,9 +147,7 @@ export default function AdminRentalInterests() {
       monthly_income:
         form.monthly_income === ""
           ? null
-          : Number(
-              String(form.monthly_income).replace(",", ".")
-            ),
+          : Number(form.monthly_income),
     };
 
     const result = editingId
@@ -167,26 +161,42 @@ export default function AdminRentalInterests() {
       return;
     }
 
-    closeForm();
+    setEditingId(null);
+    setForm(emptyForm);
+    setMessage("Interessado salvo com sucesso.");
+
     await loadInterests();
+
     setSaving(false);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   return (
     <div className="admin-page">
       <div className="admin-page-header">
         <div>
-          <span className="eyebrow">Gestão de locações</span>
+          <span className="eyebrow">
+            Gestão de locações
+          </span>
+
           <h1>Interessados</h1>
-          <p>Pessoas interessadas em alugar imóveis.</p>
+
+          <p>
+            Pessoas interessadas em alugar imóveis.
+          </p>
         </div>
 
-        <a
-  className="button"
-  href="#novo-interessado"
->
-  + Novo interessado
-</a>
+        <button
+          className="button"
+          type="button"
+          onClick={newInterest}
+        >
+          + Novo interessado
+        </button>
       </div>
 
       <section className="admin-panel">
@@ -209,12 +219,6 @@ export default function AdminRentalInterests() {
           }}
         />
 
-        {message && (
-          <p style={{ marginBottom: 20 }}>
-            {message}
-          </p>
-        )}
-
         {loading ? (
           <p>Carregando interessados...</p>
         ) : filtered.length === 0 ? (
@@ -235,7 +239,6 @@ export default function AdminRentalInterests() {
                   padding: 18,
                   display: "flex",
                   justifyContent: "space-between",
-                  alignItems: "flex-start",
                   gap: 20,
                   flexWrap: "wrap",
                 }}
@@ -267,7 +270,9 @@ export default function AdminRentalInterests() {
                     )}
 
                     {item.email && (
-                      <div>E-mail: {item.email}</div>
+                      <div>
+                        E-mail: {item.email}
+                      </div>
                     )}
 
                     {item.profession && (
@@ -290,7 +295,9 @@ export default function AdminRentalInterests() {
                 <button
                   type="button"
                   className="admin-link-button"
-                  onClick={() => openEdit(item)}
+                  onClick={() =>
+                    editInterest(item)
+                  }
                 >
                   Editar
                 </button>
@@ -301,170 +308,178 @@ export default function AdminRentalInterests() {
       </section>
 
       <section
-  id="novo-interessado"
-  className="admin-panel"
-  style={{
-    marginTop: 20,
-  }}
->
-    className="admin-panel"
-    style={{
-      marginTop: 20,
-    }}
-  >
-            <h2>
-              {editingId
-                ? "Editar interessado"
-                : "Novo interessado"}
-            </h2>
+        id="novo-interessado"
+        className="admin-panel"
+        style={{
+          marginTop: 20,
+        }}
+      >
+        <div className="panel-title-row">
+          <h2>
+            {editingId
+              ? "Editar interessado"
+              : "Novo interessado"}
+          </h2>
+        </div>
 
-            <button
-              type="button"
-              className="admin-link-button"
-              onClick={closeForm}
-            >
-              Fechar
-            </button>
-          </div>
+        {message && (
+          <p
+            style={{
+              marginBottom: 20,
+            }}
+          >
+            {message}
+          </p>
+        )}
 
-          <form onSubmit={handleSubmit}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 16,
-              }}
-            >
-              <label>
-                Nome completo *
-                <input
-                  value={form.full_name}
-                  onChange={(e) =>
-                    change(
-                      "full_name",
-                      e.target.value
-                    )
-                  }
-                  required
-                />
-              </label>
-
-              <label>
-                CPF
-                <input
-                  value={form.cpf}
-                  onChange={(e) =>
-                    change("cpf", e.target.value)
-                  }
-                />
-              </label>
-
-              <label>
-                WhatsApp
-                <input
-                  value={form.phone}
-                  onChange={(e) =>
-                    change(
-                      "phone",
-                      e.target.value
-                    )
-                  }
-                />
-              </label>
-
-              <label>
-                E-mail
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) =>
-                    change(
-                      "email",
-                      e.target.value
-                    )
-                  }
-                />
-              </label>
-
-              <label>
-                Profissão
-                <input
-                  value={form.profession}
-                  onChange={(e) =>
-                    change(
-                      "profession",
-                      e.target.value
-                    )
-                  }
-                />
-              </label>
-
-              <label>
-                Renda mensal
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={form.monthly_income}
-                  onChange={(e) =>
-                    change(
-                      "monthly_income",
-                      e.target.value
-                    )
-                  }
-                />
-              </label>
-            </div>
-
-            <label
-              style={{
-                display: "block",
-                marginTop: 16,
-              }}
-            >
-              Observações
-              <textarea
-                rows="4"
-                value={form.notes}
-                onChange={(e) =>
+        <form onSubmit={handleSubmit}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 16,
+            }}
+          >
+            <label>
+              Nome completo *
+              <input
+                required
+                value={form.full_name}
+                onChange={(event) =>
                   change(
-                    "notes",
-                    e.target.value
+                    "full_name",
+                    event.target.value
                   )
                 }
-                style={{
-                  width: "100%",
-                }}
               />
             </label>
 
-            <div
-              style={{
-                display: "flex",
-                gap: 12,
-                marginTop: 20,
-                flexWrap: "wrap",
-              }}
-            >
-              <button
-                className="button"
-                type="submit"
-                disabled={saving}
-              >
-                {saving
-                  ? "Salvando..."
-                  : "Salvar interessado"}
-              </button>
+            <label>
+              CPF
+              <input
+                value={form.cpf}
+                onChange={(event) =>
+                  change(
+                    "cpf",
+                    event.target.value
+                  )
+                }
+              />
+            </label>
 
+            <label>
+              WhatsApp
+              <input
+                value={form.phone}
+                onChange={(event) =>
+                  change(
+                    "phone",
+                    event.target.value
+                  )
+                }
+              />
+            </label>
+
+            <label>
+              E-mail
+              <input
+                type="email"
+                value={form.email}
+                onChange={(event) =>
+                  change(
+                    "email",
+                    event.target.value
+                  )
+                }
+              />
+            </label>
+
+            <label>
+              Profissão
+              <input
+                value={form.profession}
+                onChange={(event) =>
+                  change(
+                    "profession",
+                    event.target.value
+                  )
+                }
+              />
+            </label>
+
+            <label>
+              Renda mensal
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.monthly_income}
+                onChange={(event) =>
+                  change(
+                    "monthly_income",
+                    event.target.value
+                  )
+                }
+              />
+            </label>
+          </div>
+
+          <label
+            style={{
+              display: "block",
+              marginTop: 16,
+            }}
+          >
+            Observações
+
+            <textarea
+              rows="4"
+              value={form.notes}
+              onChange={(event) =>
+                change(
+                  "notes",
+                  event.target.value
+                )
+              }
+              style={{
+                width: "100%",
+              }}
+            />
+          </label>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              marginTop: 20,
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              className="button"
+              type="submit"
+              disabled={saving}
+            >
+              {saving
+                ? "Salvando..."
+                : editingId
+                ? "Salvar alterações"
+                : "Salvar interessado"}
+            </button>
+
+            {editingId && (
               <button
                 className="admin-link-button"
                 type="button"
-                onClick={closeForm}
+                onClick={cancelEdit}
               >
-                Cancelar
+                Cancelar edição
               </button>
-            </div>
-          </form>
-        </section>
-    
+            )}
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
