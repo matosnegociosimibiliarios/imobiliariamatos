@@ -305,9 +305,10 @@ export default function AdminRentalInterests() {
   <section
     id="rental-interest-form"
     className="admin-panel"
-          }}
-        >
-          <div className="panel-title-row">
+    style={{
+      marginTop: 20,
+    }}
+  >
             <h2>
               {editingId
                 ? "Editar interessado"
