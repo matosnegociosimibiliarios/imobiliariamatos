@@ -39,6 +39,10 @@ import AdminManagement from './pages/admin/AdminManagement';
 import AdminReports from './pages/admin/AdminReports';
 import AdminHealth from './pages/admin/AdminHealth';
 import AdminTeam from './pages/admin/AdminTeam';
+import AdminRentals from './pages/admin/AdminRentals';
+import AdminRentalForm from './pages/admin/AdminRentalForm';
+import AdminRentalDetail from './pages/admin/AdminRentalDetail';
+import AdminFinance from './pages/admin/AdminFinance';
 
 export default function App() {
   return (
@@ -48,14 +52,8 @@ export default function App() {
         <Route path="/comprar" element={<Comprar />} />
         <Route path="/alugar" element={<Alugar />} />
         <Route path="/imovel/:slug" element={<Imovel />} />
-        <Route
-          path="/anuncie-seu-imovel"
-          element={<OwnerCapture requestType="listing" />}
-        />
-        <Route
-          path="/avaliacao-do-imovel"
-          element={<OwnerCapture requestType="valuation" />}
-        />
+        <Route path="/anuncie-seu-imovel" element={<OwnerCapture requestType="listing" />} />
+        <Route path="/avaliacao-do-imovel" element={<OwnerCapture requestType="valuation" />} />
         <Route path="/imoveis-a-venda/:citySlug" element={<LocalProperties purpose="sale" />} />
         <Route path="/imoveis-a-venda/:citySlug/:typeSlug" element={<LocalProperties purpose="sale" />} />
         <Route path="/imoveis-para-alugar/:citySlug" element={<LocalProperties purpose="rent" />} />
@@ -94,6 +92,10 @@ export default function App() {
           <Route path="/admin/imoveis/novo" element={<PermissionRoute permission="properties.manage"><AdminPropertyForm /></PermissionRoute>} />
           <Route path="/admin/imoveis/:id/editar" element={<PermissionRoute permission="properties.manage"><AdminPropertyForm /></PermissionRoute>} />
           <Route path="/admin/imoveis/:id/gestao" element={<PermissionRoute permission="properties.view"><AdminPropertyManagement /></PermissionRoute>} />
+          <Route path="/admin/locacoes" element={<PermissionRoute permission="rentals.view"><AdminRentals /></PermissionRoute>} />
+          <Route path="/admin/locacoes/nova" element={<PermissionRoute permission="rentals.manage"><AdminRentalForm /></PermissionRoute>} />
+          <Route path="/admin/locacoes/:id" element={<PermissionRoute permission="rentals.view"><AdminRentalDetail /></PermissionRoute>} />
+          <Route path="/admin/financeiro" element={<PermissionRoute permission="financial.view"><AdminFinance /></PermissionRoute>} />
         </Route>
       </Route>
     </Routes>

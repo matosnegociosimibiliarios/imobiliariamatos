@@ -29,11 +29,16 @@ const NAV_SECTIONS = [
   },
   {
     title: 'Locação',
-    comingSoon: true,
+    items: [
+      { to: '/admin/locacoes', label: 'Locações', permission: 'rentals.view' },
+      { to: '/admin/locacoes/nova', label: 'Novo contrato', permission: 'rentals.manage' },
+    ],
   },
   {
     title: 'Financeiro',
-    comingSoon: true,
+    items: [
+      { to: '/admin/financeiro', label: 'Financeiro da empresa', permission: 'financial.view' },
+    ],
   },
   {
     title: 'Administração',
@@ -76,18 +81,15 @@ export default function AdminLayout() {
   useEffect(() => {
     if (!access) return undefined;
     let interval = null;
-
     const startPolling = () => {
       if (interval) window.clearInterval(interval);
       if (document.visibilityState !== 'visible') return;
       loadUnread();
       interval = window.setInterval(loadUnread, 15000);
     };
-
     const handleVisibility = () => startPolling();
     startPolling();
     document.addEventListener('visibilitychange', handleVisibility);
-
     return () => {
       if (interval) window.clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibility);
@@ -105,13 +107,10 @@ export default function AdminLayout() {
 
   const visibleSections = useMemo(() => {
     if (!access) return [];
-    return NAV_SECTIONS.map((section) => {
-      if (section.comingSoon) return section;
-      return {
-        ...section,
-        items: (section.items || []).filter((item) => can(access, item.permission)),
-      };
-    }).filter((section) => section.comingSoon || (section.items || []).length > 0);
+    return NAV_SECTIONS.map((section) => ({
+      ...section,
+      items: (section.items || []).filter((item) => can(access, item.permission)),
+    })).filter((section) => (section.items || []).length > 0);
   }, [access]);
 
   function badgeValue(type) {
@@ -135,23 +134,19 @@ export default function AdminLayout() {
           {visibleSections.map((section) => (
             <section className="admin-nav-section" key={section.title}>
               <h2 className="admin-nav-section-title">{section.title}</h2>
-              {section.comingSoon ? (
-                <div className="admin-nav-placeholder" aria-disabled="true">Área em breve</div>
-              ) : (
-                <div className="admin-nav-section-items">
-                  {section.items.map((item) => (
-                    <NavLink
-                      key={item.to}
-                      end={item.end}
-                      to={item.to}
-                      className={item.badge ? 'admin-nav-with-badge' : undefined}
-                    >
-                      <span>{item.label}</span>
-                      {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
-                    </NavLink>
-                  ))}
-                </div>
-              )}
+              <div className="admin-nav-section-items">
+                {section.items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    end={item.end}
+                    to={item.to}
+                    className={item.badge ? 'admin-nav-with-badge' : undefined}
+                  >
+                    <span>{item.label}</span>
+                    {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
+                  </NavLink>
+                ))}
+              </div>
             </section>
           ))}
         </nav>

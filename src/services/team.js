@@ -44,6 +44,8 @@ export const PERMISSION_CATALOG = [
   { key: 'deals.view', label: 'Ver negócios fechados', group: 'Comercial' },
   { key: 'deals.manage', label: 'Editar negócios fechados', group: 'Comercial' },
   { key: 'financial.view', label: 'Ver comissões e valores financeiros', group: 'Financeiro' },
+  { key: 'rentals.view', label: 'Ver locações', group: 'Locação' },
+  { key: 'rentals.manage', label: 'Criar e editar locações', group: 'Locação' },
   { key: 'documents.view', label: 'Ver documentos', group: 'Documentos' },
   { key: 'documents.manage', label: 'Enviar e editar documentos', group: 'Documentos' },
   { key: 'messages.view', label: 'Ver mensagens', group: 'Atendimento' },
