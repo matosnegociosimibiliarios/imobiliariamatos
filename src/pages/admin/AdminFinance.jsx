@@ -8,6 +8,7 @@ import {
   getFinanceCategories,
   getFinanceSummary,
   updateFinanceEntry,
+  deleteFinanceEntry,
 } from '../../services/finance';
 
 const today = new Date();
@@ -30,6 +31,8 @@ export default function AdminFinance() {
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
   const [filter, setFilter] = useState('all');
+  const [startDate, setStartDate] = useState(toInputDate(firstDay));
+  const [endDate, setEndDate] = useState(toInputDate(today));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -37,7 +40,7 @@ export default function AdminFinance() {
   async function load() {
     setLoading(true);
     const [summaryResult, categoriesResult] = await Promise.all([
-      getFinanceSummary({ startDate: toInputDate(firstDay), endDate: toInputDate(today) }),
+      getFinanceSummary({ startDate, endDate }),
       getFinanceCategories(),
     ]);
     if (summaryResult.error || categoriesResult.error) {
@@ -48,7 +51,7 @@ export default function AdminFinance() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [startDate, endDate]);
 
   const filteredEntries = useMemo(() => {
     if (filter === 'all') return summary.entries;
@@ -88,6 +91,13 @@ export default function AdminFinance() {
     await load();
   }
 
+  async function handleDelete(entry) {
+    if (!window.confirm(`Excluir o lançamento "${entry.description}"?`)) return;
+    const result = await deleteFinanceEntry(entry.id);
+    if (result.error) setMessage(result.error.message || 'Não foi possível excluir o lançamento.');
+    else await load();
+  }
+
   async function handleStatus(entry) {
     const nextStatus = entry.status === 'paid' ? 'pending' : 'paid';
     const result = await updateFinanceEntry(entry.id, {
@@ -110,12 +120,21 @@ export default function AdminFinance() {
 
       {message && <div className="admin-message">{message}</div>}
 
+      <section className="admin-panel">
+        <div className="panel-title-row"><h2>Período</h2><div className="admin-form-grid two">
+          <label>De<input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
+          <label>Até<input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} /></label>
+        </div></div>
+      </section>
+
       <div className="management-metrics-grid">
         <article className="admin-card"><span>Receitas pagas no mês</span><strong>{formatCurrency(summary.incomePaid)}</strong></article>
         <article className="admin-card"><span>Despesas pagas no mês</span><strong>{formatCurrency(summary.expensePaid)}</strong></article>
         <article className="admin-card"><span>Saldo realizado</span><strong>{formatCurrency(summary.balance)}</strong></article>
         <article className="admin-card"><span>A receber</span><strong>{formatCurrency(summary.incomePending)}</strong></article>
         <article className="admin-card"><span>A pagar</span><strong>{formatCurrency(summary.expensePending)}</strong></article>
+        <article className="admin-card"><span>Recebimentos administrados</span><strong>{formatCurrency(summary.managedIncome)}</strong></article>
+        <article className="admin-card"><span>Repasses administrados</span><strong>{formatCurrency(summary.managedExpense)}</strong></article>
       </div>
 
       {summary.accounts.length === 0 ? (
@@ -157,6 +176,7 @@ export default function AdminFinance() {
                 <div className="rental-contract-side">
                   <strong>{formatCurrency(entry.amount)}</strong>
                   <button type="button" className="button secondary" onClick={() => handleStatus(entry)}>{entry.status === 'paid' ? 'Marcar pendente' : 'Marcar como pago'}</button>
+                  <button type="button" className="button secondary" onClick={() => handleDelete(entry)}>Excluir</button>
                 </div>
               </article>
             ))}

@@ -53,24 +53,33 @@ export async function getFinanceSummary({ startDate, endDate } = {}) {
   ]);
 
   const entries = entriesResult.data || [];
-  const paid = entries.filter((entry) => entry.status === 'paid');
-  const pending = entries.filter((entry) => entry.status === 'pending');
-  const sum = (items, direction) => items
-    .filter((entry) => entry.direction === direction)
+  const companyEntries = entries.filter((entry) => !entry.managed_funds);
+  const managedEntries = entries.filter((entry) => entry.managed_funds);
+  const paid = companyEntries.filter((entry) => entry.status === 'paid');
+  const pending = companyEntries.filter((entry) => entry.status === 'pending');
+  const sum = (items, direction) => items.filter((entry) => entry.direction === direction)
+    .reduce((total, entry) => total + Number(entry.amount || 0), 0);
+  const managedSum = (direction) => managedEntries.filter((entry) => entry.status === 'paid' && entry.direction === direction)
     .reduce((total, entry) => total + Number(entry.amount || 0), 0);
 
   return {
     data: {
-      incomePaid: sum(paid, 'income'),
-      expensePaid: sum(paid, 'expense'),
-      incomePending: sum(pending, 'income'),
-      expensePending: sum(pending, 'expense'),
+      incomePaid: sum(paid, 'income'), expensePaid: sum(paid, 'expense'),
+      incomePending: sum(pending, 'income'), expensePending: sum(pending, 'expense'),
       balance: sum(paid, 'income') - sum(paid, 'expense'),
-      entries,
-      accounts: accountsResult.data || [],
+      managedIncome: managedSum('income'), managedExpense: managedSum('expense'),
+      entries: companyEntries, managedEntries, accounts: accountsResult.data || [],
     },
     error: entriesResult.error || accountsResult.error || null,
   };
+}
+
+export async function getFinanceManagedEntries({ startDate, endDate } = {}) {
+  let query = supabase.from('finance_entries').select(`*, account:finance_accounts(id,name,account_type), category:finance_categories(id,name,direction)`)
+    .eq('managed_funds', true).order('due_date', { ascending: false });
+  if (startDate) query = query.gte('due_date', startDate);
+  if (endDate) query = query.lte('due_date', endDate);
+  return query;
 }
 
 export async function createFinanceEntry(payload) {

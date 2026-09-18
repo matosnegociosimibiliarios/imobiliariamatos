@@ -135,13 +135,31 @@ export async function getRentalPayments(contractId) {
     .order('reference_month');
 }
 
+export async function registerRentalPayment(paymentId, payload) {
+  return supabase.rpc('register_rental_payment', {
+    p_payment_id: paymentId,
+    p_paid_amount: Number(payload.paid_amount || 0),
+    p_paid_at: payload.paid_at || new Date().toISOString(),
+    p_payment_method: payload.payment_method || null,
+    p_account_id: payload.account_id || null,
+    p_notes: payload.notes || null,
+  });
+}
+
+export async function getRentalTransfers(contractId) {
+  return supabase.from('rental_transfers').select('*, charge:rental_charges(id,reference_month)').eq('contract_id', contractId).order('due_date', { ascending: false });
+}
+
+export async function createRentalTransferForPayment(paymentId, accountId = null, dueDate = null) {
+  return supabase.rpc('create_rental_transfer_for_payment', {
+    p_payment_id: paymentId,
+    p_account_id: accountId,
+    p_due_date: dueDate,
+  });
+}
+
 export async function updateRentalPayment(id, payload) {
-  return supabase
-    .from('rental_payments')
-    .update(payload)
-    .eq('id', id)
-    .select()
-    .single();
+  return supabase.from('rental_payments').update(payload).eq('id', id).select().single();
 }
 
 export async function getRentalInspections(contractId) {
