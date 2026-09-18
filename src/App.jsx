@@ -95,6 +95,7 @@ export default function App() {
           <Route path="/admin/locacoes" element={<PermissionRoute permission="rentals.view"><AdminRentals /></PermissionRoute>} />
           <Route path="/admin/locacoes/nova" element={<PermissionRoute permission="rentals.manage"><AdminRentalForm /></PermissionRoute>} />
           <Route path="/admin/locacoes/:id" element={<PermissionRoute permission="rentals.view"><AdminRentalDetail /></PermissionRoute>} />
+          <Route path="/admin/locacoes/:id/editar" element={<PermissionRoute permission="rentals.manage"><AdminRentalForm /></PermissionRoute>} />
           <Route path="/admin/financeiro" element={<PermissionRoute permission="financial.view"><AdminFinance /></PermissionRoute>} />
         </Route>
       </Route>
