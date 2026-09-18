@@ -147,7 +147,7 @@ export async function registerRentalPayment(paymentId, payload) {
 }
 
 export async function getRentalTransfers(contractId) {
-  return supabase.from('rental_transfers').select('*').eq('contract_id', contractId).order('due_date', { ascending: false });
+  return supabase.from('rental_transfers').select('*, charge:rental_charges(id,reference_month)').eq('contract_id', contractId).order('due_date', { ascending: false });
 }
 
 export async function createRentalTransferForPayment(paymentId, accountId = null, dueDate = null) {
