@@ -12,6 +12,9 @@ import {
   createRentalInspection,
   createRentalMaintenance,
   generateRentalPayments,
+  getRentalTransfers,
+  registerRentalPayment,
+  createRentalTransferForPayment,
   getRentalChecklist,
   getRentalContract,
   getRentalHistory,
@@ -48,6 +51,7 @@ export default function AdminRentalDetail() {
   const { id } = useParams();
   const [contract, setContract] = useState(null);
   const [payments, setPayments] = useState([]);
+  const [transfers, setTransfers] = useState([]);
   const [inspections, setInspections] = useState([]);
   const [maintenance, setMaintenance] = useState([]);
   const [checklist, setChecklist] = useState([]);
@@ -60,9 +64,10 @@ export default function AdminRentalDetail() {
 
   async function load() {
     setLoading(true);
-    const [contractResult, paymentResult, inspectionResult, maintenanceResult, checklistResult, historyResult] = await Promise.all([
+    const [contractResult, paymentResult, transferResult, inspectionResult, maintenanceResult, checklistResult, historyResult] = await Promise.all([
       getRentalContract(id),
       getRentalPayments(id),
+      getRentalTransfers(id),
       getRentalInspections(id),
       getRentalMaintenance(id),
       getRentalChecklist(id),
@@ -70,11 +75,12 @@ export default function AdminRentalDetail() {
     ]);
     setContract(contractResult.data || null);
     setPayments(paymentResult.data || []);
+    setTransfers(transferResult.data || []);
     setInspections(inspectionResult.data || []);
     setMaintenance(maintenanceResult.data || []);
     setChecklist(checklistResult.data || []);
     setHistory(historyResult.data || []);
-    if (contractResult.error || paymentResult.error || inspectionResult.error || maintenanceResult.error || checklistResult.error || historyResult.error) {
+    if (contractResult.error || paymentResult.error || transferResult.error || inspectionResult.error || maintenanceResult.error || checklistResult.error || historyResult.error) {
       setMessage('Algumas informações do contrato não puderam ser carregadas.');
     }
     setLoading(false);
@@ -114,7 +120,7 @@ export default function AdminRentalDetail() {
     if (value === null) return;
     const method = window.prompt('Forma de pagamento (Pix, transferência, dinheiro...):', item.payment_method || 'Pix');
     setBusy(`pay-${item.id}`); setMessage('');
-    const result = await updateRentalPayment(item.id, { paid_amount: Number(String(value).replace(',', '.')) || 0, payment_method: method || null });
+    const result = await registerRentalPayment(item.id, { paid_amount: Number(String(value).replace(',', '.')) || 0, payment_method: method || null });
     if (result.error) setMessage(result.error.message || 'Não foi possível registrar o pagamento.');
     else await load();
     setBusy('');
@@ -243,6 +249,21 @@ export default function AdminRentalDetail() {
             {payments.length === 0 ? <tr><td colSpan="8">Nenhuma cobrança gerada.</td></tr> : payments.map((item) => <tr key={item.id}>
               <td>{monthLabel(item.reference_month)}</td><td>{formatDate(item.due_date)}</td><td>{formatCurrency(item.total_due)}</td><td>{formatCurrency(item.paid_amount)}</td><td>{formatCurrency(item.management_fee)}</td><td>{formatCurrency(item.owner_net_amount)}</td><td><span className={`rental-payment-status ${item.status}`}>{RENTAL_PAYMENT_STATUS_LABELS[item.status] || item.status}</span></td><td>{item.status !== 'paid' && item.status !== 'waived' ? <button type="button" className="secondary" onClick={() => registerPayment(item)} disabled={busy === `pay-${item.id}`}>Registrar pagamento</button> : <small>{item.paid_at ? formatDateTime(item.paid_at) : ''}</small>}</td>
             </tr>)}</tbody></table>
+        </div>
+      </section>
+
+      <section className="admin-panel">
+        <div className="panel-title-row"><div><span className="eyebrow">Repasses</span><h2>Repasses aos proprietários</h2></div><span>{transfers.filter((t) => t.status === 'pending').length} pendentes</span></div>
+        <p className="routine-section-help">O recebimento fica separado do financeiro da empresa. Após o pagamento integral, gere o repasse para o proprietário.</p>
+        <div className="rental-simple-list">
+          {payments.filter((p) => p.status === 'paid').map((payment) => {
+            const existing = transfers.find((t) => t.contract_id === id && t.charge_id);
+            return <article key={payment.id}>
+              <div><strong>{monthLabel(payment.reference_month)}</strong><span>Recebido {formatCurrency(payment.paid_amount)} · Líquido proprietário {formatCurrency(payment.owner_net_amount)}</span></div>
+              {!existing ? <button type="button" className="secondary" onClick={async () => { setBusy('transfer-' + payment.id); const r = await createRentalTransferForPayment(payment.id); if (r.error) setMessage(r.error.message || 'Não foi possível gerar o repasse.'); else await load(); setBusy(''); }} disabled={busy === 'transfer-' + payment.id}>Gerar repasse</button> : <span>{existing.status === 'paid' ? 'Repassado' : 'Repasse pendente'}</span>}
+            </article>;
+          })}
+          {payments.filter((p) => p.status === 'paid').length === 0 && <p>Nenhum pagamento integral registrado.</p>}
         </div>
       </section>
 
