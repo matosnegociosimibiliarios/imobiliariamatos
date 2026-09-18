@@ -257,7 +257,7 @@ export default function AdminRentalDetail() {
         <p className="routine-section-help">O recebimento fica separado do financeiro da empresa. Após o pagamento integral, gere o repasse para o proprietário.</p>
         <div className="rental-simple-list">
           {payments.filter((p) => p.status === 'paid').map((payment) => {
-            const existing = transfers.find((t) => t.contract_id === id && t.charge_id);
+            const existing = transfers.find((t) => t.charge?.reference_month === payment.reference_month);
             return <article key={payment.id}>
               <div><strong>{monthLabel(payment.reference_month)}</strong><span>Recebido {formatCurrency(payment.paid_amount)} · Líquido proprietário {formatCurrency(payment.owner_net_amount)}</span></div>
               {!existing ? <button type="button" className="secondary" onClick={async () => { setBusy('transfer-' + payment.id); const r = await createRentalTransferForPayment(payment.id); if (r.error) setMessage(r.error.message || 'Não foi possível gerar o repasse.'); else await load(); setBusy(''); }} disabled={busy === 'transfer-' + payment.id}>Gerar repasse</button> : <span>{existing.status === 'paid' ? 'Repassado' : 'Repasse pendente'}</span>}
