@@ -158,6 +158,15 @@ export async function createRentalTransferForPayment(paymentId, accountId = null
   });
 }
 
+export async function registerRentalTransfer(transferId, payload = {}) {
+  return supabase.rpc('register_rental_transfer', {
+    p_transfer_id: transferId,
+    p_account_id: payload.account_id || null,
+    p_paid_at: payload.paid_at || new Date().toISOString().slice(0, 10),
+    p_notes: payload.notes || null,
+  });
+}
+
 export async function updateRentalPayment(id, payload) {
   return supabase.from('rental_payments').update(payload).eq('id', id).select().single();
 }

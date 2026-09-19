@@ -15,6 +15,7 @@ import {
   getRentalTransfers,
   registerRentalPayment,
   createRentalTransferForPayment,
+  registerRentalTransfer,
   getRentalChecklist,
   getRentalContract,
   getRentalHistory,
@@ -260,7 +261,7 @@ export default function AdminRentalDetail() {
             const existing = transfers.find((t) => t.charge?.reference_month === payment.reference_month);
             return <article key={payment.id}>
               <div><strong>{monthLabel(payment.reference_month)}</strong><span>Recebido {formatCurrency(payment.paid_amount)} · Líquido proprietário {formatCurrency(payment.owner_net_amount)}</span></div>
-              {!existing ? <button type="button" className="secondary" onClick={async () => { setBusy('transfer-' + payment.id); const r = await createRentalTransferForPayment(payment.id); if (r.error) setMessage(r.error.message || 'Não foi possível gerar o repasse.'); else await load(); setBusy(''); }} disabled={busy === 'transfer-' + payment.id}>Gerar repasse</button> : <span>{existing.status === 'paid' ? 'Repassado' : 'Repasse pendente'}</span>}
+              {!existing ? <button type="button" className="secondary" onClick={async () => { setBusy('transfer-' + payment.id); const r = await createRentalTransferForPayment(payment.id); if (r.error) setMessage(r.error.message || 'Não foi possível gerar o repasse.'); else await load(); setBusy(''); }} disabled={busy === 'transfer-' + payment.id}>Gerar repasse</button> : existing.status === 'paid' ? <span>Repassado · {formatCurrency(existing.transfer_value)}</span> : <div><span>Repasse pendente · {formatCurrency(existing.transfer_value)}</span><button type="button" className="secondary" onClick={async () => { setBusy('settle-transfer-' + existing.id); const r = await registerRentalTransfer(existing.id); if (r.error) setMessage(r.error.message || 'Não foi possível baixar o repasse.'); else await load(); setBusy(''); }} disabled={busy === 'settle-transfer-' + existing.id}>Marcar como repassado</button></div>}
             </article>;
           })}
           {payments.filter((p) => p.status === 'paid').length === 0 && <p>Nenhum pagamento integral registrado.</p>}
