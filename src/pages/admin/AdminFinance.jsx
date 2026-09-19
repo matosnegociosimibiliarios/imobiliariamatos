@@ -27,7 +27,7 @@ const EMPTY_FORM = {
 };
 
 export default function AdminFinance() {
-  const [summary, setSummary] = useState({ incomePaid: 0, expensePaid: 0, incomePending: 0, expensePending: 0, balance: 0, entries: [], accounts: [] });
+  const [summary, setSummary] = useState({ incomePaid: 0, expensePaid: 0, incomePending: 0, expensePending: 0, balance: 0, managedIncome: 0, managedExpense: 0, entries: [], managedEntries: [], accounts: [] });
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState(EMPTY_FORM);
   const [filter, setFilter] = useState('all');
@@ -46,7 +46,7 @@ export default function AdminFinance() {
     if (summaryResult.error || categoriesResult.error) {
       setMessage('Não foi possível carregar todos os dados financeiros.');
     }
-    setSummary(summaryResult.data || { incomePaid: 0, expensePaid: 0, incomePending: 0, expensePending: 0, balance: 0, entries: [], accounts: [] });
+    setSummary(summaryResult.data || { incomePaid: 0, expensePaid: 0, incomePending: 0, expensePending: 0, balance: 0, managedIncome: 0, managedExpense: 0, entries: [], managedEntries: [], accounts: [] });
     setCategories(categoriesResult.data || []);
     setLoading(false);
   }
@@ -128,8 +128,8 @@ export default function AdminFinance() {
       </section>
 
       <div className="management-metrics-grid">
-        <article className="admin-card"><span>Receitas pagas no mês</span><strong>{formatCurrency(summary.incomePaid)}</strong></article>
-        <article className="admin-card"><span>Despesas pagas no mês</span><strong>{formatCurrency(summary.expensePaid)}</strong></article>
+        <article className="admin-card"><span>Receitas pagas no período</span><strong>{formatCurrency(summary.incomePaid)}</strong></article>
+        <article className="admin-card"><span>Despesas pagas no período</span><strong>{formatCurrency(summary.expensePaid)}</strong></article>
         <article className="admin-card"><span>Saldo realizado</span><strong>{formatCurrency(summary.balance)}</strong></article>
         <article className="admin-card"><span>A receber</span><strong>{formatCurrency(summary.incomePending)}</strong></article>
         <article className="admin-card"><span>A pagar</span><strong>{formatCurrency(summary.expensePending)}</strong></article>
@@ -161,7 +161,7 @@ export default function AdminFinance() {
 
       <section className="admin-panel">
         <div className="panel-title-row">
-          <h2>Lançamentos do mês</h2>
+          <h2>Lançamentos do período</h2>
           <select value={filter} onChange={(e) => setFilter(e.target.value)}><option value="all">Todos</option><option value="income">Receitas</option><option value="expense">Despesas</option></select>
         </div>
         {loading ? <p>Carregando financeiro...</p> : filteredEntries.length === 0 ? <p>Nenhum lançamento no período.</p> : (
