@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
