@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getIntegrationEvents, getIntegrationMetrics } from '../../services/admin';
 import { formatDateTime } from '../../services/crm';
+import WhatsAppEmbeddedSignup from '../../components/WhatsAppEmbeddedSignup';
 
 function Status({ ok, label }) {
   return (
@@ -67,6 +68,11 @@ export default function AdminIntegrations() {
               />
               <Status ok={status?.lead_ads_access_token} label="Formulários de anúncios" />
             </div>
+          </section>
+
+          <section className="admin-panel">
+            <h2>Conexão do WhatsApp Business</h2>
+            <WhatsAppEmbeddedSignup onConnected={load} />
           </section>
 
           <section className="admin-panel">
