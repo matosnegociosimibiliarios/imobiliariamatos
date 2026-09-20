@@ -2,8 +2,8 @@ import {
   db,
   logIntegration,
   requireAdmin,
-  sendInstagramText,
 } from './_meta.js';
+import { sendInstagramTextForOrganization } from './_instagram.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,7 +12,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    await requireAdmin(req, 'messages.respond');
+    const admin = await requireAdmin(req, 'messages.respond');
+    const organizationId = admin.membership?.organization_id;
+    if (!organizationId) throw new Error('Não foi possível identificar a imobiliária ativa.');
 
     const leadId = String(req.body?.lead_id || '').trim();
     const text = String(req.body?.text || '').trim();
@@ -29,7 +31,7 @@ export default async function handler(req, res) {
 
     const leads = await db(
       `leads?select=id,name,source_platform,source_channel,external_contact_id&` +
-      `id=eq.${encodeURIComponent(leadId)}&limit=1`
+      `id=eq.${encodeURIComponent(leadId)}&organization_id=eq.${encodeURIComponent(organizationId)}&limit=1`
     );
 
     const lead = leads?.[0];
@@ -46,12 +48,13 @@ export default async function handler(req, res) {
       return;
     }
 
-    const result = await sendInstagramText(lead.external_contact_id, text);
+    const result = await sendInstagramTextForOrganization(organizationId, lead.external_contact_id, text);
     const sentAt = new Date().toISOString();
 
     await db('social_messages?on_conflict=platform,external_message_id', {
       method: 'POST',
       body: {
+        organization_id: organizationId,
         lead_id: lead.id,
         platform: 'instagram',
         channel: 'direct',
@@ -72,6 +75,7 @@ export default async function handler(req, res) {
 
     await logIntegration('instagram_direct_outbound', {
       externalEventId: result.message_id || null,
+      organizationId,
       metadata: {
         lead_id: lead.id,
         recipient_id: lead.external_contact_id,
@@ -90,6 +94,7 @@ export default async function handler(req, res) {
     await logIntegration('instagram_direct_outbound_error', {
       status: 'error',
       errorMessage: error.message,
+      organizationId,
     });
 
     res.status(error.statusCode || 500).json({

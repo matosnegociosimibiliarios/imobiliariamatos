@@ -63,9 +63,9 @@ export async function db(path, { method='GET', body=null, prefer=null } = {}) {
   throw error;
 }
 
-export async function logIntegration(eventType, { externalEventId=null, status='received', errorMessage=null, metadata={} } = {}) {
+export async function logIntegration(eventType, { externalEventId=null, status='received', errorMessage=null, metadata={}, organizationId=null } = {}) {
   try {
-    await db('integration_events', { method:'POST', body:{ platform:'meta', event_type:eventType, external_event_id:externalEventId, status, error_message:errorMessage, metadata }, prefer:'return=minimal' });
+    await db('integration_events', { method:'POST', body:{ platform:'meta', event_type:eventType, external_event_id:externalEventId, status, error_message:errorMessage, metadata, ...(organizationId ? { organization_id: organizationId } : {}) }, prefer:'return=minimal' });
   } catch (error) { console.error('Falha ao registrar integration_event', error); }
 }
 
@@ -78,8 +78,8 @@ export async function readRawBody(req) {
   return Buffer.concat(chunks).toString('utf8');
 }
 
-export function verifyMetaSignature(rawBody, signature) {
-  const secret = process.env.META_APP_SECRET;
+export function verifyMetaSignature(rawBody, signature, overrideSecret = null) {
+  const secret = overrideSecret || process.env.META_APP_SECRET;
   if (!secret) return true;
   if (!signature || !signature.startsWith('sha256=')) return false;
   const expected = `sha256=${crypto.createHmac('sha256', secret).update(rawBody).digest('hex')}`;

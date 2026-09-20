@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getIntegrationEvents, getIntegrationMetrics } from '../../services/admin';
+import { getCurrentSession } from '../../services/auth';
 import { formatDateTime } from '../../services/crm';
 import WhatsAppEmbeddedSignup from '../../components/WhatsAppEmbeddedSignup';
 
@@ -12,6 +13,63 @@ function Status({ ok, label }) {
   );
 }
 
+function InstagramConnection() {
+  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const result = params.get('instagram');
+    const detail = params.get('message');
+    if (result === 'connected') setMessage('Instagram conectado e webhook inscrito.');
+    if (result === 'error') setMessage(detail ? decodeURIComponent(detail) : 'Não foi possível conectar o Instagram.');
+  }, []);
+
+  async function connect() {
+    setLoading(true);
+    setMessage('');
+    try {
+      const session = await getCurrentSession();
+      if (!session?.access_token) throw new Error('Sessão administrativa expirada.');
+      const url = new URL('/api/instagram-connect', window.location.origin);
+      if (username.trim()) url.searchParams.set('username', username.trim());
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.url) throw new Error(data.error || 'Não foi possível iniciar a conexão.');
+      window.location.assign(data.url);
+    } catch (error) {
+      setMessage(error.message || 'Não foi possível iniciar a conexão.');
+      setLoading(false);
+    }
+  }
+
+  return (
+    <section className="admin-panel">
+      <h2>Conectar Instagram da imobiliária</h2>
+      <p>Informe o @ para conferência e autorize a conta profissional pelo Instagram. O token fica armazenado de forma segura por empresa.</p>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'end', flexWrap: 'wrap' }}>
+        <label style={{ display: 'grid', gap: 6, minWidth: 280 }}>
+          <strong style={{ fontSize: 13 }}>Instagram @</strong>
+          <input
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            placeholder="@suaimobiliaria"
+            disabled={loading}
+          />
+        </label>
+        <button className="button" type="button" onClick={connect} disabled={loading}>
+          {loading ? 'Abrindo Instagram...' : 'Conectar Instagram'}
+        </button>
+      </div>
+      {message && <p className="integration-note" style={{ marginTop: 12 }}>{message}</p>}
+    </section>
+  );
+}
+
+
 export default function AdminIntegrations() {
   const [status, setStatus] = useState(null);
   const [metrics, setMetrics] = useState(null);
@@ -20,8 +78,12 @@ export default function AdminIntegrations() {
 
   async function load() {
     setLoading(true);
+    const session = await getCurrentSession();
+    const authHeaders = session?.access_token
+      ? { Authorization: `Bearer ${session.access_token}` }
+      : {};
     const [statusResponse, metricsResult, eventsResult] = await Promise.all([
-      fetch('/api/meta-status').then((r) => r.json()).catch(() => null),
+      fetch('/api/meta-status', { headers: authHeaders }).then((r) => r.json()).catch(() => null),
       getIntegrationMetrics(30),
       getIntegrationEvents(),
     ]);
@@ -51,6 +113,8 @@ export default function AdminIntegrations() {
         <section className="admin-panel">Verificando...</section>
       ) : (
         <>
+          <InstagramConnection />
+
           <section className="admin-panel">
             <h2>Status da conexão</h2>
             <div className="integration-status-grid">
@@ -58,6 +122,10 @@ export default function AdminIntegrations() {
               <Status ok={status?.webhook_verify_token} label="Verificação do webhook" />
               <Status ok={status?.meta_app_secret} label="Assinatura da Meta" />
               <Status ok={status?.instagram_access_token} label="Instagram Direct" />
+              <Status
+                ok={status?.instagram_connected}
+                label={status?.instagram_username ? `Instagram @${status.instagram_username}` : 'Instagram conectado por imobiliária'}
+              />
               <Status
                 ok={status?.whatsapp_access_token}
                 label="Token do WhatsApp Business"
