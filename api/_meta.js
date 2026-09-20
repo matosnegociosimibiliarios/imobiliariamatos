@@ -63,9 +63,9 @@ export async function db(path, { method='GET', body=null, prefer=null } = {}) {
   throw error;
 }
 
-export async function logIntegration(eventType, { externalEventId=null, status='received', errorMessage=null, metadata={} } = {}) {
+export async function logIntegration(eventType, { externalEventId=null, status='received', errorMessage=null, metadata={}, organizationId=null } = {}) {
   try {
-    await db('integration_events', { method:'POST', body:{ platform:'meta', event_type:eventType, external_event_id:externalEventId, status, error_message:errorMessage, metadata }, prefer:'return=minimal' });
+    await db('integration_events', { method:'POST', body:{ platform:'meta', event_type:eventType, external_event_id:externalEventId, status, error_message:errorMessage, metadata, ...(organizationId ? { organization_id: organizationId } : {}) }, prefer:'return=minimal' });
   } catch (error) { console.error('Falha ao registrar integration_event', error); }
 }
 
