@@ -45,6 +45,7 @@ const NAV_SECTIONS = [
     items: [
       { to: '/admin/equipe', label: 'Equipe e Permissões', permission: 'team.view' },
       { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage' },
+      { to: '/admin/identidade', label: 'Identidade da Imobiliária', permission: 'integrations.manage' },
       { to: '/admin/saude', label: 'Saúde do Sistema', permission: 'health.view' },
     ],
   },
