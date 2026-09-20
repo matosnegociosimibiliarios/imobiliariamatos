@@ -172,7 +172,13 @@ export default async function handler(req, res) {
   try {
     rawBody = await readRawBody(req);
 
-    if (!verifyMetaSignature(rawBody, req.headers['x-hub-signature-256'])) {
+    const payload = rawBody ? JSON.parse(rawBody) : {};
+    const signatureSecret =
+      payload.object === 'instagram'
+        ? (process.env.META_INSTAGRAM_APP_SECRET || process.env.META_APP_SECRET)
+        : process.env.META_APP_SECRET;
+
+    if (!verifyMetaSignature(rawBody, req.headers['x-hub-signature-256'], signatureSecret)) {
       await logIntegration('signature_error', {
         status: 'rejected',
         errorMessage: 'Assinatura inválida.',
@@ -180,8 +186,6 @@ export default async function handler(req, res) {
       res.status(401).send('Invalid signature');
       return;
     }
-
-    const payload = rawBody ? JSON.parse(rawBody) : {};
     const tasks = [];
 
     for (const entry of payload.entry || []) {
