@@ -2,8 +2,18 @@ import crypto from 'node:crypto';
 
 export const GRAPH_VERSION = process.env.META_GRAPH_API_VERSION || 'v26.0';
 
-export function envStatus(req) {
+export async function envStatus(req) {
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'imobiliariamatos.vercel.app';
+  let storedWhatsApp = null;
+  try {
+    const organizations = await db('organizations?select=id&limit=1');
+    if (organizations?.[0]?.id) {
+      storedWhatsApp = await getWhatsAppConnection(organizations[0].id);
+    }
+  } catch (error) {
+    console.warn('Não foi possível verificar a conexão armazenada do WhatsApp:', error.message);
+  }
+
   return {
     supabase_service_role: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
     webhook_verify_token: Boolean(process.env.META_WEBHOOK_VERIFY_TOKEN),
@@ -11,8 +21,8 @@ export function envStatus(req) {
     instagram_access_token: Boolean(process.env.META_INSTAGRAM_ACCESS_TOKEN),
     lead_ads_access_token: Boolean(process.env.META_LEAD_ADS_ACCESS_TOKEN),
     instagram_user_id: Boolean(process.env.META_INSTAGRAM_USER_ID),
-    whatsapp_access_token: Boolean(process.env.META_WHATSAPP_ACCESS_TOKEN),
-    whatsapp_phone_number_id: Boolean(process.env.META_WHATSAPP_PHONE_NUMBER_ID),
+    whatsapp_access_token: Boolean(process.env.META_WHATSAPP_ACCESS_TOKEN || storedWhatsApp?.access_token),
+    whatsapp_phone_number_id: Boolean(process.env.META_WHATSAPP_PHONE_NUMBER_ID || storedWhatsApp?.phone_number_id),
     whatsapp_business_account_id: Boolean(process.env.META_WHATSAPP_BUSINESS_ACCOUNT_ID),
     webhook_url: `https://${host}/api/meta-webhook`,
     graph_version: GRAPH_VERSION,
