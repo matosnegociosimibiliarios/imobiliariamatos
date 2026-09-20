@@ -76,6 +76,34 @@ export function verifyMetaSignature(rawBody, signature) {
   try { return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature)); } catch { return false; }
 }
 
+export async function supabaseRpc(functionName, body) {
+  const { url, key } = getSupabaseAdminConfig();
+  const response = await fetch(`${url}/rest/v1/rpc/${functionName}`, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body || {}),
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = new Error(data?.message || data?.hint || `Supabase RPC ${response.status}`);
+    error.statusCode = response.status >= 400 && response.status < 500 ? 400 : 500;
+    throw error;
+  }
+  return data;
+}
+
+export async function getWhatsAppConnection(organizationId) {
+  if (!organizationId) return null;
+  const rows = await supabaseRpc('get_meta_whatsapp_connection', {
+    p_organization_id: organizationId,
+  });
+  return Array.isArray(rows) ? (rows[0] || null) : rows || null;
+}
+
 export async function graphGet(idOrPath, token, fields=null) {
   const url = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/${idOrPath}`);
   if (fields) url.searchParams.set('fields', fields);
@@ -327,9 +355,15 @@ export function normalizePhoneDigits(value) {
   return String(value || '').replace(/\D/g, '');
 }
 
-export async function sendWhatsAppText(recipientWaId, text, phoneNumberId = null) {
-  const token = process.env.META_WHATSAPP_ACCESS_TOKEN;
-  const senderPhoneNumberId = phoneNumberId || process.env.META_WHATSAPP_PHONE_NUMBER_ID;
+export async function sendWhatsAppText(recipientWaId, text, phoneNumberId = null, organizationId = null) {
+  let token = process.env.META_WHATSAPP_ACCESS_TOKEN || null;
+  let senderPhoneNumberId = phoneNumberId || process.env.META_WHATSAPP_PHONE_NUMBER_ID || null;
+
+  if ((!token || !senderPhoneNumberId) && organizationId) {
+    const connection = await getWhatsAppConnection(organizationId);
+    token = token || connection?.access_token || null;
+    senderPhoneNumberId = senderPhoneNumberId || connection?.phone_number_id || null;
+  }
 
   if (!token || !senderPhoneNumberId) {
     throw new Error('WhatsApp não configurado no servidor.');
