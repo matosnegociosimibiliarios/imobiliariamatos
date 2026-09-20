@@ -246,7 +246,8 @@ export default async function handler(req, res) {
             }).then(() =>
               logIntegration('instagram_direct_message', {
                 externalEventId: event.message.mid || null,
-                metadata: { sender_id: event.sender.id, organization_id: instagramConnection.organization_id },
+                metadata: { sender_id: event.sender.id },
+                organizationId: instagramConnection.organization_id,
               })
             )
           );
