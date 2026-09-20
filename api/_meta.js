@@ -78,8 +78,8 @@ export async function readRawBody(req) {
   return Buffer.concat(chunks).toString('utf8');
 }
 
-export function verifyMetaSignature(rawBody, signature) {
-  const secret = process.env.META_APP_SECRET;
+export function verifyMetaSignature(rawBody, signature, overrideSecret = null) {
+  const secret = overrideSecret || process.env.META_APP_SECRET;
   if (!secret) return true;
   if (!signature || !signature.startsWith('sha256=')) return false;
   const expected = `sha256=${crypto.createHmac('sha256', secret).update(rawBody).digest('hex')}`;
