@@ -43,6 +43,7 @@ import AdminRentals from './pages/admin/AdminRentals';
 import AdminRentalForm from './pages/admin/AdminRentalForm';
 import AdminRentalDetail from './pages/admin/AdminRentalDetail';
 import AdminFinance from './pages/admin/AdminFinance';
+import AdminAgencySettings from './pages/admin/AdminAgencySettings';
 
 export default function App() {
   return (
@@ -87,6 +88,7 @@ export default function App() {
           <Route path="/admin/captacoes/:id" element={<PermissionRoute permission="captures.view"><AdminCaptureDetail /></PermissionRoute>} />
           <Route path="/admin/equipe" element={<PermissionRoute permission="team.view"><AdminTeam /></PermissionRoute>} />
           <Route path="/admin/integracoes" element={<PermissionRoute permission="integrations.manage"><AdminIntegrations /></PermissionRoute>} />
+          <Route path="/admin/identidade" element={<PermissionRoute permission="integrations.manage"><AdminAgencySettings /></PermissionRoute>} />
           <Route path="/admin/mensagens" element={<PermissionRoute permission="messages.view"><AdminInstagramInbox /></PermissionRoute>} />
           <Route path="/admin/whatsapp" element={<PermissionRoute permission="messages.view"><AdminWhatsAppInbox /></PermissionRoute>} />
           <Route path="/admin/imoveis/novo" element={<PermissionRoute permission="properties.manage"><AdminPropertyForm /></PermissionRoute>} />
