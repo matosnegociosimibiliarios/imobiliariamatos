@@ -5161,3 +5161,22 @@ button, input, select { font: inherit; }
     padding-left: 4px;
   }
 }
+
+
+.whatsapp-connect-box {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--surface, #fff);
+}
+
+.whatsapp-connect-box p {
+  margin: 6px 0 0;
+  color: var(--muted, #64748b);
+}
+
+.whatsapp-connect-box .button {
+  justify-self: start;
+}
