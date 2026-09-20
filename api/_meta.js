@@ -2,8 +2,18 @@ import crypto from 'node:crypto';
 
 export const GRAPH_VERSION = process.env.META_GRAPH_API_VERSION || 'v26.0';
 
-export function envStatus(req) {
+export async function envStatus(req) {
   const host = req.headers['x-forwarded-host'] || req.headers.host || 'imobiliariamatos.vercel.app';
+  let storedWhatsApp = null;
+  try {
+    const organizations = await db('organizations?select=id&limit=1');
+    if (organizations?.[0]?.id) {
+      storedWhatsApp = await getWhatsAppConnection(organizations[0].id);
+    }
+  } catch (error) {
+    console.warn('Não foi possível verificar a conexão armazenada do WhatsApp:', error.message);
+  }
+
   return {
     supabase_service_role: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
     webhook_verify_token: Boolean(process.env.META_WEBHOOK_VERIFY_TOKEN),
@@ -11,8 +21,8 @@ export function envStatus(req) {
     instagram_access_token: Boolean(process.env.META_INSTAGRAM_ACCESS_TOKEN),
     lead_ads_access_token: Boolean(process.env.META_LEAD_ADS_ACCESS_TOKEN),
     instagram_user_id: Boolean(process.env.META_INSTAGRAM_USER_ID),
-    whatsapp_access_token: Boolean(process.env.META_WHATSAPP_ACCESS_TOKEN),
-    whatsapp_phone_number_id: Boolean(process.env.META_WHATSAPP_PHONE_NUMBER_ID),
+    whatsapp_access_token: Boolean(process.env.META_WHATSAPP_ACCESS_TOKEN || storedWhatsApp?.access_token),
+    whatsapp_phone_number_id: Boolean(process.env.META_WHATSAPP_PHONE_NUMBER_ID || storedWhatsApp?.phone_number_id),
     whatsapp_business_account_id: Boolean(process.env.META_WHATSAPP_BUSINESS_ACCOUNT_ID),
     webhook_url: `https://${host}/api/meta-webhook`,
     graph_version: GRAPH_VERSION,
@@ -74,6 +84,34 @@ export function verifyMetaSignature(rawBody, signature) {
   if (!signature || !signature.startsWith('sha256=')) return false;
   const expected = `sha256=${crypto.createHmac('sha256', secret).update(rawBody).digest('hex')}`;
   try { return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature)); } catch { return false; }
+}
+
+export async function supabaseRpc(functionName, body) {
+  const { url, key } = getSupabaseAdminConfig();
+  const response = await fetch(`${url}/rest/v1/rpc/${functionName}`, {
+    method: 'POST',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body || {}),
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = new Error(data?.message || data?.hint || `Supabase RPC ${response.status}`);
+    error.statusCode = response.status >= 400 && response.status < 500 ? 400 : 500;
+    throw error;
+  }
+  return data;
+}
+
+export async function getWhatsAppConnection(organizationId) {
+  if (!organizationId) return null;
+  const rows = await supabaseRpc('get_meta_whatsapp_connection', {
+    p_organization_id: organizationId,
+  });
+  return Array.isArray(rows) ? (rows[0] || null) : rows || null;
 }
 
 export async function graphGet(idOrPath, token, fields=null) {
@@ -327,9 +365,15 @@ export function normalizePhoneDigits(value) {
   return String(value || '').replace(/\D/g, '');
 }
 
-export async function sendWhatsAppText(recipientWaId, text, phoneNumberId = null) {
-  const token = process.env.META_WHATSAPP_ACCESS_TOKEN;
-  const senderPhoneNumberId = phoneNumberId || process.env.META_WHATSAPP_PHONE_NUMBER_ID;
+export async function sendWhatsAppText(recipientWaId, text, phoneNumberId = null, organizationId = null) {
+  let token = process.env.META_WHATSAPP_ACCESS_TOKEN || null;
+  let senderPhoneNumberId = phoneNumberId || process.env.META_WHATSAPP_PHONE_NUMBER_ID || null;
+
+  if ((!token || !senderPhoneNumberId) && organizationId) {
+    const connection = await getWhatsAppConnection(organizationId);
+    token = token || connection?.access_token || null;
+    senderPhoneNumberId = senderPhoneNumberId || connection?.phone_number_id || null;
+  }
 
   if (!token || !senderPhoneNumberId) {
     throw new Error('WhatsApp não configurado no servidor.');
