@@ -78,8 +78,12 @@ export default function AdminIntegrations() {
 
   async function load() {
     setLoading(true);
+    const session = await getCurrentSession();
+    const authHeaders = session?.access_token
+      ? { Authorization: `Bearer ${session.access_token}` }
+      : {};
     const [statusResponse, metricsResult, eventsResult] = await Promise.all([
-      fetch('/api/meta-status').then((r) => r.json()).catch(() => null),
+      fetch('/api/meta-status', { headers: authHeaders }).then((r) => r.json()).catch(() => null),
       getIntegrationMetrics(30),
       getIntegrationEvents(),
     ]);
@@ -118,6 +122,10 @@ export default function AdminIntegrations() {
               <Status ok={status?.webhook_verify_token} label="Verificação do webhook" />
               <Status ok={status?.meta_app_secret} label="Assinatura da Meta" />
               <Status ok={status?.instagram_access_token} label="Instagram Direct" />
+              <Status
+                ok={status?.instagram_connected}
+                label={status?.instagram_username ? `Instagram @${status.instagram_username}` : 'Instagram conectado por imobiliária'}
+              />
               <Status
                 ok={status?.whatsapp_access_token}
                 label="Token do WhatsApp Business"
