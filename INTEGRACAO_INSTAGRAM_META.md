@@ -55,3 +55,27 @@ No painel do site abra:
 `/admin/integracoes`
 
 A tela informa quais partes da configuração estão presentes e mostra os últimos eventos recebidos sem revelar os tokens.
+
+
+## Camada 3 — conexão por imobiliária
+
+A conexão do Instagram deixou de depender de um token global. Cada organização pode autorizar sua própria conta profissional pelo fluxo oficial Instagram Business Login.
+
+Fluxo:
+1. O administrador informa opcionalmente o @ no CRM.
+2. O CRM cria um state temporário vinculado à organização ativa e ao usuário autenticado.
+3. O usuário autoriza a conta em `https://www.instagram.com/oauth/authorize`.
+4. O backend troca o código por token de curta duração e depois por token de longa duração.
+5. O CRM identifica o Instagram autorizado, confere o @ informado e grava o token no Vault da organização.
+6. O backend inscreve automaticamente a conta em `messages,messaging_seen`.
+7. O webhook roteia cada evento pelo Instagram User ID para a organização correta.
+8. O envio de mensagens usa o token da organização, nunca um token global.
+9. Tokens próximos do vencimento são renovados diariamente por Cron.
+
+Variáveis usadas pelo fluxo:
+- `META_INSTAGRAM_APP_ID` — ID do aplicativo do produto Instagram Business Login.
+- `META_INSTAGRAM_APP_SECRET` — segredo do aplicativo do Instagram.
+- `META_INSTAGRAM_REDIRECT_URI` — opcional; padrão de produção: `https://imobiliariamatos.vercel.app/api/instagram-callback`.
+- `CRON_SECRET` — segredo usado para autorizar o job diário de renovação.
+
+Os tokens das imobiliárias não são expostos ao navegador.
