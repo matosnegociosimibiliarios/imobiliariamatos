@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { signOut } from '../services/auth';
 import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/admin';
-import { ROLE_LABELS, can, getAccessContext } from '../services/team';
+import { ROLE_LABELS, can, getAccessContext, getUserOrganizations, setActiveOrganization } from '../services/team';
 
 const NAV_SECTIONS = [
   {
@@ -55,14 +55,42 @@ export default function AdminLayout() {
   const [unreadInstagram, setUnreadInstagram] = useState(0);
   const [unreadWhatsApp, setUnreadWhatsApp] = useState(0);
   const [access, setAccess] = useState(null);
+  const [organizations, setOrganizations] = useState([]);
+  const [switchingOrganization, setSwitchingOrganization] = useState(false);
+
+  async function loadContext() {
+    const [accessResult, organizationsResult] = await Promise.all([
+      getAccessContext(),
+      getUserOrganizations(),
+    ]);
+    if (!accessResult.error) setAccess(accessResult.data || null);
+    if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
+  }
 
   useEffect(() => {
     let active = true;
-    getAccessContext().then((result) => {
-      if (active && !result.error) setAccess(result.data || null);
+    Promise.all([getAccessContext(), getUserOrganizations()]).then(([accessResult, organizationsResult]) => {
+      if (!active) return;
+      if (!accessResult.error) setAccess(accessResult.data || null);
+      if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
     });
     return () => { active = false; };
   }, []);
+
+  async function handleOrganizationChange(event) {
+    const organizationId = event.target.value;
+    if (!organizationId || organizationId === access?.organization_id) return;
+    setSwitchingOrganization(true);
+    const result = await setActiveOrganization(organizationId);
+    if (result.error) {
+      window.alert(result.error.message || 'Não foi possível trocar de empresa.');
+      setSwitchingOrganization(false);
+      return;
+    }
+    await loadContext();
+    setSwitchingOrganization(false);
+    window.location.reload();
+  }
 
   async function loadUnread() {
     if (!can(access, 'messages.view')) return;
@@ -129,6 +157,26 @@ export default function AdminLayout() {
             <small>{access?.organization_name || 'Painel administrativo'}</small>
           </div>
         </div>
+
+        {organizations.length > 1 && (
+          <div style={{ padding: '0 16px 16px' }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
+              Empresa ativa
+            </label>
+            <select
+              value={access?.organization_id || ''}
+              onChange={handleOrganizationChange}
+              disabled={switchingOrganization}
+              style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,.18)', background: 'rgba(255,255,255,.06)', color: 'inherit' }}
+            >
+              {organizations.map((organization) => (
+                <option key={organization.id} value={organization.id}>
+                  {organization.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <nav className="admin-nav" aria-label="Menu administrativo">
           {visibleSections.map((section) => (

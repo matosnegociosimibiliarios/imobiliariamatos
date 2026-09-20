@@ -206,7 +206,7 @@ export default function AdminTeam() {
     <div className="admin-page team-page">
       <div className="admin-page-header">
         <div>
-          <span className="eyebrow">Versão 10.14.2 · Base SaaS</span>
+          <span className="eyebrow">Base SaaS · Multiempresa</span>
           <h1>Equipe e permissões</h1>
           <p>Controle quem entra no CRM, o que cada pessoa pode acessar e quem fez cada alteração.</p>
         </div>
@@ -280,9 +280,9 @@ export default function AdminTeam() {
       </section>
 
       <section className="admin-card team-saas-note">
-        <span className="eyebrow">Preparação para comercialização</span>
-        <h2>Base multiempresa criada, migração completa fica para a fase SaaS</h2>
-        <p>Esta versão já cria a entidade “empresa/organização”, usuários por empresa, funções, permissões e auditoria. Os registros atuais continuam no ambiente único da Matos. Antes de vender o CRM para outras imobiliárias, faremos a migração que adiciona o identificador da empresa em todos os dados e garante isolamento total entre clientes.</p>
+        <span className="eyebrow">Camada 1 concluída</span>
+        <h2>Base multiempresa ativa</h2>
+        <p>O CRM já trabalha com organização ativa, membros por empresa, permissões, isolamento por organização e troca de contexto. Novos clientes poderão ter sua própria organização sem compartilhar registros com outras empresas.</p>
       </section>
     </div>
   );

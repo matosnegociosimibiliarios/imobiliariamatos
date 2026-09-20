@@ -61,6 +61,29 @@ export async function getAccessContext() {
   return { data: result?.data || null, error: result?.error || null, status: result?.status };
 }
 
+export async function getUserOrganizations() {
+  const result = await withSupabaseRetry(() => supabase.rpc('list_user_organizations'));
+  return {
+    data: Array.isArray(result?.data) ? result.data : [],
+    error: result?.error || null,
+    status: result?.status,
+  };
+}
+
+export async function setActiveOrganization(organizationId) {
+  return withSupabaseRetry(() => supabase.rpc('set_active_organization', {
+    p_organization_id: organizationId,
+  }));
+}
+
+export async function createOrganization({ name, slug }) {
+  const result = await withSupabaseRetry(() => supabase.rpc('create_organization', {
+    p_name: name,
+    p_slug: slug || null,
+  }));
+  return { data: result?.data || null, error: result?.error || null, status: result?.status };
+}
+
 export function can(access, permission) {
   if (access?.role === 'owner') return true;
   return Boolean(access?.permissions?.[permission]);
