@@ -101,6 +101,23 @@ export default async function handler(req, res) {
 
     phoneNumberId = await discoverPhoneNumber(accessToken, wabaId, phoneNumberId);
 
+    let coexistence = sessionEvent === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING';
+    let resolvedDisplayPhoneNumber = displayPhoneNumber;
+
+    if (phoneNumberId) {
+      try {
+        const phoneData = await graphGet(
+          encodeURIComponent(phoneNumberId),
+          accessToken,
+          'id,display_phone_number,is_on_biz_app,platform_type'
+        );
+        coexistence = coexistence || Boolean(phoneData?.is_on_biz_app);
+        resolvedDisplayPhoneNumber = resolvedDisplayPhoneNumber || phoneData?.display_phone_number || null;
+      } catch (error) {
+        console.warn('Não foi possível verificar o estado de coexistência do número:', error.message);
+      }
+    }
+
     const subscribeResponse = await fetch(
       `https://graph.facebook.com/${GRAPH_VERSION}/${encodeURIComponent(wabaId)}/subscribed_apps`,
       {
@@ -128,12 +145,12 @@ export default async function handler(req, res) {
       p_organization_id: organizationId,
       p_waba_id: wabaId,
       p_phone_number_id: phoneNumberId,
-      p_display_phone_number: displayPhoneNumber,
+      p_display_phone_number: resolvedDisplayPhoneNumber,
       p_access_token: accessToken,
       p_metadata: {
         source: 'embedded_signup',
         session_event: sessionEvent,
-        coexistence: sessionEvent === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING',
+        coexistence,
         connected_by_user_id: admin.id,
         connected_at: new Date().toISOString(),
       },
@@ -153,8 +170,8 @@ export default async function handler(req, res) {
       connected: true,
       waba_id: wabaId,
       phone_number_id: phoneNumberId,
-      display_phone_number: displayPhoneNumber,
-      coexistence: sessionEvent === 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING',
+      display_phone_number: resolvedDisplayPhoneNumber,
+      coexistence,
     });
   } catch (error) {
     console.error('Falha no Embedded Signup do WhatsApp:', error);
