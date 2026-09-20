@@ -2,12 +2,16 @@ import {
   createLeadFromLeadAd,
   logIntegration,
   readRawBody,
-  storeInstagramOutboundEcho,
   updateWhatsAppDeliveryStatus,
-  upsertInstagramDirectLead,
   upsertWhatsAppInboundMessage,
   verifyMetaSignature,
 } from './_meta.js';
+import {
+  getInstagramConnectionByUserId,
+  storeInstagramOutboundEchoForOrganization,
+  touchInstagramWebhook,
+  upsertInstagramDirectLeadForOrganization,
+} from './_instagram.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -181,66 +185,72 @@ export default async function handler(req, res) {
     const tasks = [];
 
     for (const entry of payload.entry || []) {
-      // Instagram Direct usa entry.messaging.
-      for (const event of entry.messaging || []) {
-        if (!event?.message) continue;
+      // Instagram Direct: entry.id identifica a conta profissional conectada.
+      const instagramConnection = entry.id
+        ? await getInstagramConnectionByUserId(String(entry.id))
+        : null;
 
-        const text =
-          event.message.text ||
-          (event.message.attachments
-            ? '[Mídia recebida no Instagram]'
-            : '[Mensagem recebida no Instagram]');
+      if (instagramConnection?.organization_id) {
+        await touchInstagramWebhook(String(entry.id));
 
-        const metadata = {
-          recipient_id: event.recipient?.id || null,
-          sender_id: event.sender?.id || null,
-          attachments: event.message.attachments || [],
-          is_echo: Boolean(event.message.is_echo),
-        };
+        for (const event of entry.messaging || []) {
+          if (!event?.message) continue;
 
-        if (event.message.is_echo) {
-          const recipientId = event.recipient?.id;
-          if (!recipientId) continue;
+          const text =
+            event.message.text ||
+            (event.message.attachments
+              ? '[Mídia recebida no Instagram]'
+              : '[Mensagem recebida no Instagram]');
+
+          const metadata = {
+            recipient_id: event.recipient?.id || null,
+            sender_id: event.sender?.id || null,
+            attachments: event.message.attachments || [],
+            is_echo: Boolean(event.message.is_echo),
+            instagram_user_id: String(entry.id),
+            instagram_username: instagramConnection.username || null,
+          };
+
+          if (event.message.is_echo) {
+            const recipientId = event.recipient?.id;
+            if (!recipientId) continue;
+
+            tasks.push(
+              storeInstagramOutboundEchoForOrganization({
+                organizationId: instagramConnection.organization_id,
+                recipientId: String(recipientId),
+                messageId: event.message.mid || null,
+                text,
+                timestamp: event.timestamp || null,
+                metadata,
+              }).then(() =>
+                logIntegration('instagram_direct_outbound_echo', {
+                  externalEventId: event.message.mid || null,
+                  metadata: { recipient_id: recipientId, organization_id: instagramConnection.organization_id },
+                })
+              )
+            );
+            continue;
+          }
+
+          if (!event?.sender?.id) continue;
 
           tasks.push(
-            storeInstagramOutboundEcho({
-              recipientId: String(recipientId),
+            upsertInstagramDirectLeadForOrganization({
+              organizationId: instagramConnection.organization_id,
+              senderId: String(event.sender.id),
               messageId: event.message.mid || null,
               text,
               timestamp: event.timestamp || null,
               metadata,
             }).then(() =>
-              logIntegration('instagram_direct_outbound_echo', {
+              logIntegration('instagram_direct_message', {
                 externalEventId: event.message.mid || null,
-                metadata: { recipient_id: recipientId },
+                metadata: { sender_id: event.sender.id, organization_id: instagramConnection.organization_id },
               })
             )
           );
-          continue;
         }
-
-        if (!event?.sender?.id) continue;
-        if (
-          process.env.META_INSTAGRAM_USER_ID &&
-          String(event.sender.id) === String(process.env.META_INSTAGRAM_USER_ID)
-        ) {
-          continue;
-        }
-
-        tasks.push(
-          upsertInstagramDirectLead({
-            senderId: String(event.sender.id),
-            messageId: event.message.mid || null,
-            text,
-            timestamp: event.timestamp || null,
-            metadata,
-          }).then(() =>
-            logIntegration('instagram_direct_message', {
-              externalEventId: event.message.mid || null,
-              metadata: { sender_id: event.sender.id },
-            })
-          )
-        );
       }
 
       // WhatsApp e Lead Ads usam entry.changes.
