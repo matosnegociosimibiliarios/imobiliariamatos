@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await requireAdmin(req, 'messages.respond');
+    const admin = await requireAdmin(req, 'messages.respond');
 
     const leadId = String(req.body?.lead_id || '').trim();
     const text = String(req.body?.text || '').trim();
@@ -72,7 +72,8 @@ export default async function handler(req, res) {
     const result = await sendWhatsAppText(
       lead.whatsapp_wa_id,
       text,
-      lead.whatsapp_phone_number_id || null
+      lead.whatsapp_phone_number_id || null,
+      admin.membership?.organization_id || process.env.META_ORGANIZATION_ID || null
     );
 
     const messageId = result?.messages?.[0]?.id || null;
