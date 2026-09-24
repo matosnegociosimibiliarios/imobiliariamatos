@@ -171,6 +171,9 @@ export default function AdminPropertyManagement() {
           <p>{property.public_location_text || 'Localização não informada'}</p>
         </div>
         <div className="admin-page-actions property-team-actions">
+          <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/editar`}>Cadastro</Link>
+          <Link className="admin-link-button active" to={`/admin/imoveis/${property.id}/gestao`}>Gestão</Link>
+          <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>
           <ResponsibleSelect
             table="properties"
             recordId={property.id}
@@ -184,6 +187,12 @@ export default function AdminPropertyManagement() {
           <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/editar`}>Editar anúncio</Link>
           <Link className="admin-link-button" to="/admin/imoveis">Voltar</Link>
         </div>
+      </div>
+
+      <div className="property-record-tabs">
+        <Link to={`/admin/imoveis/${property.id}/editar`}>Cadastro</Link>
+        <Link className="active" to={`/admin/imoveis/${property.id}/gestao`}>Gestão</Link>
+        <Link to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>
       </div>
 
       {message && <div className="admin-message">{message}</div>}
