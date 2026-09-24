@@ -66,7 +66,7 @@ export default function AdminRentalReports() {
   const current = useMemo(() => {
     if (type === 'contracts') {
       const rows = data.contracts
-        .filter((c) => inPeriod(c.start_date, start, end) && (status === 'all' || c.status === status))
+        .filter((c) => (!c.start_date || c.start_date <= end) && (!c.end_date || c.end_date >= start) && (status === 'all' || c.status === status))
         .map((c) => ({
           code: c.code, tenant: c.tenant_name, owner: c.owner_name, property: propertyLabel(c.property),
           city: c.property?.city?.name || '—', status: RENTAL_STATUS_LABELS[c.status] || c.status,
@@ -77,7 +77,7 @@ export default function AdminRentalReports() {
         title: 'Relatório de contratos de locação',
         columns: [['code','Contrato'],['tenant','Inquilino'],['owner','Proprietário'],['property','Imóvel'],['city','Cidade'],['status','Situação'],['start','Início'],['end','Fim'],['rent','Aluguel'],['fee','Administração']].map(([key,label]) => ({key,label})),
         rows,
-        stats: [['Contratos', rows.length], ['Ativos', rows.filter((r) => r.status === 'Ativo').length], ['Aluguel mensal', formatCurrency(data.contracts.filter((c) => c.status === 'active').reduce((s,c) => s + moneyNumber(c.monthly_rent), 0))]],
+        stats: [['Contratos', rows.length], ['Ativos', rows.filter((r) => r.status === 'Ativo').length], ['Aluguel mensal', formatCurrency(data.contracts.filter((c) => (!c.start_date || c.start_date <= end) && (!c.end_date || c.end_date >= start) && c.status === 'active').reduce((s,c) => s + moneyNumber(c.monthly_rent), 0))]],
       };
     }
 
