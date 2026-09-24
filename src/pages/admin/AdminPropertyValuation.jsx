@@ -401,7 +401,14 @@ export default function AdminPropertyValuation() {
                       return (
                         <React.Fragment key={item.id}>
                           <tr>
-                            <td><strong>{item.source_label || item.comparable_property?.code || 'Comparável'}</strong><small>{item.location_text || item.comparable_property?.public_location_text || '—'}</small></td>
+                            <td>
+                              <strong>{item.source_label || item.comparable_property?.code || 'Comparável'}</strong>
+                              <small>
+                                {item.source_type === 'closed_sale' ? 'Negócio realizado' : item.source_type === 'active_listing' ? 'Imóvel anunciado' : 'Fonte manual'}
+                                {item.reference_date ? ' · ' + new Date(item.reference_date + 'T12:00:00').toLocaleDateString('pt-BR') : ''}
+                              </small>
+                              <small>{item.location_text || item.comparable_property?.public_location_text || '—'}</small>
+                            </td>
                             <td><strong>{formatMoney(finalValue)}</strong><small>base {formatMoney(base)}</small></td>
                             <td>{formatNumber(area)} m²</td>
                             <td>{area > 0 ? formatMoney(finalValue / area) : '—'}</td>
