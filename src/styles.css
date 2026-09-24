@@ -5180,3 +5180,198 @@ button, input, select { font: inherit; }
 .whatsapp-connect-box .button {
   justify-self: start;
 }
+
+
+/* =========================================================
+   CRM BETA — IDENTIDADE VISUAL INSPIRADA NA LOGO DA CHAVE
+   ========================================================= */
+.admin-shell {
+  --crm-black: #050505;
+  --crm-black-soft: #111111;
+  --crm-red: #e10613;
+  --crm-red-dark: #8f0008;
+  --crm-red-soft: #fff0f1;
+  --crm-silver: #d9dde2;
+  --crm-silver-dark: #9aa0a8;
+  --crm-surface: #ffffff;
+  --crm-page: #f2f3f5;
+  --accent: var(--crm-red);
+  --accent-2: var(--crm-red-dark);
+  --ink: #15171a;
+  --muted: #69707a;
+  --line: #d8dbe0;
+  --soft: #f5e9ea;
+  background: var(--crm-page);
+}
+
+.admin-shell .admin-sidebar {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(225,6,19,.20), transparent 34%),
+    linear-gradient(180deg, #080808 0%, #111111 58%, #050505 100%);
+  border-right: 1px solid #252525;
+  box-shadow: 8px 0 30px rgba(0,0,0,.12);
+}
+
+.admin-shell .admin-sidebar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #7d0007, #ff1a24, #c9cdd2, #ff1a24, #7d0007);
+}
+
+.admin-shell .admin-brand {
+  padding: 2px 2px 18px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid #292929;
+}
+
+.admin-brand-logo {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  display: block;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px #2e2e2e, 0 8px 22px rgba(225,6,19,.20);
+}
+
+.admin-shell .admin-brand strong {
+  color: #ffffff;
+  letter-spacing: -.01em;
+}
+
+.admin-shell .admin-brand small {
+  color: #aeb3ba;
+}
+
+.admin-shell .admin-nav-section-title {
+  color: #9da2aa;
+}
+
+.admin-shell .admin-nav-section .admin-nav-section-items a {
+  color: #cfd3d8;
+}
+
+.admin-shell .admin-nav-section .admin-nav-section-items a.active,
+.admin-shell .admin-nav-section .admin-nav-section-items a:hover {
+  background: linear-gradient(90deg, rgba(225,6,19,.20), rgba(225,6,19,.07));
+  color: #ffffff;
+  box-shadow: inset 3px 0 0 var(--crm-red);
+}
+
+.admin-shell .admin-nav-with-badge b {
+  background: var(--crm-red);
+  color: #ffffff;
+}
+
+.admin-shell .admin-main {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(225,6,19,.035), transparent 25%),
+    var(--crm-page);
+}
+
+.admin-shell .admin-page-header h1,
+.admin-shell .admin-panel h2,
+.admin-shell .panel-title-row a,
+.admin-shell .admin-actions a,
+.admin-shell .admin-link-button,
+.admin-shell .admin-row-actions a,
+.admin-shell .admin-row-actions button {
+  color: var(--crm-red);
+}
+
+.admin-shell .button {
+  background: linear-gradient(180deg, #ef1b26 0%, #b9000b 100%);
+  border: 1px solid #8e0008;
+  box-shadow: 0 8px 18px rgba(225,6,19,.16);
+}
+
+.admin-shell .button:hover {
+  background: linear-gradient(180deg, #ff2731 0%, #a5000a 100%);
+}
+
+.admin-shell .admin-panel,
+.admin-shell .admin-stat-card {
+  border-color: var(--crm-silver);
+  box-shadow: 0 8px 26px rgba(0,0,0,.035);
+}
+
+.admin-shell .admin-stat-card strong {
+  color: #17191d;
+}
+
+.admin-shell .admin-status.published {
+  background: #fff0f1;
+  color: #a40009;
+}
+
+.admin-shell .admin-status.draft {
+  background: #f0f1f3;
+  color: #545a62;
+}
+
+.admin-shell .admin-current-user {
+  border-color: #383838;
+  background: #171717;
+}
+
+.admin-shell .admin-sidebar-bottom a,
+.admin-shell .admin-sidebar-bottom button {
+  border-color: #3a3a3a;
+  color: #d9dde2;
+}
+
+.admin-shell .admin-sidebar-bottom a:hover,
+.admin-shell .admin-sidebar-bottom button:hover {
+  border-color: #666666;
+  background: #1c1c1c;
+}
+
+.admin-shell .admin-sidebar-bottom .admin-subscription-button {
+  border-color: #9e0a12;
+  background: #3a080b;
+  color: #ffffff;
+}
+
+.admin-shell .admin-sidebar-bottom .admin-subscription-button:hover {
+  background: #57090d;
+}
+
+.login-page {
+  background:
+    radial-gradient(circle at 18% 16%, rgba(225,6,19,.12), transparent 30%),
+    radial-gradient(circle at 82% 84%, rgba(0,0,0,.08), transparent 32%),
+    #f2f3f5;
+}
+
+.login-card {
+  border-color: var(--crm-silver, #d9dde2);
+  box-shadow: 0 28px 70px rgba(0,0,0,.12);
+}
+
+.login-brand {
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e1e3e6;
+}
+
+.login-brand-logo {
+  width: 64px;
+  height: 64px;
+  flex-basis: 64px;
+}
+
+.login-card h1 {
+  color: #17191d;
+}
+
+.login-card .button {
+  background: linear-gradient(180deg, #ef1b26 0%, #b9000b 100%);
+  border-color: #8e0008;
+}
+
+.login-card .button:hover {
+  background: linear-gradient(180deg, #ff2731 0%, #a5000a 100%);
+}

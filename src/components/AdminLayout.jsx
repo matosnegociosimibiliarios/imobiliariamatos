@@ -152,10 +152,10 @@ export default function AdminLayout() {
     <div className="admin-shell">
       <aside className="admin-sidebar">
         <div className="admin-brand">
-          <span className="brand-mark">M</span>
+          <img className="admin-brand-logo" src="/crm-beta-logo.webp" alt="CRM Beta" />
           <div>
-            <strong>Matos</strong>
-            <small>{access?.organization_name || 'Painel administrativo'}</small>
+            <strong>CRM Beta</strong>
+            <small>Painel administrativo</small>
           </div>
         </div>
 
