@@ -10,6 +10,7 @@ import {
   getPropertyValuationCandidates,
   getPropertyValuations,
   recalculatePropertyValuation,
+  setPropertyValuationStatus,
   updatePropertyValuation,
 } from '../../services/propertyValuation';
 import { formatMoney } from '../../services/properties';
@@ -277,6 +278,20 @@ export default function AdminPropertyValuation() {
     setSaving(false);
   }
 
+  async function changeStatus(status) {
+    if (!selected) return;
+    const labels = { final: 'Finalizar avaliação', archived: 'Arquivar avaliação', draft: 'Reabrir como rascunho' };
+    if (!window.confirm(labels[status] + '?')) return;
+    setSaving(true);
+    const result = await setPropertyValuationStatus(selected.id, status);
+    if (result.error) setMessage(result.error.message || 'Não foi possível alterar o status da avaliação.');
+    else {
+      setMessage(status === 'final' ? 'Avaliação finalizada.' : status === 'archived' ? 'Avaliação arquivada.' : 'Avaliação reaberta como rascunho.');
+      await refreshSelected();
+    }
+    setSaving(false);
+  }
+
   async function calculate() {
     if (!selected) return;
     setSaving(true);
@@ -357,7 +372,17 @@ export default function AdminPropertyValuation() {
       {selected && (
         <>
           <form className="admin-panel valuation-header-form" onSubmit={saveHeader}>
-            <div className="property-section-heading"><div><span className="eyebrow">Configuração</span><h2>Dados da avaliação</h2></div><span className="valuation-status">{selected.status === 'final' ? 'Finalizada' : 'Rascunho'}</span></div>
+            <div className="property-section-heading">
+              <div><span className="eyebrow">Configuração</span><h2>Dados da avaliação</h2></div>
+              <div className="valuation-header-status">
+                <span className="valuation-status">{selected.status === 'final' ? 'Finalizada' : selected.status === 'archived' ? 'Arquivada' : 'Rascunho'}</span>
+                <div className="valuation-status-actions">
+                  {selected.status === 'draft' && <button type="button" className="admin-link-button" onClick={() => changeStatus('final')} disabled={saving || !selected.comparables?.length}>Finalizar</button>}
+                  {selected.status === 'final' && <button type="button" className="admin-link-button" onClick={() => changeStatus('archived')} disabled={saving}>Arquivar</button>}
+                  {selected.status === 'archived' && <button type="button" className="admin-link-button" onClick={() => changeStatus('draft')} disabled={saving}>Reabrir</button>}
+                </div>
+              </div>
+            </div>
             <div className="admin-form-grid three">
               <label>Data-base<input type="date" name="valuation_date" defaultValue={selected.valuation_date} /></label>
               <label>Método<select name="valuation_type" defaultValue={selected.valuation_type}>{Object.entries(TYPE_LABELS).map(([value,label]) => <option value={value} key={value}>{label}</option>)}</select></label>
