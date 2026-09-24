@@ -142,12 +142,16 @@ export default function AdminPropertyValuation() {
   async function addCandidate(candidate) {
     if (!selected) return;
     setSaving(true);
-    const referenceValue = Number(candidate.sale_price || 0);
+    const referenceValue = Number(candidate.reference_value || candidate.sale_price || 0);
+    const isClosedSale = candidate.source_type === 'closed_sale';
     const result = await addValuationComparable(selected.id, {
       comparable_property_id: candidate.property_id,
-      source_type: candidate.property_id ? 'active_listing' : 'manual',
-      reference_date: new Date().toISOString().slice(0, 10),
-      listed_price: referenceValue,
+      transaction_id: candidate.transaction_id || null,
+      source_type: candidate.source_type || 'active_listing',
+      reference_date: candidate.reference_date || new Date().toISOString().slice(0, 10),
+      listed_price: candidate.listed_price ?? (isClosedSale ? null : referenceValue),
+      closed_price: candidate.closed_price ?? (isClosedSale ? referenceValue : null),
+      proposal_price: candidate.proposal_price ?? null,
       reference_value: referenceValue,
       area: candidate.built_area || candidate.total_area,
       built_area: candidate.built_area,
@@ -343,9 +347,25 @@ export default function AdminPropertyValuation() {
               <div className="valuation-candidate-box">
                 <div className="valuation-candidate-heading"><strong>Sugestões encontradas no CRM</strong><button type="button" onClick={loadCandidates}>Atualizar</button></div>
                 {candidates.length === 0 ? <p>Nenhum comparável elegível encontrado no cadastro atual.</p> : candidates.map((candidate) => (
-                  <div className="valuation-candidate-row" key={candidate.property_id}>
-                    <div><strong>{candidate.code} — {candidate.title}</strong><span>{candidate.location_text || candidate.neighborhood_name || candidate.city_name || 'Local não informado'} · {formatNumber(candidate.built_area || candidate.total_area)} m² · {formatMoney(candidate.sale_price)}</span></div>
-                    <div><b>{formatNumber(candidate.similarity_index, 0)}%</b><button type="button" onClick={() => addCandidate(candidate)} disabled={saving}>Adicionar</button></div>
+                  <div className="valuation-candidate-row" key={candidate.transaction_id || candidate.property_id}>
+                    <div>
+                      <strong>{candidate.code} — {candidate.title}</strong>
+                      <span>
+                        {candidate.source_type === 'closed_sale' ? 'Negócio realizado' : 'Imóvel anunciado'}
+                        {' · '}
+                        {candidate.reference_date ? new Date(candidate.reference_date + 'T12:00:00').toLocaleDateString('pt-BR') : 'Data não informada'}
+                        {' · '}
+                        {candidate.location_text || candidate.neighborhood_name || candidate.city_name || 'Local não informado'}
+                        {' · '}
+                        {formatNumber(candidate.built_area || candidate.total_area)} m²
+                        {' · '}
+                        {formatMoney(candidate.reference_value || candidate.sale_price)}
+                      </span>
+                    </div>
+                    <div>
+                      <b>{formatNumber(candidate.similarity_index, 0)}%</b>
+                      <button type="button" onClick={() => addCandidate(candidate)} disabled={saving}>Adicionar</button>
+                    </div>
                   </div>
                 ))}
               </div>
