@@ -31,6 +31,7 @@ const NAV_SECTIONS = [
     title: 'Locação',
     items: [
       { to: '/admin/locacoes', label: 'Locações', permission: 'rentals.view' },
+      { to: '/admin/locacoes/relatorios', label: 'Relatórios de Locação', permission: 'rentals.view' },
       { to: '/admin/locacoes/nova', label: 'Novo contrato', permission: 'rentals.manage' },
     ],
   },
