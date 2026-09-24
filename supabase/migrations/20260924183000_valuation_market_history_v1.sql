@@ -67,6 +67,7 @@ base_properties as (
     p.title,
     p.property_type,
     p.purpose,
+    p.status,
     p.sale_price,
     p.city_id,
     p.neighborhood_id,
