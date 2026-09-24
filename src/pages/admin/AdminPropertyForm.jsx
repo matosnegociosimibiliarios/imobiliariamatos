@@ -221,14 +221,20 @@ export default function AdminPropertyForm() {
 
         <div className="admin-page-actions">
           {editing && property && (
-            <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/gestao`}>
-              Gestão do imóvel
-            </Link>
+            <>
+              <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/gestao`}>Gestão</Link>
+              <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>
+            </>
           )}
-          <Link className="admin-link-button" to="/admin/imoveis">
-            Voltar
-          </Link>
+          <Link className="admin-link-button" to="/admin/imoveis">Voltar</Link>
         </div>
+        {editing && property && (
+          <div className="property-record-tabs">
+            <Link className="active" to={`/admin/imoveis/${property.id}/editar`}>Cadastro</Link>
+            <Link to={`/admin/imoveis/${property.id}/gestao`}>Gestão</Link>
+            <Link to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>
+          </div>
+        )}
       </div>
 
       {message && <div className="admin-message">{message}</div>}
