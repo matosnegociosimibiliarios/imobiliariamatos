@@ -104,6 +104,37 @@ export default function AdminPropertyValuation() {
     [valuations, selectedId]
   );
 
+  const marketSummary = useMemo(() => {
+    const comparables = selected?.comparables || [];
+    const closedSales = comparables.filter((item) => item.source_type === 'closed_sale');
+    const activeListings = comparables.filter((item) => item.source_type === 'active_listing');
+    const manualSources = comparables.filter((item) => item.source_type === 'manual');
+    const pricePerM2 = comparables
+      .map((item) => {
+        const value = Number(comparableValue(item) || 0);
+        const area = Number(item.area || item.built_area || 0);
+        return value > 0 && area > 0 ? value / area : null;
+      })
+      .filter((value) => Number.isFinite(value) && value > 0);
+    const sorted = [...pricePerM2].sort((a, b) => a - b);
+    const medianPricePerM2 = sorted.length
+      ? sorted.length % 2
+        ? sorted[Math.floor(sorted.length / 2)]
+        : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+      : null;
+    const latestClosed = [...closedSales]
+      .sort((a, b) => String(b.reference_date || '').localeCompare(String(a.reference_date || '')))[0] || null;
+
+    return {
+      total: comparables.length,
+      closedSales: closedSales.length,
+      activeListings: activeListings.length,
+      manualSources: manualSources.length,
+      medianPricePerM2,
+      latestClosed,
+    };
+  }, [selected]);
+
   async function createEvaluation() {
     setSaving(true);
     const result = await createPropertyValuation(id, {
@@ -387,6 +418,16 @@ export default function AdminPropertyValuation() {
                 <div className="admin-save-bar"><button className="button" disabled={saving}>Adicionar comparável</button></div>
               </form>
             )}
+
+            {selected.comparables?.length ? (
+              <div className="valuation-market-summary">
+                <article><span>Comparáveis</span><strong>{marketSummary.total}</strong><small>Amostra atual</small></article>
+                <article><span>Negócios realizados</span><strong>{marketSummary.closedSales}</strong><small>Dados efetivamente fechados</small></article>
+                <article><span>Anúncios ativos</span><strong>{marketSummary.activeListings}</strong><small>Oferta observada no CRM</small></article>
+                <article><span>R$/m² mediano</span><strong>{marketSummary.medianPricePerM2 ? formatMoney(marketSummary.medianPricePerM2) : '—'}</strong><small>Entre os comparáveis com área e valor</small></article>
+                <article><span>Último negócio</span><strong>{marketSummary.latestClosed?.closed_price ? formatMoney(marketSummary.latestClosed.closed_price) : '—'}</strong><small>{marketSummary.latestClosed?.reference_date ? new Date(marketSummary.latestClosed.reference_date + 'T12:00:00').toLocaleDateString('pt-BR') : 'Nenhum negócio fechado na amostra'}</small></article>
+              </div>
+            ) : null}
 
             <div className="valuation-comparables-table-wrap">
               {selected.comparables?.length ? (
