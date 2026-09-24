@@ -118,3 +118,12 @@ export async function deleteValuationAdjustment(id) {
     .delete()
     .eq('id', id);
 }
+
+export async function setPropertyValuationStatus(id, status) {
+  return supabase
+    .from('property_valuations')
+    .update({ status })
+    .eq('id', id)
+    .select()
+    .single();
+}
