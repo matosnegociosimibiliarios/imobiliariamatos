@@ -377,7 +377,7 @@ export default function AdminPropertyValuation() {
               <div className="valuation-header-status">
                 <span className="valuation-status">{selected.status === 'final' ? 'Finalizada' : selected.status === 'archived' ? 'Arquivada' : 'Rascunho'}</span>
                 <div className="valuation-status-actions">
-                  {selected.status === 'draft' && <button type="button" className="admin-link-button" onClick={() => changeStatus('final')} disabled={saving || !selected.comparables?.length}>Finalizar</button>}
+                  {selected.status === 'draft' && <button type="button" className="admin-link-button" onClick={() => changeStatus('final')} disabled={saving || !selected.comparables?.length || !selected.estimated_value}>Finalizar</button>}
                   {selected.status === 'final' && <button type="button" className="admin-link-button" onClick={() => changeStatus('archived')} disabled={saving}>Arquivar</button>}
                   {selected.status === 'archived' && <button type="button" className="admin-link-button" onClick={() => changeStatus('draft')} disabled={saving}>Reabrir</button>}
                 </div>
