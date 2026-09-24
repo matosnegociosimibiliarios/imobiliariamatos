@@ -61,6 +61,7 @@ export async function addValuationComparable(valuationId, comparable) {
     .insert({
       valuation_id: valuationId,
       comparable_property_id: comparable.comparable_property_id || null,
+      transaction_id: comparable.transaction_id || null,
       source_type: comparable.source_type || 'manual',
       selection_status: comparable.selection_status || 'accepted',
       reference_date: comparable.reference_date || new Date().toISOString().slice(0, 10),
