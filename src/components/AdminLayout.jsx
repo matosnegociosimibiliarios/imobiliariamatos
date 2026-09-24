@@ -208,6 +208,7 @@ export default function AdminLayout() {
             </div>
           )}
           <a href="/" target="_blank" rel="noreferrer">Ver Site Público</a>
+          <NavLink to="/admin" end>Voltar ao Painel</NavLink>
           <button type="button" className="admin-subscription-button" onClick={handleSubscription}>
             Assinar versão paga
           </button>
