@@ -9,6 +9,7 @@ import {
   getAcquisitionMetrics,
   getChannelPerformance,
   getDailyRoutineData,
+  getExecutiveDashboardMetrics,
 } from '../../services/admin';
 import {
   formatCurrency,
@@ -26,6 +27,7 @@ export default function AdminDashboard() {
   const [acquisition, setAcquisition] = useState(null);
   const [channelPerformance, setChannelPerformance] = useState([]);
   const [routineSummary, setRoutineSummary] = useState(null);
+  const [executive, setExecutive] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,6 +41,7 @@ export default function AdminDashboard() {
         acquisitionResult,
         channelResult,
         routineResult,
+        executiveResult,
       ] = await Promise.all([
         getDashboardMetrics(30),
         getLeadSources(30),
@@ -48,6 +51,7 @@ export default function AdminDashboard() {
         getAcquisitionMetrics(30),
         getChannelPerformance(30),
         getDailyRoutineData(),
+        getExecutiveDashboardMetrics(30),
       ]);
 
       setMetrics(metricsResult.data || null);
@@ -58,6 +62,7 @@ export default function AdminDashboard() {
       setAcquisition(acquisitionResult.data || null);
       setChannelPerformance(channelResult.data || []);
       setRoutineSummary(buildRoutine(routineResult.data || {}).counts);
+      setExecutive(executiveResult.data || null);
       setLoading(false);
     })();
   }, []);
@@ -190,6 +195,22 @@ export default function AdminDashboard() {
         </>
       )}
 
+
+      {executive && (
+        <section className="admin-panel">
+          <div className="panel-title-row"><div><span className="eyebrow">CENTRO DE COMANDO</span><h2>Visão executiva</h2><small>Comercial, locação e caixa nos últimos 30 dias.</small></div><div className="admin-actions"><Link to="/admin/financeiro">Financeiro</Link><Link to="/admin/locacoes">Locação</Link></div></div>
+          <div className="management-metrics-grid">
+            <div className="admin-card"><span>Valor vendido</span><strong>{formatCurrency(executive.commercial?.won_value || 0)}</strong></div>
+            <div className="admin-card"><span>Comissão a receber</span><strong>{formatCurrency(executive.commercial?.commission_receivable || 0)}</strong></div>
+            <div className="admin-card"><span>Resultado de caixa</span><strong>{formatCurrency(Number(executive.finance?.income_paid || 0)-Number(executive.finance?.expense_paid || 0))}</strong></div>
+            <div className="admin-card"><span>Contas vencidas</span><strong>{formatCurrency(Number(executive.finance?.overdue_receivable || 0)+Number(executive.finance?.overdue_payable || 0))}</strong></div>
+            <div className="admin-card"><span>Inadimplência locação</span><strong>{formatCurrency(executive.rentals?.overdue_value || 0)}</strong></div>
+            <div className="admin-card"><span>Contratos vencendo</span><strong>{executive.rentals?.expiring_60_days || 0}</strong></div>
+            <div className="admin-card"><span>Manutenções abertas</span><strong>{executive.rentals?.open_maintenance || 0}</strong></div>
+            <div className="admin-card"><span>Propostas abertas</span><strong>{executive.commercial?.open_proposals || 0}</strong></div>
+          </div>
+        </section>
+      )}
 
       <section className="admin-panel routine-dashboard-panel">
         <div className="panel-title-row">

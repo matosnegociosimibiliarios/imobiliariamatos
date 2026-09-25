@@ -1001,3 +1001,8 @@ export async function getDealStatusHistory(dealId) {
 export async function getDealMetrics(daysBack = 365) {
   return supabase.rpc('admin_deal_metrics', { days_back: daysBack });
 }
+
+
+export async function getExecutiveDashboardMetrics(daysBack = 30) {
+  return supabase.rpc('executive_dashboard_metrics', { p_days_back: daysBack });
+}
