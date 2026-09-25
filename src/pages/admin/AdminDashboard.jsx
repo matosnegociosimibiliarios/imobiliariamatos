@@ -1,5 +1,303 @@
-import React,{useEffect,useState}from'react';import{Link}from'react-router-dom';import{formatCurrency,formatDateTime}from'../../services/crm';import{getDashboardMetrics,getExecutiveDashboardMetrics,getDailyRoutineData}from'../../services/admin';import{buildRoutine}from'../../services/routine';
-export default function AdminDashboard(){const[metrics,setMetrics]=useState(null),[exec,setExec]=useState(null),[actions,setActions]=useState([]),[routine,setRoutine]=useState(null),[loading,setLoading]=useState(true);
-useEffect(()=>{(async()=>{const[x,e,r]=await Promise.all([getDashboardMetrics(30),getExecutiveDashboardMetrics(30),getDailyRoutineData()]);setMetrics(x.data||null);setExec(e.data||{});setActions((r.data?.leads||[]).filter(v=>v.next_action_at).sort((a,b)=>new Date(a.next_action_at)-new Date(b.next_action_at)).slice(0,5));setRoutine(buildRoutine(r.data||{}).counts);setLoading(false)})()},[]);
-const f=exec?.finance||{},r=exec?.rentals||{},cm=exec?.commercial||{};
-return <div className="admin-page"><div className="admin-page-header"><div><span className="eyebrow">CENTRO DE COMANDO · ÚLTIMOS 30 DIAS</span><h1>Visão executiva</h1><p>Leitura rápida do comercial, locação e caixa da empresa.</p></div><div className="admin-actions"><Link className="button" to="/admin/financeiro">Financeiro</Link><Link className="button" to="/admin/locacoes">Locação</Link></div></div>{loading?<div className="admin-panel">Carregando dados...</div>:<><section className="admin-panel"><div className="panel-title-row"><div><span className="eyebrow">Resultado</span><h2>Indicadores principais</h2></div></div><div className="management-metrics-grid"><article className="admin-card"><span>Negócios fechados</span><strong>{cm.won_deals||0}</strong></article><article className="admin-card"><span>Valor vendido</span><strong>{formatCurrency(cm.won_value||0)}</strong></article><article className="admin-card"><span>Comissão a receber</span><strong>{formatCurrency(cm.commission_receivable||0)}</strong></article><article className="admin-card"><span>Receita realizada</span><strong>{formatCurrency(f.income_paid||0)}</strong></article><article className="admin-card"><span>Despesa realizada</span><strong>{formatCurrency(f.expense_paid||0)}</strong></article><article className="admin-card"><span>Resultado de caixa</span><strong>{formatCurrency(Number(f.income_paid||0)-Number(f.expense_paid||0))}</strong></article><article className="admin-card"><span>Contratos ativos</span><strong>{r.active_contracts||0}</strong></article><article className="admin-card"><span>Aluguéis mensais</span><strong>{formatCurrency(r.monthly_rent||0)}</strong></article></div></section><section className="admin-dashboard-grid"><section className="admin-panel"><div className="panel-title-row"><h2>Pontos de atenção</h2></div><div className="metric-list"><Link to="/admin/acoes"><span>Ações atrasadas</span><strong>{routine?.overdue||0}</strong></Link><Link to="/admin/financeiro"><span>Contas a receber vencidas</span><strong>{formatCurrency(f.overdue_receivable||0)}</strong></Link><Link to="/admin/financeiro"><span>Contas a pagar vencidas</span><strong>{formatCurrency(f.overdue_payable||0)}</strong></Link><Link to="/admin/locacoes/relatorios"><span>Inadimplência de locação</span><strong>{formatCurrency(r.overdue_value||0)}</strong></Link><Link to="/admin/locacoes/relatorios"><span>Contratos vencendo em 60 dias</span><strong>{r.expiring_60_days||0}</strong></Link><Link to="/admin/locacoes/operacao"><span>Manutenções abertas</span><strong>{r.open_maintenance||0}</strong></Link><Link to="/admin/propostas"><span>Propostas abertas</span><strong>{cm.open_proposals||0}</strong></Link></div></section><section className="admin-panel"><div className="panel-title-row"><h2>Próximas ações</h2><Link to="/admin/acoes">Ver todas</Link></div>{actions.length?<div className="metric-list">{actions.map(x=><Link className="dashboard-action-row" to={`/admin/leads/${x.id}`} key={x.id}><span><strong>{x.name}</strong><small>{x.next_action_text||'Atender cliente'}</small></span><b>{formatDateTime(x.next_action_at)}</b></Link>)}</div>:<p>Nenhuma ação programada.</p>}</section></section><section className="admin-panel"><div className="panel-title-row"><div><span className="eyebrow">Comercial</span><h2>Funil</h2></div><Link to="/admin/leads">Abrir funil</Link></div><div className="routine-dashboard-grid"><div><span>Leads</span><strong>{cm.leads||0}</strong></div><div><span>Agendamentos</span><strong>{cm.appointments||0}</strong></div><div><span>Propostas abertas</span><strong>{cm.open_proposals||0}</strong></div><div><span>Fechados</span><strong>{cm.won_deals||0}</strong></div></div></section></>}</div>}
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  getDashboardMetrics,
+  getLeadSources,
+  getLostReasons,
+  getTopLeadProperties,
+  getUpcomingActions,
+  getAcquisitionMetrics,
+  getChannelPerformance,
+  getDailyRoutineData,
+  getExecutiveDashboardMetrics,
+} from '../../services/admin';
+import {
+  formatCurrency,
+  formatDateTime,
+  originLabel,
+} from '../../services/crm';
+import { buildRoutine } from '../../services/routine';
+
+export default function AdminDashboard() {
+  const [metrics, setMetrics] = useState(null);
+  const [sources, setSources] = useState([]);
+  const [lostReasons, setLostReasons] = useState([]);
+  const [topProperties, setTopProperties] = useState([]);
+  const [actions, setActions] = useState([]);
+  const [acquisition, setAcquisition] = useState(null);
+  const [channelPerformance, setChannelPerformance] = useState([]);
+  const [routineSummary, setRoutineSummary] = useState(null);
+  const [executive, setExecutive] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const [
+        metricsResult,
+        sourcesResult,
+        lostResult,
+        topResult,
+        actionsResult,
+        acquisitionResult,
+        channelResult,
+        routineResult,
+        executiveResult,
+      ] = await Promise.all([
+        getDashboardMetrics(30),
+        getLeadSources(30),
+        getLostReasons(90),
+        getTopLeadProperties(30),
+        getUpcomingActions(),
+        getAcquisitionMetrics(30),
+        getChannelPerformance(30),
+        getDailyRoutineData(),
+        getExecutiveDashboardMetrics(30),
+      ]);
+
+      setMetrics(metricsResult.data || null);
+      setSources(sourcesResult.data || []);
+      setLostReasons(lostResult.data || []);
+      setTopProperties(topResult.data || []);
+      setActions((actionsResult.data || []).slice(0, 5));
+      setAcquisition(acquisitionResult.data || null);
+      setChannelPerformance(channelResult.data || []);
+      setRoutineSummary(buildRoutine(routineResult.data || {}).counts);
+      setExecutive(executiveResult.data || null);
+      setLoading(false);
+    })();
+  }, []);
+
+  const cards = metrics
+    ? [
+        ['Visitantes únicos', metrics.unique_visitors],
+        ['Leads', metrics.leads],
+        ['Agendamentos', metrics.appointments],
+        ['Propostas em aberto', routineSummary?.proposals || 0],
+        ['Fechados', metrics.won],
+        ['Lead → venda', `${metrics.lead_to_won_rate}%`],
+        ['Valor fechado', formatCurrency(metrics.won_value)],
+        ['Comissão', formatCurrency(metrics.commission_value)],
+        ['Captações', metrics.captures],
+        ['Captações novas', metrics.capture_new],
+        ['Autorizados', metrics.capture_authorized],
+        ['Imóveis publicados', metrics.capture_published],
+      ]
+    : [];
+
+  return (
+    <div className="admin-page">
+      <div className="admin-page-header">
+        <div>
+          <span className="eyebrow">Últimos 30 dias</span>
+          <h1>Visão geral</h1>
+        </div>
+
+        <Link className="button" to="/admin/imoveis/novo">
+          Novo imóvel
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="admin-panel">Carregando dados...</div>
+      ) : (
+        <>
+          <div className="admin-stats admin-stats-wide">
+            {cards.map(([label, value]) => (
+              <article className="admin-stat-card" key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </article>
+            ))}
+          </div>
+
+          <div className="admin-dashboard-grid">
+            <section className="admin-panel">
+              <div className="panel-title-row">
+                <h2>Próximas ações</h2>
+                <Link to="/admin/acoes">Ver todas</Link>
+              </div>
+
+              {actions.length === 0 ? (
+                <p>Nenhuma ação cadastrada.</p>
+              ) : (
+                <div className="metric-list">
+                  {actions.map((item) => (
+                    <Link
+                      className="dashboard-action-row"
+                      to={`/admin/leads/${item.id}`}
+                      key={item.id}
+                    >
+                      <span>
+                        <strong>{item.name}</strong>
+                        <small>
+                          {item.next_action_text || 'Atender cliente'}
+                        </small>
+                      </span>
+
+                      <b>{formatDateTime(item.next_action_at)}</b>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="admin-panel">
+              <h2>Imóveis que mais geram leads</h2>
+
+              {topProperties.length === 0 ? (
+                <p>Ainda não há dados suficientes.</p>
+              ) : (
+                <div className="metric-list">
+                  {topProperties.map((item) => (
+                    <div key={item.property_id}>
+                      <span>{item.code} — {item.title}</span>
+                      <strong>{item.total}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="admin-panel">
+              <h2>Origem dos leads</h2>
+
+              {sources.length === 0 ? (
+                <p>Ainda não há leads.</p>
+              ) : (
+                <div className="metric-list">
+                  {sources.map((item) => (
+                    <div key={item.source}>
+                      <span>{item.source}</span>
+                      <strong>{item.total}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="admin-panel">
+              <h2>Por que perdemos clientes?</h2>
+
+              {lostReasons.length === 0 ? (
+                <p>Ainda não há negócios marcados como perdidos.</p>
+              ) : (
+                <div className="metric-list">
+                  {lostReasons.map((item) => (
+                    <div key={item.reason}>
+                      <span>{item.reason}</span>
+                      <strong>{item.total}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </>
+      )}
+
+
+      {executive && (
+        <section className="admin-panel">
+          <div className="panel-title-row"><div><span className="eyebrow">CENTRO DE COMANDO</span><h2>Visão executiva</h2><small>Comercial, locação e caixa nos últimos 30 dias.</small></div><div className="admin-actions"><Link to="/admin/financeiro">Financeiro</Link><Link to="/admin/locacoes">Locação</Link></div></div>
+          <div className="management-metrics-grid">
+            <div className="admin-card"><span>Valor vendido</span><strong>{formatCurrency(executive.commercial?.won_value || 0)}</strong></div>
+            <div className="admin-card"><span>Comissão a receber</span><strong>{formatCurrency(executive.commercial?.commission_receivable || 0)}</strong></div>
+            <div className="admin-card"><span>Resultado de caixa</span><strong>{formatCurrency(Number(executive.finance?.income_paid || 0)-Number(executive.finance?.expense_paid || 0))}</strong></div>
+            <div className="admin-card"><span>Contas vencidas</span><strong>{formatCurrency(Number(executive.finance?.overdue_receivable || 0)+Number(executive.finance?.overdue_payable || 0))}</strong></div>
+            <div className="admin-card"><span>Inadimplência locação</span><strong>{formatCurrency(executive.rentals?.overdue_value || 0)}</strong></div>
+            <div className="admin-card"><span>Contratos vencendo</span><strong>{executive.rentals?.expiring_60_days || 0}</strong></div>
+            <div className="admin-card"><span>Manutenções abertas</span><strong>{executive.rentals?.open_maintenance || 0}</strong></div>
+            <div className="admin-card"><span>Propostas abertas</span><strong>{executive.commercial?.open_proposals || 0}</strong></div>
+          </div>
+        </section>
+      )}
+
+      <section className="admin-panel routine-dashboard-panel">
+        <div className="panel-title-row">
+          <div>
+            <span className="eyebrow">Centro de comando</span>
+            <h2>O que precisa de atenção hoje</h2>
+          </div>
+          <Link to="/admin/acoes">Abrir rotina</Link>
+        </div>
+
+        <div className="routine-dashboard-grid">
+          <Link to="/admin/acoes#atrasadas"><span>Ações atrasadas</span><strong>{routineSummary?.overdue || 0}</strong></Link>
+          <Link to="/admin/acoes#hoje"><span>Ações para hoje</span><strong>{routineSummary?.today || 0}</strong></Link>
+          <Link to="/admin/acoes#visitas"><span>Visitas hoje</span><strong>{routineSummary?.visits || 0}</strong></Link>
+          <Link to="/admin/acoes#sem-acao"><span>Sem próxima ação</span><strong>{routineSummary?.no_next_action || 0}</strong></Link>
+          <Link to="/admin/acoes#propostas"><span>Propostas abertas</span><strong>{routineSummary?.proposals || 0}</strong></Link>
+          <Link to="/admin/acoes#retornos-propostas"><span>Retornos de propostas</span><strong>{routineSummary?.proposal_followups || 0}</strong></Link>
+          <Link to="/admin/acoes#propostas-vencendo"><span>Propostas vencendo</span><strong>{routineSummary?.proposal_expiring || 0}</strong></Link>
+        </div>
+      </section>
+
+      <section className="admin-panel">
+        <div className="panel-title-row">
+          <div>
+            <span className="eyebrow">Origem dos resultados</span>
+            <h2>Desempenho por canal nos últimos 30 dias</h2>
+          </div>
+        </div>
+
+        {channelPerformance.length === 0 ? (
+          <p>Ainda não há dados suficientes.</p>
+        ) : (
+          <div className="channel-performance-table-wrap">
+            <table className="channel-performance-table">
+              <thead>
+                <tr>
+                  <th>Canal</th>
+                  <th>Leads</th>
+                  <th>Visitas</th>
+                  <th>Fechados</th>
+                  <th>Valor fechado</th>
+                  <th>Comissão</th>
+                </tr>
+              </thead>
+              <tbody>
+                {channelPerformance.map((item) => (
+                  <tr key={`${item.platform}-${item.channel}`}>
+                    <td>{originLabel(item.platform, item.channel)}</td>
+                    <td>{item.leads}</td>
+                    <td>{item.appointments}</td>
+                    <td>{item.won}</td>
+                    <td>{formatCurrency(item.deal_value)}</td>
+                    <td>{formatCurrency(item.commission_value)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className="admin-panel">
+        <div className="panel-title-row"><div><span className="eyebrow">Aquisição</span><h2>Interações nos últimos 30 dias</h2></div><Link to="/admin/integracoes">Instagram / Meta</Link></div>
+        <div className="acquisition-grid">
+          <div><span>Buscas no site</span><strong>{acquisition?.search_clicks || 0}</strong></div>
+          <div><span>Cliques no WhatsApp</span><strong>{acquisition?.whatsapp_clicks || 0}</strong></div>
+          <div><span>Leads do site</span><strong>{acquisition?.lead_submits || 0}</strong></div>
+          <div><span>Pedidos de visita</span><strong>{acquisition?.appointment_submits || 0}</strong></div>
+          <div><span>Instagram Direct</span><strong>{acquisition?.instagram_direct_leads || 0}</strong></div>
+          <div><span>Meta Lead Ads</span><strong>{acquisition?.meta_lead_ads || 0}</strong></div>
+        </div>
+      </section>
+      <section className="admin-panel">
+        <h2>Ações rápidas</h2>
+
+        <div className="admin-actions">
+          <Link to="/admin/gestao">Painel gerencial</Link>
+          <Link to="/admin/mensagens">Mensagens Instagram</Link>
+          <Link to="/admin/leads">Abrir funil</Link>
+          <Link to="/admin/acoes">Rotina de hoje</Link>
+          <Link to="/admin/propostas">Propostas</Link>
+          <Link to="/admin/negocios">Negócios fechados</Link>
+          <Link to="/admin/agendamentos">Agendamentos</Link>
+          <Link to="/admin/captacoes">Captações</Link>
+          <Link to="/admin/imoveis">Imóveis</Link>
+        </div>
+      </section>
+    </div>
+  );
+}
