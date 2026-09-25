@@ -31,6 +31,8 @@ const NAV_SECTIONS = [
     title: 'Locação',
     items: [
       { to: '/admin/locacoes', label: 'Locações', permission: 'rentals.view' },
+      { to: '/admin/locacoes/pipeline', label: 'Pipeline de Locação', permission: 'rentals.view' },
+      { to: '/admin/locacoes/operacao', label: 'Central de Operações', permission: 'rentals.manage' },
       { to: '/admin/locacoes/relatorios', label: 'Relatórios de Locação', permission: 'rentals.view' },
       { to: '/admin/locacoes/nova', label: 'Novo contrato', permission: 'rentals.manage' },
     ],
@@ -61,10 +63,7 @@ export default function AdminLayout() {
   const [switchingOrganization, setSwitchingOrganization] = useState(false);
 
   async function loadContext() {
-    const [accessResult, organizationsResult] = await Promise.all([
-      getAccessContext(),
-      getUserOrganizations(),
-    ]);
+    const [accessResult, organizationsResult] = await Promise.all([getAccessContext(), getUserOrganizations()]);
     if (!accessResult.error) setAccess(accessResult.data || null);
     if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
   }
@@ -97,10 +96,7 @@ export default function AdminLayout() {
   async function loadUnread() {
     if (!can(access, 'messages.view')) return;
     try {
-      const [instagramResult, whatsappResult] = await Promise.all([
-        getUnreadInstagramCount(),
-        getUnreadWhatsAppCount(),
-      ]);
+      const [instagramResult, whatsappResult] = await Promise.all([getUnreadInstagramCount(), getUnreadWhatsAppCount()]);
       if (!instagramResult.error) setUnreadInstagram(Number(instagramResult.data || 0));
       if (!whatsappResult.error) setUnreadWhatsApp(Number(whatsappResult.data || 0));
     } catch (error) {
@@ -154,28 +150,14 @@ export default function AdminLayout() {
       <aside className="admin-sidebar">
         <div className="admin-brand">
           <img className="admin-brand-logo" src="/crm-beta-logo.webp" alt="CRM Beta" />
-          <div>
-            <strong>CRM Beta</strong>
-            <small>Painel administrativo</small>
-          </div>
+          <div><strong>CRM Beta</strong><small>Painel administrativo</small></div>
         </div>
 
         {organizations.length > 1 && (
           <div style={{ padding: '0 16px 16px' }}>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
-              Empresa ativa
-            </label>
-            <select
-              value={access?.organization_id || ''}
-              onChange={handleOrganizationChange}
-              disabled={switchingOrganization}
-              style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,.18)', background: 'rgba(255,255,255,.06)', color: 'inherit' }}
-            >
-              {organizations.map((organization) => (
-                <option key={organization.id} value={organization.id}>
-                  {organization.name}
-                </option>
-              ))}
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Empresa ativa</label>
+            <select value={access?.organization_id || ''} onChange={handleOrganizationChange} disabled={switchingOrganization} style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,.18)', background: 'rgba(255,255,255,.06)', color: 'inherit' }}>
+              {organizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}
             </select>
           </div>
         )}
@@ -186,12 +168,7 @@ export default function AdminLayout() {
               <h2 className="admin-nav-section-title">{section.title}</h2>
               <div className="admin-nav-section-items">
                 {section.items.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    end={item.end}
-                    to={item.to}
-                    className={item.badge ? 'admin-nav-with-badge' : undefined}
-                  >
+                  <NavLink key={item.to} end={item.end} to={item.to} className={item.badge ? 'admin-nav-with-badge' : undefined}>
                     <span>{item.label}</span>
                     {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
                   </NavLink>
@@ -202,24 +179,14 @@ export default function AdminLayout() {
         </nav>
 
         <div className="admin-sidebar-bottom">
-          {access && (
-            <div className="admin-current-user">
-              <strong>{access.full_name || access.email || 'Usuário'}</strong>
-              <small>{ROLE_LABELS[access.role] || access.role}</small>
-            </div>
-          )}
+          {access && <div className="admin-current-user"><strong>{access.full_name || access.email || 'Usuário'}</strong><small>{ROLE_LABELS[access.role] || access.role}</small></div>}
           <a href="/" target="_blank" rel="noreferrer">Ver Site Público</a>
           <NavLink to="/admin" end>Voltar ao Painel</NavLink>
-          <button type="button" className="admin-subscription-button" onClick={handleSubscription}>
-            Assinar versão paga
-          </button>
+          <button type="button" className="admin-subscription-button" onClick={handleSubscription}>Assinar versão paga</button>
           <button type="button" onClick={handleLogout}>Sair</button>
         </div>
       </aside>
-
-      <main className="admin-main">
-        <Outlet context={{ access }} />
-      </main>
+      <main className="admin-main"><Outlet context={{ access }} /></main>
     </div>
   );
 }

@@ -41,6 +41,19 @@ export const RENTAL_MAINTENANCE_STATUS_LABELS = {
   cancelled: 'Cancelada',
 };
 
+export const RENTAL_PROCESS_STAGE_LABELS = {
+  available: 'Disponível',
+  interested: 'Interessado',
+  visit: 'Visita',
+  proposal: 'Proposta',
+  screening: 'Análise cadastral',
+  contract: 'Contrato',
+  occupied: 'Ocupado',
+  renewal: 'Renovação',
+  vacated: 'Desocupado',
+  lost: 'Perdido',
+};
+
 export function numberOrNull(value) {
   if (value === '' || value === null || value === undefined) return null;
   const number = Number(value);
@@ -90,29 +103,16 @@ export async function getRentalFormOptions() {
   ]);
 
   return {
-    data: {
-      properties: properties.data || [],
-      leads: leads.data || [],
-    },
+    data: { properties: properties.data || [], leads: leads.data || [] },
     error: properties.error || leads.error || null,
   };
 }
 
 export async function saveRentalContract(payload, id = null) {
   if (id) {
-    return supabase
-      .from('rental_contracts')
-      .update(payload)
-      .eq('id', id)
-      .select()
-      .single();
+    return supabase.from('rental_contracts').update(payload).eq('id', id).select().single();
   }
-
-  return supabase
-    .from('rental_contracts')
-    .insert(payload)
-    .select()
-    .single();
+  return supabase.from('rental_contracts').insert(payload).select().single();
 }
 
 export async function deleteRentalContract(id) {
@@ -128,11 +128,7 @@ export async function refreshRentalPaymentStatuses() {
 }
 
 export async function getRentalPayments(contractId) {
-  return supabase
-    .from('rental_payments')
-    .select('*')
-    .eq('contract_id', contractId)
-    .order('reference_month');
+  return supabase.from('rental_payments').select('*').eq('contract_id', contractId).order('reference_month');
 }
 
 export async function registerRentalPayment(paymentId, payload) {
@@ -147,7 +143,11 @@ export async function registerRentalPayment(paymentId, payload) {
 }
 
 export async function getRentalTransfers(contractId) {
-  return supabase.from('rental_transfers').select('*, charge:rental_charges(id,reference_month)').eq('contract_id', contractId).order('due_date', { ascending: false });
+  return supabase
+    .from('rental_transfers')
+    .select('*, charge:rental_charges(id,reference_month)')
+    .eq('contract_id', contractId)
+    .order('due_date', { ascending: false });
 }
 
 export async function createRentalTransferForPayment(paymentId, accountId = null, dueDate = null) {
@@ -167,16 +167,67 @@ export async function registerRentalTransfer(transferId, payload = {}) {
   });
 }
 
+export async function updateRentalTransferExpenses(transferId, otherExpenses, notes = null) {
+  return supabase.rpc('update_rental_transfer_expenses', {
+    p_transfer_id: transferId,
+    p_other_expenses: Number(otherExpenses || 0),
+    p_notes: notes || null,
+  });
+}
+
 export async function updateRentalPayment(id, payload) {
   return supabase.from('rental_payments').update(payload).eq('id', id).select().single();
 }
 
+export async function setRentalContractLifecycle(contractId, action, at = null) {
+  return supabase.rpc('set_rental_contract_lifecycle', {
+    p_contract_id: contractId,
+    p_action: action,
+    p_at: at || new Date().toISOString(),
+  });
+}
+
+export async function applyRentalAdjustment(contractId, payload) {
+  return supabase.rpc('apply_rental_adjustment', {
+    p_contract_id: contractId,
+    p_index_name: payload.index_name,
+    p_index_percent: Number(payload.index_percent || 0),
+    p_effective_date: payload.effective_date,
+    p_notes: payload.notes || null,
+  });
+}
+
+export async function getRentalAdjustments(contractId) {
+  return supabase.from('rental_adjustments').select('*').eq('contract_id', contractId).order('effective_date', { ascending: false });
+}
+
+export async function getRentalGuarantee(contractId) {
+  return supabase.from('rental_guarantees').select('*').eq('contract_id', contractId).maybeSingle();
+}
+
+export async function saveRentalGuarantee(contractId, payload, id = null) {
+  const record = { ...payload, contract_id: contractId };
+  if (id) return supabase.from('rental_guarantees').update(record).eq('id', id).select().single();
+  return supabase.from('rental_guarantees').upsert(record, { onConflict: 'contract_id' }).select().single();
+}
+
+export async function getRentalCollectionActionsForCharge(chargeId) {
+  return supabase.from('rental_collection_actions').select('*').eq('charge_id', chargeId).order('contacted_at', { ascending: false });
+}
+
+export async function recordRentalCollectionAction(chargeId, payload) {
+  return supabase.rpc('record_rental_collection_action', {
+    p_charge_id: chargeId,
+    p_channel: payload.channel || 'whatsapp',
+    p_notes: payload.notes || null,
+    p_agreement_text: payload.agreement_text || null,
+    p_installment_plan: payload.installment_plan || null,
+    p_next_contact_at: payload.next_contact_at || null,
+  });
+}
+
 export async function getRentalInspections(contractId) {
-  return supabase
-    .from('rental_inspections')
-    .select('*')
-    .eq('contract_id', contractId)
-    .order('scheduled_at', { ascending: false, nullsFirst: false });
+  return supabase.from('rental_inspections').select('*').eq('contract_id', contractId).order('scheduled_at', { ascending: false, nullsFirst: false });
 }
 
 export async function createRentalInspection(payload) {
@@ -188,11 +239,7 @@ export async function updateRentalInspection(id, payload) {
 }
 
 export async function getRentalMaintenance(contractId) {
-  return supabase
-    .from('rental_maintenance')
-    .select('*')
-    .eq('contract_id', contractId)
-    .order('created_at', { ascending: false });
+  return supabase.from('rental_maintenance').select('*').eq('contract_id', contractId).order('created_at', { ascending: false });
 }
 
 export async function createRentalMaintenance(payload) {
@@ -204,11 +251,7 @@ export async function updateRentalMaintenance(id, payload) {
 }
 
 export async function getRentalChecklist(contractId) {
-  return supabase
-    .from('rental_documents')
-    .select('*')
-    .eq('contract_id', contractId)
-    .order('display_order');
+  return supabase.from('rental_documents').select('*').eq('contract_id', contractId).order('display_order');
 }
 
 export async function updateRentalChecklistItem(id, payload) {
@@ -216,9 +259,25 @@ export async function updateRentalChecklistItem(id, payload) {
 }
 
 export async function getRentalHistory(contractId) {
+  return supabase.from('rental_status_history').select('*').eq('contract_id', contractId).order('created_at', { ascending: false });
+}
+
+export async function getRentalProcesses() {
   return supabase
-    .from('rental_status_history')
-    .select('*')
-    .eq('contract_id', contractId)
-    .order('created_at', { ascending: false });
+    .from('rental_processes')
+    .select(`
+      *,
+      property:properties(id,code,title,public_location_text,rent_price,status),
+      lead:leads(id,name,whatsapp,email)
+    `)
+    .order('updated_at', { ascending: false });
+}
+
+export async function saveRentalProcess(payload, id = null) {
+  if (id) return supabase.from('rental_processes').update(payload).eq('id', id).select().single();
+  return supabase.from('rental_processes').insert(payload).select().single();
+}
+
+export async function getRentalStageHistory(propertyId) {
+  return supabase.from('rental_stage_history').select('*').eq('property_id', propertyId).order('created_at', { ascending: false });
 }
