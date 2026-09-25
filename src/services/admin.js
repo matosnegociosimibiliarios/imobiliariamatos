@@ -1006,3 +1006,8 @@ export async function getDealMetrics(daysBack = 365) {
 export async function getExecutiveDashboardMetrics(daysBack = 30) {
   return supabase.rpc('executive_dashboard_metrics', { p_days_back: daysBack });
 }
+
+
+export async function getCommercialFunnelMetrics(daysBack = 30) {
+  return supabase.rpc('commercial_funnel_metrics', { p_days_back: daysBack });
+}

@@ -10,6 +10,7 @@ const NAV_SECTIONS = [
     items: [
       { to: '/admin/gestao', label: 'Metas', permission: 'management.view' },
       { to: '/admin/relatorios', label: 'Relatórios', permission: 'reports.view' },
+      { to: '/admin/funil', label: 'Funil Comercial', permission: 'leads.view' },
       { to: '/admin/leads', label: 'Funil de Clientes', permission: 'leads.view' },
       { to: '/admin/propostas', label: 'Propostas', permission: 'proposals.view' },
       { to: '/admin/negocios', label: 'Negócios Fechados', permission: 'deals.view' },

@@ -5382,3 +5382,45 @@ button, input, select { font: inherit; }
 .valuation-market-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:16px 0}.valuation-market-summary article{padding:14px;border:1px solid #e1e3e6;border-radius:10px;background:#fafafa}.valuation-market-summary span,.valuation-market-summary small{display:block;color:#737981}.valuation-market-summary strong{display:block;margin:6px 0 3px;font-size:19px;color:#1b1e23}.valuation-market-summary article:nth-child(2) strong{color:#b9000b}.valuation-market-summary small{font-size:11px;line-height:1.4}@media(max-width:1000px){.valuation-market-summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:640px){.valuation-market-summary{grid-template-columns:1fr}}
 
 .valuation-header-status{display:flex;align-items:center;gap:8px}.valuation-status-actions{display:flex;gap:6px}@media(max-width:640px){.valuation-header-status{align-items:flex-start;flex-direction:column}}
+
+
+/* =========================================================
+   V12.0 - CENTRO DE COMANDO DO FUNIL COMERCIAL
+   ========================================================= */
+.commercial-funnel-actions{display:flex;gap:10px;align-items:center}
+.commercial-funnel-actions select{min-width:160px}
+.commercial-funnel-summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.commercial-funnel-summary article{padding:15px 16px;border:1px solid var(--crm-silver,#d9dde2);border-radius:10px;background:#fff}
+.commercial-funnel-summary span{display:block;color:#737981;font-size:12px}
+.commercial-funnel-summary strong{display:block;margin-top:7px;color:#17191d;font-size:23px}
+.commercial-funnel-summary article:nth-child(3) strong{color:#a40009}
+.commercial-funnel-board{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:8px;overflow-x:auto}
+.commercial-funnel-stage{display:block;min-width:130px;padding:12px;border:1px solid #e0e2e5;border-radius:10px;background:#fafafa;text-decoration:none;color:#1b1e23}
+.commercial-funnel-stage:hover{border-color:#e10613;background:#fff7f7}
+.commercial-funnel-stage-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.commercial-funnel-stage-top strong{font-size:12px}
+.commercial-funnel-stage-top b{font-size:20px}
+.commercial-funnel-bar{height:7px;margin:12px 0 9px;border-radius:999px;background:#e8e9eb;overflow:hidden}
+.commercial-funnel-bar span{display:block;height:100%;border-radius:inherit;background:#a40009}
+.commercial-funnel-stage.won .commercial-funnel-bar span{background:#167044}
+.commercial-funnel-stage.proposal .commercial-funnel-bar span{background:#b56b00}
+.commercial-funnel-stage-meta{display:flex;justify-content:space-between;gap:6px;color:#7a8088;font-size:10px}
+.commercial-funnel-lost{display:flex;align-items:center;gap:12px;margin-top:12px;padding:11px 13px;border:1px solid #ead1d3;border-radius:9px;background:#fff5f5}
+.commercial-funnel-lost span{color:#737981;font-size:12px}
+.commercial-funnel-lost strong{color:#a40009;font-size:18px}
+.commercial-funnel-lost a{margin-left:auto;color:#a40009;font-weight:700;font-size:12px}
+.commercial-funnel-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.commercial-attention-list,.commercial-source-list{display:grid;gap:8px}
+.commercial-attention-item,.commercial-source-list>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px;border:1px solid #e2e4e7;border-radius:9px;background:#fff;text-decoration:none}
+.commercial-attention-item span,.commercial-source-list span{color:#555c65;font-size:13px}
+.commercial-attention-item strong,.commercial-source-list strong{font-size:17px;color:#17191d}
+.commercial-attention-item.danger{border-color:#efc9cc;background:#fff7f7}
+.commercial-attention-item.danger strong{color:#a40009}
+.commercial-attention-item.warning{border-color:#ead9b9;background:#fffaf1}
+.commercial-attention-item.info{border-color:#cbdce9;background:#f7fbff}
+.commercial-funnel-links{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.commercial-funnel-links a{padding:14px;border:1px solid #d9dde2;border-radius:10px;background:#fff;color:#a40009;text-decoration:none;font-weight:800}
+.commercial-funnel-links a:hover{border-color:#e10613;background:#fff7f7}
+.commercial-funnel-links span{display:block;margin-top:4px;color:#737981;font-size:11px;font-weight:500}
+@media(max-width:1100px){.commercial-funnel-summary{grid-template-columns:repeat(3,1fr)}.commercial-funnel-board{grid-template-columns:repeat(3,minmax(150px,1fr))}.commercial-funnel-links{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.commercial-funnel-actions{width:100%;flex-direction:column;align-items:stretch}.commercial-funnel-actions select{width:100%}.commercial-funnel-summary{grid-template-columns:repeat(2,1fr)}.commercial-funnel-grid{grid-template-columns:1fr}.commercial-funnel-links{grid-template-columns:1fr}}
