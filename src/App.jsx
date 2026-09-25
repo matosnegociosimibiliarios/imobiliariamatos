@@ -44,6 +44,8 @@ import AdminRentals from './pages/admin/AdminRentals';
 import AdminRentalForm from './pages/admin/AdminRentalForm';
 import AdminRentalDetail from './pages/admin/AdminRentalDetail';
 import AdminRentalReports from './pages/admin/AdminRentalReports';
+import AdminRentalPipeline from './pages/admin/AdminRentalPipeline';
+import AdminRentalOperations from './pages/admin/AdminRentalOperations';
 import AdminFinance from './pages/admin/AdminFinance';
 import AdminAgencySettings from './pages/admin/AdminAgencySettings';
 
@@ -98,6 +100,8 @@ export default function App() {
           <Route path="/admin/imoveis/:id/gestao" element={<PermissionRoute permission="properties.view"><AdminPropertyManagement /></PermissionRoute>} />
           <Route path="/admin/imoveis/:id/avaliacao" element={<PermissionRoute permission="properties.view"><AdminPropertyValuation /></PermissionRoute>} />
           <Route path="/admin/locacoes" element={<PermissionRoute permission="rentals.view"><AdminRentals /></PermissionRoute>} />
+          <Route path="/admin/locacoes/pipeline" element={<PermissionRoute permission="rentals.view"><AdminRentalPipeline /></PermissionRoute>} />
+          <Route path="/admin/locacoes/operacao" element={<PermissionRoute permission="rentals.manage"><AdminRentalOperations /></PermissionRoute>} />
           <Route path="/admin/locacoes/relatorios" element={<PermissionRoute permission="rentals.view"><AdminRentalReports /></PermissionRoute>} />
           <Route path="/admin/locacoes/nova" element={<PermissionRoute permission="rentals.manage"><AdminRentalForm /></PermissionRoute>} />
           <Route path="/admin/locacoes/:id" element={<PermissionRoute permission="rentals.view"><AdminRentalDetail /></PermissionRoute>} />
