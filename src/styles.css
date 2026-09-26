@@ -5424,3 +5424,21 @@ button, input, select { font: inherit; }
 .commercial-funnel-links span{display:block;margin-top:4px;color:#737981;font-size:11px;font-weight:500}
 @media(max-width:1100px){.commercial-funnel-summary{grid-template-columns:repeat(3,1fr)}.commercial-funnel-board{grid-template-columns:repeat(3,minmax(150px,1fr))}.commercial-funnel-links{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.commercial-funnel-actions{width:100%;flex-direction:column;align-items:stretch}.commercial-funnel-actions select{width:100%}.commercial-funnel-summary{grid-template-columns:repeat(2,1fr)}.commercial-funnel-grid{grid-template-columns:1fr}.commercial-funnel-links{grid-template-columns:1fr}}
+
+
+/* =========================================================
+   V13.0 - AVALIAÇÃO AVANÇADA
+   ========================================================= */
+.valuation-advanced-panel{margin-top:16px}
+.valuation-advanced-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.valuation-advanced-grid article{padding:14px;border:1px solid #e0e2e5;border-radius:10px;background:#fff}
+.valuation-advanced-grid span{display:block;color:#737981;font-size:11px}
+.valuation-advanced-grid strong{display:block;margin-top:7px;color:#17191d;font-size:19px}
+.valuation-advanced-grid small{display:block;margin-top:5px;color:#858b92;font-size:10px;line-height:1.35}
+.valuation-advanced-subgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.valuation-advanced-subgrid>div{padding:14px;border:1px solid #e0e2e5;border-radius:10px;background:#fafafa}
+.valuation-advanced-subgrid strong{font-size:12px;color:#a40009}
+.valuation-advanced-subgrid p{margin:6px 0 0;color:#626870;font-size:12px;line-height:1.5}
+@media(max-width:1100px){.valuation-advanced-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.valuation-advanced-grid,.valuation-advanced-subgrid{grid-template-columns:1fr 1fr}.valuation-advanced-grid strong{font-size:16px}}
+@media(max-width:480px){.valuation-advanced-grid,.valuation-advanced-subgrid{grid-template-columns:1fr}}

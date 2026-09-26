@@ -9,6 +9,7 @@ import {
   deleteValuationComparable,
   getPropertyValuationCandidates,
   getPropertyValuations,
+  getAdvancedPropertyValuationAnalysis,
   recalculatePropertyValuation,
   setPropertyValuationStatus,
   updatePropertyValuation,
@@ -50,6 +51,7 @@ export default function AdminPropertyValuation() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [advancedAnalysis, setAdvancedAnalysis] = useState(null);
   const [showCandidates, setShowCandidates] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [expandedComparable, setExpandedComparable] = useState(null);
@@ -99,6 +101,16 @@ export default function AdminPropertyValuation() {
   }
 
   useEffect(() => { load(); }, [id]);
+
+  useEffect(() => {
+    if (!selectedId) { setAdvancedAnalysis(null); return; }
+    let active = true;
+    (async () => {
+      const result = await getAdvancedPropertyValuationAnalysis(selectedId);
+      if (active) setAdvancedAnalysis(result.error ? null : result.data);
+    })();
+    return () => { active = false; };
+  }, [selectedId]);
 
   const selected = useMemo(
     () => valuations.find((item) => item.id === selectedId) || null,
@@ -510,6 +522,42 @@ export default function AdminPropertyValuation() {
                 <div className="admin-empty"><h3>Amostra ainda vazia</h3><p>Adicione comparáveis sugeridos pelo CRM ou registre fontes manualmente.</p></div>
               )}
             </div>
+          </section>
+
+          <section className="admin-panel valuation-advanced-panel">
+            <div className="property-section-heading">
+              <div>
+                <span className="eyebrow">Análise avançada</span>
+                <h2>Leitura técnica do mercado</h2>
+                <p className="valuation-help">Indicadores calculados exclusivamente a partir da amostra aceita nesta avaliação.</p>
+              </div>
+            </div>
+            {!advancedAnalysis ? (
+              <div className="admin-empty"><p>Calcule a avaliação para atualizar a análise avançada.</p></div>
+            ) : (
+              <>
+                <div className="valuation-advanced-grid">
+                  <article><span>Mediana R$/m²</span><strong>{advancedAnalysis.price_per_m2?.median ? formatMoney(advancedAnalysis.price_per_m2.median) : '—'}</strong><small>Referência central da amostra</small></article>
+                  <article><span>Média R$/m²</span><strong>{advancedAnalysis.price_per_m2?.mean ? formatMoney(advancedAnalysis.price_per_m2.mean) : '—'}</strong><small>Valor médio observado</small></article>
+                  <article><span>Variação da amostra</span><strong>{advancedAnalysis.price_per_m2?.coefficient_variation_pct != null ? formatNumber(advancedAnalysis.price_per_m2.coefficient_variation_pct, 1) + '%' : '—'}</strong><small>Coeficiente de variação</small></article>
+                  <article><span>Desconto médio realizado</span><strong>{advancedAnalysis.liquidity?.avg_closed_discount_pct != null ? formatNumber(advancedAnalysis.liquidity.avg_closed_discount_pct, 1) + '%' : '—'}</strong><small>Preço fechado versus anunciado</small></article>
+                  <article><span>Prazo mediano</span><strong>{advancedAnalysis.liquidity?.median_days_on_market != null ? formatNumber(advancedAnalysis.liquidity.median_days_on_market, 0) + ' dias' : '—'}</strong><small>Tempo de mercado dos fechamentos</small></article>
+                  <article><span>Posição estimada</span><strong>{advancedAnalysis.positioning?.estimated_vs_median_market_pct != null ? (advancedAnalysis.positioning.estimated_vs_median_market_pct > 0 ? '+' : '') + formatNumber(advancedAnalysis.positioning.estimated_vs_median_market_pct, 1) + '%' : '—'}</strong><small>Versus mediana de mercado por m²</small></article>
+                </div>
+                <div className="valuation-advanced-subgrid">
+                  <div>
+                    <strong>Amostra</strong>
+                    <p>{advancedAnalysis.sample?.count || 0} comparáveis aceitos · {advancedAnalysis.sample?.closed_sales || 0} negócios realizados · {advancedAnalysis.sample?.active_listings || 0} anúncios ativos.</p>
+                    <p>Similaridade média: {formatNumber(advancedAnalysis.sample?.avg_similarity, 1)}% · Distância média: {advancedAnalysis.sample?.avg_distance_km != null ? formatNumber(advancedAnalysis.sample.avg_distance_km, 1) + ' km' : '—'}.</p>
+                  </div>
+                  <div>
+                    <strong>Leitura para investimento</strong>
+                    <p>{advancedAnalysis.investment?.gross_yield_pct != null ? 'Yield bruto indicativo: ' + formatNumber(advancedAnalysis.investment.gross_yield_pct, 2) + '% ao ano.' : 'Sem aluguel informado no snapshot para calcular yield bruto.'}</p>
+                    <p>O yield é apenas uma métrica indicativa e não considera vacância, impostos, manutenção, condomínio ou outros custos.</p>
+                  </div>
+                </div>
+              </>
+            )}
           </section>
 
           <section className="admin-panel valuation-results-panel">
