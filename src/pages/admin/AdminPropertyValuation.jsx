@@ -94,6 +94,12 @@ export default function AdminPropertyValuation() {
     if (!result.error) setCandidates(result.data || []);
   }
 
+  async function loadAdvancedAnalysis(valuationId = selectedId) {
+    if (!valuationId) { setAdvancedAnalysis(null); return; }
+    const result = await getAdvancedPropertyValuationAnalysis(valuationId);
+    setAdvancedAnalysis(result.error ? null : result.data);
+  }
+
   async function load() {
     setLoading(true);
     await Promise.all([loadProperty(), loadValuations(), loadCandidates()]);
@@ -103,8 +109,8 @@ export default function AdminPropertyValuation() {
   useEffect(() => { load(); }, [id]);
 
   useEffect(() => {
-    if (!selectedId) { setAdvancedAnalysis(null); return; }
     let active = true;
+    if (!selectedId) { setAdvancedAnalysis(null); return () => {}; }
     (async () => {
       const result = await getAdvancedPropertyValuationAnalysis(selectedId);
       if (active) setAdvancedAnalysis(result.error ? null : result.data);
@@ -214,6 +220,7 @@ export default function AdminPropertyValuation() {
     else {
       setMessage('Comparável adicionado.');
       await refreshSelected();
+      await loadAdvancedAnalysis(selected.id);
     }
     setSaving(false);
   }
@@ -244,13 +251,17 @@ export default function AdminPropertyValuation() {
       setShowManual(false);
       setMessage('Comparável manual adicionado.');
       await refreshSelected();
+      await loadAdvancedAnalysis(selected.id);
     }
     setSaving(false);
   }
 
   async function refreshSelected() {
     const result = await getPropertyValuations(id);
-    if (!result.error) setValuations(result.data || []);
+    if (!result.error) {
+      setValuations(result.data || []);
+      await loadAdvancedAnalysis(selectedId);
+    }
   }
 
   async function removeComparable(comparable) {
@@ -261,6 +272,7 @@ export default function AdminPropertyValuation() {
     else {
       setMessage('Comparável removido.');
       await refreshSelected();
+      await loadAdvancedAnalysis(selected.id);
     }
     setSaving(false);
   }
@@ -286,7 +298,10 @@ export default function AdminPropertyValuation() {
     setSaving(true);
     const result = await deleteValuationAdjustment(adjustment.id);
     if (result.error) setMessage(result.error.message || 'Não foi possível remover o ajuste.');
-    else await refreshSelected();
+    else {
+      await refreshSelected();
+      await loadAdvancedAnalysis(selected.id);
+    }
     setSaving(false);
   }
 
@@ -300,6 +315,7 @@ export default function AdminPropertyValuation() {
     else {
       setMessage(status === 'final' ? 'Avaliação finalizada.' : status === 'archived' ? 'Avaliação arquivada.' : 'Avaliação reaberta como rascunho.');
       await refreshSelected();
+      await loadAdvancedAnalysis(selected.id);
     }
     setSaving(false);
   }
@@ -312,6 +328,7 @@ export default function AdminPropertyValuation() {
     else {
       setMessage('Cálculo atualizado com base nos comparáveis aceitos.');
       await refreshSelected();
+      await loadAdvancedAnalysis(selected.id);
     }
     setSaving(false);
   }
@@ -538,10 +555,12 @@ export default function AdminPropertyValuation() {
               <>
                 <div className="valuation-advanced-grid">
                   <article><span>Mediana R$/m²</span><strong>{advancedAnalysis.price_per_m2?.median ? formatMoney(advancedAnalysis.price_per_m2.median) : '—'}</strong><small>Referência central da amostra</small></article>
+                  <article><span>Média ponderada R$/m²</span><strong>{advancedAnalysis.price_per_m2?.weighted_mean ? formatMoney(advancedAnalysis.price_per_m2.weighted_mean) : '—'}</strong><small>Considera o peso dos comparáveis</small></article>
                   <article><span>Média R$/m²</span><strong>{advancedAnalysis.price_per_m2?.mean ? formatMoney(advancedAnalysis.price_per_m2.mean) : '—'}</strong><small>Valor médio observado</small></article>
                   <article><span>Variação da amostra</span><strong>{advancedAnalysis.price_per_m2?.coefficient_variation_pct != null ? formatNumber(advancedAnalysis.price_per_m2.coefficient_variation_pct, 1) + '%' : '—'}</strong><small>Coeficiente de variação</small></article>
                   <article><span>Desconto médio realizado</span><strong>{advancedAnalysis.liquidity?.avg_closed_discount_pct != null ? formatNumber(advancedAnalysis.liquidity.avg_closed_discount_pct, 1) + '%' : '—'}</strong><small>Preço fechado versus anunciado</small></article>
                   <article><span>Prazo mediano</span><strong>{advancedAnalysis.liquidity?.median_days_on_market != null ? formatNumber(advancedAnalysis.liquidity.median_days_on_market, 0) + ' dias' : '—'}</strong><small>Tempo de mercado dos fechamentos</small></article>
+                  <article><span>Confiança da amostra</span><strong>{advancedAnalysis.quality?.confidence === 'high' ? 'Alta' : advancedAnalysis.quality?.confidence === 'medium' ? 'Média' : advancedAnalysis.quality?.confidence === 'low' ? 'Baixa' : '—'}</strong><small>{advancedAnalysis.quality?.score != null ? 'Índice interno: ' + formatNumber(advancedAnalysis.quality.score, 0) + '/100' : 'Qualidade da amostra'}</small></article>
                   <article><span>Posição estimada</span><strong>{advancedAnalysis.positioning?.estimated_vs_median_market_pct != null ? (advancedAnalysis.positioning.estimated_vs_median_market_pct > 0 ? '+' : '') + formatNumber(advancedAnalysis.positioning.estimated_vs_median_market_pct, 1) + '%' : '—'}</strong><small>Versus mediana de mercado por m²</small></article>
                 </div>
                 <div className="valuation-advanced-subgrid">
@@ -549,6 +568,7 @@ export default function AdminPropertyValuation() {
                     <strong>Amostra</strong>
                     <p>{advancedAnalysis.sample?.count || 0} comparáveis aceitos · {advancedAnalysis.sample?.closed_sales || 0} negócios realizados · {advancedAnalysis.sample?.active_listings || 0} anúncios ativos.</p>
                     <p>Similaridade média: {formatNumber(advancedAnalysis.sample?.avg_similarity, 1)}% · Distância média: {advancedAnalysis.sample?.avg_distance_km != null ? formatNumber(advancedAnalysis.sample.avg_distance_km, 1) + ' km' : '—'}.</p>
+                    <p>R$/m² ponderado: {advancedAnalysis.price_per_m2?.weighted_mean != null ? formatMoney(advancedAnalysis.price_per_m2.weighted_mean) : '—'} · dispersão: {advancedAnalysis.price_per_m2?.coefficient_variation_pct != null ? formatNumber(advancedAnalysis.price_per_m2.coefficient_variation_pct, 1) + '%' : '—'}.</p>
                   </div>
                   <div>
                     <strong>Leitura para investimento</strong>
