@@ -132,3 +132,7 @@ export async function setPropertyValuationStatus(id, status) {
 export async function getAdvancedPropertyValuationAnalysis(id) {
   return supabase.rpc('property_valuation_advanced_analysis', { p_valuation_id: id });
 }
+
+export async function getAdvancedPropertyValuationAnalysisV2(id) {
+  return supabase.rpc('property_valuation_advanced_analysis_v2', { p_valuation_id: id });
+}
