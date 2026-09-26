@@ -10,6 +10,7 @@ import {
   getPropertyValuationCandidates,
   getPropertyValuations,
   getAdvancedPropertyValuationAnalysis,
+  getAdvancedPropertyValuationAnalysisV2,
   recalculatePropertyValuation,
   setPropertyValuationStatus,
   updatePropertyValuation,
@@ -52,6 +53,7 @@ export default function AdminPropertyValuation() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [advancedAnalysis, setAdvancedAnalysis] = useState(null);
+  const [advancedAnalysisV2, setAdvancedAnalysisV2] = useState(null);
   const [showCandidates, setShowCandidates] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [expandedComparable, setExpandedComparable] = useState(null);
@@ -97,7 +99,9 @@ export default function AdminPropertyValuation() {
   async function loadAdvancedAnalysis(valuationId = selectedId) {
     if (!valuationId) { setAdvancedAnalysis(null); return; }
     const result = await getAdvancedPropertyValuationAnalysis(valuationId);
+    const v2 = await getAdvancedPropertyValuationAnalysisV2(valuationId);
     setAdvancedAnalysis(result.error ? null : result.data);
+    setAdvancedAnalysisV2(v2.error ? null : v2.data);
   }
 
   async function load() {
@@ -113,7 +117,11 @@ export default function AdminPropertyValuation() {
     if (!selectedId) { setAdvancedAnalysis(null); return () => {}; }
     (async () => {
       const result = await getAdvancedPropertyValuationAnalysis(selectedId);
-      if (active) setAdvancedAnalysis(result.error ? null : result.data);
+      const v2 = await getAdvancedPropertyValuationAnalysisV2(selectedId);
+      if (active) {
+        setAdvancedAnalysis(result.error ? null : result.data);
+        setAdvancedAnalysisV2(v2.error ? null : v2.data);
+      }
     })();
     return () => { active = false; };
   }, [selectedId]);
@@ -576,6 +584,37 @@ export default function AdminPropertyValuation() {
                     <p>O yield é apenas uma métrica indicativa e não considera vacância, impostos, manutenção, condomínio ou outros custos.</p>
                   </div>
                 </div>
+              </>
+            )}
+          </section>
+
+          <section className="admin-panel valuation-v2-panel">
+            <div className="property-section-heading">
+              <div>
+                <span className="eyebrow">Análise avançada V2</span>
+                <h2>Robustez e cenários de mercado</h2>
+                <p className="valuation-help">A análise usa apenas comparáveis aceitos e separa mediana, quartis e possíveis outliers da amostra.</p>
+              </div>
+            </div>
+            {!advancedAnalysisV2 ? (
+              <div className="admin-empty"><p>Adicione e aceite comparáveis para gerar a análise avançada.</p></div>
+            ) : (
+              <>
+                <div className="valuation-advanced-grid">
+                  <article><span>R$/m² P25</span><strong>{advancedAnalysisV2.price_per_m2?.p25 ? formatMoney(advancedAnalysisV2.price_per_m2.p25) : '—'}</strong><small>Faixa conservadora</small></article>
+                  <article><span>R$/m² mediano</span><strong>{advancedAnalysisV2.price_per_m2?.median ? formatMoney(advancedAnalysisV2.price_per_m2.median) : '—'}</strong><small>Ponto central da amostra</small></article>
+                  <article><span>R$/m² P75</span><strong>{advancedAnalysisV2.price_per_m2?.p75 ? formatMoney(advancedAnalysisV2.price_per_m2.p75) : '—'}</strong><small>Faixa superior observada</small></article>
+                  <article><span>Outliers</span><strong>{advancedAnalysisV2.outliers?.count ?? 0}</strong><small>Fora do intervalo IQR</small></article>
+                  <article><span>Amostra fechada</span><strong>{formatNumber(advancedAnalysisV2.sample?.closed_share_pct, 1)}%</strong><small>Participação de negócios realizados</small></article>
+                  <article><span>Dispersão</span><strong>{advancedAnalysisV2.interpretation?.dispersion || '—'}</strong><small>Coeficiente de variação</small></article>
+                </div>
+                <div className="valuation-v2-scenarios">
+                  <div><strong>Cenários por m²</strong><span>Conservador: {advancedAnalysisV2.scenarios?.conservative_value ? formatMoney(advancedAnalysisV2.scenarios.conservative_value) : '—'}</span><span>Central: {advancedAnalysisV2.scenarios?.central_value ? formatMoney(advancedAnalysisV2.scenarios.central_value) : '—'}</span><span>Superior: {advancedAnalysisV2.scenarios?.upper_market_value ? formatMoney(advancedAnalysisV2.scenarios.upper_market_value) : '—'}</span></div>
+                  <div><strong>Leitura da amostra</strong><span>Força: {advancedAnalysisV2.interpretation?.sample_strength || '—'}</span><span>Sinal: {advancedAnalysisV2.interpretation?.market_signal === 'acima_da_mediana' ? 'Acima da mediana' : advancedAnalysisV2.interpretation?.market_signal === 'abaixo_da_mediana' ? 'Abaixo da mediana' : advancedAnalysisV2.interpretation?.market_signal === 'proximo_da_mediana' ? 'Próximo da mediana' : 'Insuficiente'}</span><span>Qualidade V2: {formatNumber(advancedAnalysisV2.quality?.score, 0)}/100</span></div>
+                </div>
+                {(advancedAnalysisV2.outliers?.count || 0) > 0 && (
+                  <div className="valuation-v2-alert"><strong>Atenção à amostra:</strong> {advancedAnalysisV2.outliers.count} comparável(is) apresenta(m) R$/m² fora do intervalo estatístico entre {formatMoney(advancedAnalysisV2.outliers.lower_bound)} e {formatMoney(advancedAnalysisV2.outliers.upper_bound)}. Revise esses itens antes de finalizar a avaliação.</div>
+                )}
               </>
             )}
           </section>

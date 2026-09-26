@@ -5442,3 +5442,10 @@ button, input, select { font: inherit; }
 @media(max-width:1100px){.valuation-advanced-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:700px){.valuation-advanced-grid,.valuation-advanced-subgrid{grid-template-columns:1fr 1fr}.valuation-advanced-grid strong{font-size:16px}}
 @media(max-width:480px){.valuation-advanced-grid,.valuation-advanced-subgrid{grid-template-columns:1fr}}
+
+/* Advanced valuation V2 */
+.valuation-v2-scenarios{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.valuation-v2-scenarios>div{display:grid;gap:8px;padding:14px;border:1px solid #e1e3e6;border-radius:10px;background:#fafafa}
+.valuation-v2-scenarios strong{font-size:13px;color:#20242a}.valuation-v2-scenarios span{font-size:12px;color:#606771}
+.valuation-v2-alert{margin-top:12px;padding:12px 14px;border:1px solid #e7caca;border-radius:9px;background:#fff7f7;color:#5f2024;font-size:12px}
+@media(max-width:760px){.valuation-v2-scenarios{grid-template-columns:1fr}}
