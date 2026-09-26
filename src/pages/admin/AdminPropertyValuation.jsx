@@ -10,6 +10,7 @@ import {
   getPropertyValuationCandidates,
   getPropertyValuations,
   getAdvancedPropertyValuationAnalysis,
+  getAdvancedPropertyValuationAnalysisV2,
   recalculatePropertyValuation,
   setPropertyValuationStatus,
   updatePropertyValuation,
@@ -52,6 +53,7 @@ export default function AdminPropertyValuation() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [advancedAnalysis, setAdvancedAnalysis] = useState(null);
+  const [advancedAnalysisV2, setAdvancedAnalysisV2] = useState(null);
   const [showCandidates, setShowCandidates] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [expandedComparable, setExpandedComparable] = useState(null);
@@ -97,7 +99,9 @@ export default function AdminPropertyValuation() {
   async function loadAdvancedAnalysis(valuationId = selectedId) {
     if (!valuationId) { setAdvancedAnalysis(null); return; }
     const result = await getAdvancedPropertyValuationAnalysis(valuationId);
+    const v2 = await getAdvancedPropertyValuationAnalysisV2(valuationId);
     setAdvancedAnalysis(result.error ? null : result.data);
+    setAdvancedAnalysisV2(v2.error ? null : v2.data);
   }
 
   async function load() {
@@ -113,7 +117,11 @@ export default function AdminPropertyValuation() {
     if (!selectedId) { setAdvancedAnalysis(null); return () => {}; }
     (async () => {
       const result = await getAdvancedPropertyValuationAnalysis(selectedId);
-      if (active) setAdvancedAnalysis(result.error ? null : result.data);
+      const v2 = await getAdvancedPropertyValuationAnalysisV2(selectedId);
+      if (active) {
+        setAdvancedAnalysis(result.error ? null : result.data);
+        setAdvancedAnalysisV2(v2.error ? null : v2.data);
+      }
     })();
     return () => { active = false; };
   }, [selectedId]);
