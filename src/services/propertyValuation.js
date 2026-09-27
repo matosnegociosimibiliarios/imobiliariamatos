@@ -55,6 +55,25 @@ export async function recalculatePropertyValuation(id) {
   });
 }
 
+export async function consolidatePropertyValuationComparables(id, limit = 30) {
+  return supabase.rpc('consolidate_property_valuation_comparables', {
+    p_valuation_id: id,
+    p_limit: limit,
+  });
+}
+
+export async function getPropertyValuationHistory(id) {
+  return supabase
+    .from('property_valuation_history')
+    .select('*')
+    .eq('valuation_id', id)
+    .order('version', { ascending: false });
+}
+
+export async function getPropertyValuationExecutiveSummary(id) {
+  return supabase.rpc('property_valuation_executive_summary', { p_valuation_id: id });
+}
+
 export async function addValuationComparable(valuationId, comparable) {
   return supabase
     .from('valuation_comparables')
