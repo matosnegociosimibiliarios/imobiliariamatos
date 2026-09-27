@@ -9,6 +9,9 @@ import {
   deleteValuationComparable,
   getPropertyValuationCandidates,
   getPropertyValuations,
+  getPropertyValuationHistory,
+  getPropertyValuationExecutiveSummary,
+  consolidatePropertyValuationComparables,
   getAdvancedPropertyValuationAnalysis,
   getAdvancedPropertyValuationAnalysisV2,
   recalculatePropertyValuation,
@@ -54,6 +57,8 @@ export default function AdminPropertyValuation() {
   const [message, setMessage] = useState('');
   const [advancedAnalysis, setAdvancedAnalysis] = useState(null);
   const [advancedAnalysisV2, setAdvancedAnalysisV2] = useState(null);
+  const [executiveSummary, setExecutiveSummary] = useState(null);
+  const [valuationHistory, setValuationHistory] = useState([]);
   const [showCandidates, setShowCandidates] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [expandedComparable, setExpandedComparable] = useState(null);
@@ -100,8 +105,12 @@ export default function AdminPropertyValuation() {
     if (!valuationId) { setAdvancedAnalysis(null); return; }
     const result = await getAdvancedPropertyValuationAnalysis(valuationId);
     const v2 = await getAdvancedPropertyValuationAnalysisV2(valuationId);
+    const executive = await getPropertyValuationExecutiveSummary(valuationId);
+    const history = await getPropertyValuationHistory(valuationId);
     setAdvancedAnalysis(result.error ? null : result.data);
     setAdvancedAnalysisV2(v2.error ? null : v2.data);
+    setExecutiveSummary(executive.error ? null : executive.data);
+    setValuationHistory(history.error ? [] : (history.data || []));
   }
 
   async function load() {
@@ -118,9 +127,13 @@ export default function AdminPropertyValuation() {
     (async () => {
       const result = await getAdvancedPropertyValuationAnalysis(selectedId);
       const v2 = await getAdvancedPropertyValuationAnalysisV2(selectedId);
+      const executive = await getPropertyValuationExecutiveSummary(selectedId);
+      const history = await getPropertyValuationHistory(selectedId);
       if (active) {
         setAdvancedAnalysis(result.error ? null : result.data);
         setAdvancedAnalysisV2(v2.error ? null : v2.data);
+        setExecutiveSummary(executive.error ? null : executive.data);
+        setValuationHistory(history.error ? [] : (history.data || []));
       }
     })();
     return () => { active = false; };
@@ -171,8 +184,9 @@ export default function AdminPropertyValuation() {
     if (result.error) setMessage(result.error.message || 'Não foi possível iniciar a avaliação.');
     else {
       setSelectedId(result.data.id);
+      await consolidatePropertyValuationComparables(result.data.id, 30);
       await loadValuations();
-      setMessage('Nova avaliação criada.');
+      setMessage('Nova avaliação criada e amostra de mercado consolidada automaticamente.');
     }
     setSaving(false);
   }
@@ -322,6 +336,19 @@ export default function AdminPropertyValuation() {
     if (result.error) setMessage(result.error.message || 'Não foi possível alterar o status da avaliação.');
     else {
       setMessage(status === 'final' ? 'Avaliação finalizada.' : status === 'archived' ? 'Avaliação arquivada.' : 'Avaliação reaberta como rascunho.');
+      await refreshSelected();
+      await loadAdvancedAnalysis(selected.id);
+    }
+    setSaving(false);
+  }
+
+  async function consolidateSample() {
+    if (!selected) return;
+    setSaving(true);
+    const result = await consolidatePropertyValuationComparables(selected.id, 30);
+    if (result.error) setMessage(result.error.message || 'Não foi possível consolidar a amostra.');
+    else {
+      setMessage('Amostra de mercado atualizada automaticamente.');
       await refreshSelected();
       await loadAdvancedAnalysis(selected.id);
     }
@@ -549,6 +576,22 @@ export default function AdminPropertyValuation() {
             </div>
           </section>
 
+          <section className="admin-panel valuation-executive-panel">
+            <div className="property-section-heading">
+              <div><span className="eyebrow">Visão executiva</span><h2>Resumo da avaliação</h2><p className="valuation-help">Síntese da faixa de valor, qualidade da amostra e cenários calculados.</p></div>
+              <button className="admin-link-button" type="button" onClick={consolidateSample} disabled={saving}>Atualizar amostra automaticamente</button>
+            </div>
+            {executiveSummary?.analysis ? (
+              <div className="valuation-market-summary">
+                <article><span>Valor estimado</span><strong>{formatMoney(executiveSummary.valuation?.estimated_value) || '—'}</strong><small>Resultado central</small></article>
+                <article><span>Faixa de mercado</span><strong>{formatMoney(executiveSummary.valuation?.minimum_value) || '—'} → {formatMoney(executiveSummary.valuation?.maximum_value) || '—'}</strong><small>Limites calculados</small></article>
+                <article><span>R$/m² mediano</span><strong>{formatMoney(executiveSummary.analysis?.price_per_m2?.median) || '—'}</strong><small>Mediana da amostra</small></article>
+                <article><span>Amostra</span><strong>{executiveSummary.analysis?.sample?.count ?? 0}</strong><small>{executiveSummary.analysis?.sample?.closed_sales ?? 0} negócios realizados</small></article>
+                <article><span>Qualidade</span><strong>{formatNumber(executiveSummary.analysis?.quality?.score, 0)}/100</strong><small>{executiveSummary.analysis?.quality?.confidence === 'high' ? 'Alta' : executiveSummary.analysis?.quality?.confidence === 'medium' ? 'Média' : 'Baixa'}</small></article>
+              </div>
+            ) : <div className="admin-empty"><p>O resumo executivo será preenchido após a consolidação e o cálculo da avaliação.</p></div>}
+          </section>
+
           <section className="admin-panel valuation-advanced-panel">
             <div className="property-section-heading">
               <div>
@@ -638,6 +681,20 @@ export default function AdminPropertyValuation() {
             </div>
           </section>
         </>
+      )}
+
+      {selected && valuationHistory.length > 0 && (
+        <section className="admin-panel valuation-change-history">
+          <div className="property-section-heading"><div><span className="eyebrow">Auditoria</span><h2>Histórico de alterações</h2><p className="valuation-help">Cada versão preserva o estado da avaliação e os principais eventos.</p></div></div>
+          <div className="valuation-history-list">
+            {valuationHistory.slice(0, 8).map((item) => (
+              <div key={item.id} className="valuation-history-item">
+                <span>v{item.version}</span><strong>{item.event_type === 'status_changed' ? 'Status alterado' : item.event_type === 'recalculated' ? 'Cálculo atualizado' : item.event_type === 'created' ? 'Avaliação criada' : 'Dados atualizados'}</strong>
+                <small>{new Date(item.created_at).toLocaleString('pt-BR')} · {item.actor_id ? 'usuário identificado' : 'processo do sistema'}</small>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       <section className="admin-panel valuation-disclaimer">
