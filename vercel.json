@@ -43,11 +43,7 @@
   "rewrites": [
     {
       "source": "/sitemap.xml",
-      "destination": "/api/sitemap"
-    },
-    {
-      "source": "/robots.txt",
-      "destination": "/api/robots"
+      "destination": "/api/property-page?mode=sitemap"
     },
     {
       "source": "/imovel/:slug",
