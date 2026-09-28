@@ -32,6 +32,7 @@ const initialForm = {
   financing_allowed: false,
   exchange_allowed: false,
   featured: false,
+  tag: '',
 };
 
 function numberOrNull(value) {
@@ -88,6 +89,7 @@ export default function AdminPropertyForm() {
         financing_allowed: Boolean(data.financing_allowed),
         exchange_allowed: Boolean(data.exchange_allowed),
         featured: Boolean(data.featured),
+        tag: data.tag || '',
       });
 
       setLoading(false);
@@ -146,6 +148,7 @@ export default function AdminPropertyForm() {
         financing_allowed: form.financing_allowed,
         exchange_allowed: form.exchange_allowed,
         featured: form.featured,
+        tag: form.tag || null,
         published_at:
           form.status === 'published'
             ? new Date().toISOString()
@@ -474,6 +477,16 @@ export default function AdminPropertyForm() {
                 onChange={updateField}
               />
               Imóvel em destaque
+            </label>
+
+            <label className="property-tag-field">
+              Etiqueta pública
+              <select name="tag" value={form.tag} onChange={updateField}>
+                <option value="">Sem etiqueta</option>
+                <option value="Lançamento">Lançamento</option>
+                <option value="Exclusivo">Exclusivo</option>
+                <option value="Pronto para Morar">Pronto para Morar</option>
+              </select>
             </label>
           </div>
         </section>
