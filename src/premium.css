@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;900&display=swap');
+
+:root {
+  --matos-red: #A60311;
+  --matos-red-dark: #590209;
+  --matos-black: #0D0D0D;
+  --matos-text: #2B2B2B;
+  --matos-white: #FFFFFF;
+  --matos-line: #EAEAEA;
+  --matos-soft: #F5F5F5;
+}
+body { font-family: 'Inter', Arial, sans-serif; color: var(--matos-text); background: var(--matos-white); }
+h1,h2,h3,h4,.brand-wordmark { font-family: 'Montserrat','Inter',sans-serif; }
+.premium-header { background:#FFFFFF; border-bottom-color:#EAEAEA; }
+.premium-header .nav a:hover,.premium-header .nav a.active { color:#A60311; }
+.client-area-button:hover { border-color:#A60311; color:#A60311; }
+.premium-hero-overlay { background:rgba(13,13,13,.40); }
+.premium-search .tab.active { color:#A60311; }
+.button,.whatsapp-cta { background:#A60311; }
+.button:hover,.whatsapp-cta:hover { background:#590209; }
+.premium-showcase { background:#F5F5F5; }
+.property-card { border-color:#EAEAEA; }
+.property-card-badge { background:#A60311; color:#FFFFFF; }
+.premium-conversion,.premium-footer { background:#0D0D0D; }
+.admin-shell { --crm-red:#A60311; --crm-red-dark:#590209; --crm-black:#0D0D0D; --accent:#A60311; --accent-2:#590209; --ink:#2B2B2B; --line:#EAEAEA; }
