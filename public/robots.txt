@@ -1,0 +1,1 @@
+User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /login\n\nSitemap: https://imobiliariamatos.vercel.app/sitemap.xml\n
