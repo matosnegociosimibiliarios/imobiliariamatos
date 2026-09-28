@@ -39,7 +39,35 @@ function inject(html, { title, description, canonical, image, robots='index,foll
   return html.replace('</head>', `${tags.join('\n')}\n</head>`);
 }
 
+
+function xmlEscape(v=''){return String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');}
+async function serveSitemap(req,res){
+  const host=req.headers['x-forwarded-host']||req.headers.host;
+  const origin=`https://${host}`;
+  const [cities,props]=await Promise.all([
+    publicDb('cities?select=id,slug&active=eq.true&limit=1000'),
+    publicDb('properties?select=slug,purpose,property_type,city_id,updated_at&status=eq.published&deleted_at=is.null&limit=1000')
+  ]);
+  const cityMap=new Map(cities.map(c=>[c.id,c]));
+  const typeMap={Casa:'casas',Apartamento:'apartamentos',Terreno:'terrenos','Sítio':'sitios',Comercial:'imoveis-comerciais'};
+  const urls=new Set(['/','/comprar','/alugar','/anuncie-seu-imovel','/avaliacao-do-imovel','/politica-de-privacidade']);
+  for(const p of props){
+    urls.add(`/imovel/${p.slug}`);
+    const city=cityMap.get(p.city_id); if(!city) continue;
+    const purposes=p.purpose==='sale_and_rent'?['sale','rent']:[p.purpose];
+    for(const purpose of purposes){
+      const prefix=purpose==='rent'?'imoveis-para-alugar':'imoveis-a-venda';
+      urls.add(`/${prefix}/${city.slug}`);
+      const ts=typeMap[p.property_type]; if(ts) urls.add(`/${prefix}/${city.slug}/${ts}`);
+    }
+  }
+  const body=[...urls].map(path=>`<url><loc>${xmlEscape(origin+path)}</loc></url>`).join('\n');
+  res.setHeader('Content-Type','application/xml; charset=utf-8');
+  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`);
+}
+
 export default async function handler(req,res) {
+  if (req.query.mode === 'sitemap') return serveSitemap(req,res);
   try {
     const slug=String(req.query.slug||'').trim();
     const host=req.headers['x-forwarded-host']||req.headers.host||'imobiliariamatos.vercel.app';
