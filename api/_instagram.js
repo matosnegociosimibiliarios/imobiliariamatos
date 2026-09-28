@@ -9,8 +9,9 @@ function instagramAppId() {
 function instagramAppSecret() {
   return process.env.META_INSTAGRAM_APP_SECRET || process.env.META_APP_SECRET;
 }
-function redirectUri(req) {
-  return process.env.META_INSTAGRAM_REDIRECT_URI || 'https://imobiliariamatos.vercel.app/api/instagram-callback';
+const INSTAGRAM_REDIRECT_URI = 'https://imobiliariamatos.vercel.app/api/instagram-callback';
+function redirectUri() {
+  return INSTAGRAM_REDIRECT_URI;
 }
 function normalizeUsername(value) {
   return String(value || '').trim().replace(/^@+/, '').toLowerCase();
