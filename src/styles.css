@@ -5454,7 +5454,6 @@ button, input, select { font: inherit; }
 /* =========================================================
    V14 — IMOBILIÁRIA MATOS PREMIUM DESIGN SYSTEM
    ========================================================= */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;900&display=swap');
 
 :root{
   --matos-red:#A60311;--matos-red-dark:#590209;--matos-black:#0D0D0D;
