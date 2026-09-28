@@ -52,7 +52,8 @@ export async function startInstagramOAuth(req, res) {
     url.searchParams.set('response_type', 'code');
     url.searchParams.set('scope', SCOPES.join(','));
     url.searchParams.set('state', state);
-    url.searchParams.set('force_reauth', '1');
+    url.searchParams.set('enable_fb_login', '0');
+    url.searchParams.set('force_authentication', '1');
 
     res.status(200).json({ url: url.toString() });
   } catch (error) {
