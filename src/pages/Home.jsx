@@ -5,14 +5,6 @@ import { trackEvent } from '../services/tracking';
 import PropertyGrid from '../components/PropertyGrid';
 import { getHomeProperties } from '../services/properties';
 
-const propertyTypes = [
-  ['Casa', 'Casas para morar, investir ou vender'],
-  ['Apartamento', 'Opções práticas em diferentes regiões'],
-  ['Terreno', 'Áreas para construir e investir'],
-  ['Sítio', 'Imóveis rurais e de lazer'],
-  ['Comercial', 'Pontos e espaços para negócios'],
-];
-
 export default function Home() {
   const navigate = useNavigate();
   const [search, setSearch] = useState({ purpose: 'sale', location: '', propertyType: '' });
@@ -22,35 +14,43 @@ export default function Home() {
 
   useEffect(() => {
     let active = true;
-
     (async () => {
       const { data, error } = await getHomeProperties();
-
       if (!active) return;
       setProperties(data || []);
       setLoadError(Boolean(error));
       setLoading(false);
     })();
-
     return () => { active = false; };
   }, []);
 
+  function updateSearch(event) {
+    const { name, value } = event.target;
+    setSearch((current) => ({ ...current, [name]: value }));
+  }
 
-  function updateSearch(event) { const { name, value } = event.target; setSearch((current) => ({ ...current, [name]: value })); }
-  function submitSearch(event) { event.preventDefault(); const params = new URLSearchParams(); if (search.location) params.set('local', search.location); if (search.propertyType) params.set('tipo', search.propertyType); trackEvent('search_click', { metadata: { source:'home', ...search } }); const route = search.purpose === 'rent' ? '/alugar' : '/comprar'; navigate(`${route}${params.toString() ? `?${params.toString()}` : ''}`); }
+  function submitSearch(event) {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    if (search.location) params.set('local', search.location);
+    if (search.propertyType) params.set('tipo', search.propertyType);
+    trackEvent('search_click', { metadata: { source: 'home', ...search } });
+    const route = search.purpose === 'rent' ? '/alugar' : '/comprar';
+    navigate(`${route}${params.toString() ? `?${params.toString()}` : ''}`);
+  }
+
   return (
     <main id="inicio">
-      <SeoHead title="Imóveis em Ressaquinha e região" description="Imóveis para comprar, alugar, anunciar e avaliar em Ressaquinha e região." canonicalPath="/" jsonLd={{ '@context':'https://schema.org', '@type':'RealEstateAgent', name:'Matos Negócios Imobiliários', url:window.location.origin }} />
-      <section className="hero">
-        <div className="hero-copy">
-          <span className="eyebrow">Matos Negócios Imobiliários</span>
-          <h1>Encontre o imóvel certo para você.</h1>
-          <p>
-            Casas, apartamentos, terrenos, sítios e imóveis comerciais para comprar,
-            alugar ou investir.
-          </p>
+      <SeoHead title="Imobiliária Matos | Imóveis em Ressaquinha e região" description="Encontre imóveis para comprar, alugar, vender ou avaliar em Ressaquinha e região." canonicalPath="/" jsonLd={{ '@context':'https://schema.org', '@type':'RealEstateAgent', name:'Imobiliária Matos', url:window.location.origin }} />
 
-          <form className="search-panel" onSubmit={submitSearch}>
+      <section className="premium-hero">
+        <div className="premium-hero-overlay" />
+        <div className="premium-hero-content">
+          <span className="eyebrow eyebrow-light">Imobiliária Matos</span>
+          <h1>Encontre o imóvel perfeito para a sua história com a Imobiliária Matos.</h1>
+          <p>Compra, venda e locação com atendimento próximo, informação clara e segurança em cada etapa.</p>
+
+          <form className="search-panel premium-search" onSubmit={submitSearch}>
             <div className="search-tabs">
               <button className={`tab ${search.purpose === 'sale' ? 'active' : ''}`} type="button" onClick={() => setSearch((c) => ({ ...c, purpose:'sale' }))}>Comprar</button>
               <button className={`tab ${search.purpose === 'rent' ? 'active' : ''}`} type="button" onClick={() => setSearch((c) => ({ ...c, purpose:'rent' }))}>Alugar</button>
@@ -58,88 +58,45 @@ export default function Home() {
             <div className="search-grid">
               <label>Localização<input name="location" value={search.location} onChange={updateSearch} placeholder="Cidade ou bairro" /></label>
               <label>Tipo de imóvel<select name="propertyType" value={search.propertyType} onChange={updateSearch}><option value="">Todos os tipos</option><option>Casa</option><option>Apartamento</option><option>Terreno</option><option>Sítio</option><option>Comercial</option></select></label>
-              <button className="button search-button" type="submit">Buscar imóveis</button>
+              <button className="button search-button" type="submit">Buscar Imóveis</button>
             </div>
           </form>
         </div>
-
-        <div className="hero-visual" aria-hidden="true">
-          <div className="building-card">
-            <span>Seu próximo imóvel começa aqui.</span>
-          </div>
-        </div>
       </section>
 
-      <section className="section">
+      <section className="section premium-showcase">
         <div className="section-heading">
-          <span className="eyebrow">Oportunidades</span>
+          <span className="eyebrow">Seleção Matos</span>
           <h2>Imóveis em destaque</h2>
-          <p>Os imóveis publicados no banco aparecem automaticamente nesta área.</p>
+          <p>Oportunidades selecionadas para morar, investir ou começar uma nova fase.</p>
         </div>
-
         {loading && <div className="loading-box">Carregando imóveis...</div>}
-
-        {!loading && loadError && (
-          <div className="empty-state">
-            <h3>Não foi possível carregar os imóveis</h3>
-            <p>Confira a conexão com o banco e tente novamente.</p>
-          </div>
-        )}
-
-        {!loading && !loadError && properties.length > 0 && (
-          <PropertyGrid properties={properties} />
-        )}
-
-        {!loading && !loadError && properties.length === 0 && (
-          <div className="empty-state">
-            <div className="empty-icon">⌂</div>
-            <h3>Nenhum imóvel publicado ainda</h3>
-            <p>Assim que você publicar o primeiro imóvel, ele aparecerá aqui automaticamente.</p>
-          </div>
-        )}
+        {!loading && loadError && <div className="empty-state"><h3>Não foi possível carregar os imóveis</h3><p>Tente novamente em alguns instantes.</p></div>}
+        {!loading && !loadError && properties.length > 0 && <PropertyGrid properties={properties} />}
+        {!loading && !loadError && properties.length === 0 && <div className="empty-state"><div className="empty-icon">⌂</div><h3>Novas oportunidades em breve</h3><p>Os imóveis publicados aparecerão automaticamente aqui.</p></div>}
+        <div className="showcase-action"><Link className="button button-outline-premium" to="/comprar">Ver todos os imóveis</Link></div>
       </section>
 
-      <section className="section section-soft">
-        <div className="section-heading">
-          <span className="eyebrow">Escolha o que procura</span>
-          <h2>Encontre por tipo de imóvel</h2>
-        </div>
-
-        <div className="type-grid">
-          {propertyTypes.map(([name, description]) => (
-            <article className="type-card" key={name}>
-              <div className="type-icon">⌂</div>
-              <h3>{name}</h3>
-              <p>{description}</p>
-              <Link to="/comprar">Ver opções →</Link>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="owner-section" id="anunciar">
+      <section className="premium-conversion" id="avaliar">
         <div>
-          <span className="eyebrow eyebrow-light">Para proprietários</span>
-          <h2>Quer vender ou alugar seu imóvel?</h2>
-          <p>Envie os dados do imóvel. A solicitação entra diretamente no nosso processo de captação e acompanhamento.</p>
+          <span className="eyebrow eyebrow-light">Venda e avaliação</span>
+          <h2>Quer vender ou avaliar seu imóvel de forma rápida? Fale com nossos especialistas.</h2>
+          <p>Conte com a Imobiliária Matos para entender o mercado, organizar a apresentação do imóvel e conduzir o atendimento.</p>
         </div>
-        <Link className="button button-light" to="/anuncie-seu-imovel">Quero anunciar meu imóvel</Link>
+        <a className="button whatsapp-cta" href="https://wa.me/5532935016786?text=Ol%C3%A1%2C%20quero%20vender%20ou%20avaliar%20meu%20im%C3%B3vel." target="_blank" rel="noreferrer" onClick={() => trackEvent('whatsapp_click', { metadata: { source:'home_cta' } })}>Falar no WhatsApp</a>
       </section>
 
-      <section className="section valuation" id="avaliar">
-        <div>
-          <span className="eyebrow">Avaliação</span>
-          <h2>Quer saber quanto seu imóvel pode valer?</h2>
-          <p>Solicite uma avaliação antes de vender ou alugar.</p>
-        </div>
-        <Link className="button" to="/avaliacao-do-imovel">Solicitar avaliação</Link>
-      </section>
-
-      <section className="section section-soft" id="sobre">
+      <section className="section premium-services" id="sobre">
         <div className="section-heading">
-          <span className="eyebrow">Sobre</span>
-          <h2>Matos Negócios Imobiliários</h2>
-          <p>Esta área será usada para apresentar a empresa, região de atuação, CRECI e forma de trabalho.</p>
+          <span className="eyebrow">Imobiliária Matos</span>
+          <h2>Seu imóvel tratado como uma decisão importante.</h2>
+          <p>Atendimento para quem quer comprar, alugar, anunciar ou avaliar um imóvel em Ressaquinha e região.</p>
+        </div>
+        <div className="premium-service-grid">
+          <Link to="/comprar"><strong>Comprar</strong><span>Encontre oportunidades para morar ou investir.</span></Link>
+          <Link to="/alugar"><strong>Alugar</strong><span>Veja imóveis disponíveis para locação.</span></Link>
+          <Link to="/anuncie-seu-imovel"><strong>Vender</strong><span>Cadastre seu imóvel para iniciar o atendimento.</span></Link>
+          <Link to="/avaliacao-do-imovel"><strong>Avaliar</strong><span>Solicite uma análise do seu imóvel.</span></Link>
         </div>
       </section>
     </main>
