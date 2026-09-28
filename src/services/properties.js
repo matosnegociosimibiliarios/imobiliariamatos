@@ -18,6 +18,7 @@ const cardFields = `
   bathrooms,
   parking_spaces,
   featured,
+  tag,
   created_at,
   city:cities(id,name,state_code,slug),
   neighborhood:neighborhoods(name),
