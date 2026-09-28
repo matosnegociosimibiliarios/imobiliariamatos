@@ -5449,3 +5449,52 @@ button, input, select { font: inherit; }
 .valuation-v2-scenarios strong{font-size:13px;color:#20242a}.valuation-v2-scenarios span{font-size:12px;color:#606771}
 .valuation-v2-alert{margin-top:12px;padding:12px 14px;border:1px solid #e7caca;border-radius:9px;background:#fff7f7;color:#5f2024;font-size:12px}
 @media(max-width:760px){.valuation-v2-scenarios{grid-template-columns:1fr}}
+
+
+/* =========================================================
+   V14 — IMOBILIÁRIA MATOS PREMIUM DESIGN SYSTEM
+   ========================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;900&display=swap');
+
+:root{
+  --matos-red:#A60311;--matos-red-dark:#590209;--matos-black:#0D0D0D;
+  --matos-text:#2B2B2B;--matos-white:#FFFFFF;--matos-line:#EAEAEA;--matos-soft:#F5F5F5;
+  --accent:var(--matos-red);--accent-2:var(--matos-red-dark);--ink:var(--matos-text);
+  --line:var(--matos-line);--soft:var(--matos-soft);
+  font-family:'Inter',Arial,sans-serif;color:var(--matos-text);background:#fff;
+}
+body{font-family:'Inter',Arial,sans-serif;color:var(--matos-text);background:#fff}
+h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
+.button{background:var(--matos-red);border-radius:8px;box-shadow:0 10px 24px rgba(166,3,17,.14)}
+.button:hover{background:var(--matos-red-dark)}
+.premium-header{min-height:82px;padding-top:12px;padding-bottom:12px;background:#fff;border-bottom:1px solid var(--matos-line);backdrop-filter:none}
+.premium-brand{gap:12px}.brand-logo{width:52px;height:52px;object-fit:cover;border-radius:50%;box-shadow:0 0 0 1px #e3e3e3}
+.brand-wordmark strong{font-size:19px;line-height:1;color:var(--matos-text);font-weight:900}.brand-wordmark small{display:block;margin-top:5px;font-size:9px;letter-spacing:.28em;color:#686868;font-weight:700}
+.premium-header .nav{color:#3d3d3d;font-weight:500}.premium-header .nav a:hover,.premium-header .nav a.active{color:var(--matos-red);font-weight:700}
+.client-area-button{padding:10px 15px;border:1px solid #d9d9d9;border-radius:8px;font-size:13px;font-weight:700}.client-area-button:hover{border-color:var(--matos-red);color:var(--matos-red)}
+.premium-hero{position:relative;min-height:650px;display:grid;align-items:center;background:url("https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2000&q=88") center/cover}
+.premium-hero-overlay{position:absolute;inset:0;background:rgba(13,13,13,.40)}
+.premium-hero-content{position:relative;z-index:1;width:min(1180px,calc(100% - 44px));margin:0 auto;padding:80px 0;color:#fff}
+.premium-hero h1{max-width:900px;margin:14px 0 18px;font-size:clamp(40px,5.4vw,72px);line-height:1.03;letter-spacing:-.04em;font-weight:900}
+.premium-hero-content>p{max-width:670px;margin:0;color:#f1f1f1;font-size:18px;line-height:1.65}
+.eyebrow{color:var(--matos-red)}.eyebrow-light{color:#fff}
+.premium-search{max-width:920px;margin-top:34px;border:0;border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.22)}
+.premium-search .tab{border:0;background:#f5f5f5}.premium-search .tab.active{background:#f7e9ea;color:var(--matos-red)}
+.premium-search .search-grid{grid-template-columns:1.3fr 1fr auto}
+.premium-showcase{background:var(--matos-soft)}.premium-showcase .section-heading h2{color:var(--matos-black)}
+.showcase-action{display:flex;justify-content:center;margin-top:36px}.button-outline-premium{background:#fff;color:var(--matos-red);border:1px solid var(--matos-red);box-shadow:none}.button-outline-premium:hover{color:#fff}
+.property-card{overflow:hidden;border:1px solid var(--matos-line)!important;border-radius:14px!important;background:#fff;box-shadow:0 12px 34px rgba(13,13,13,.055)!important;transition:transform .2s ease,box-shadow .2s ease}
+.property-card:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(13,13,13,.10)!important}
+.property-card-badge{background:var(--matos-red)!important;color:#fff!important;border-radius:6px!important;font-weight:800!important}
+.property-card-price{color:var(--matos-black)!important}.property-card-code{color:var(--matos-red)!important}
+.premium-conversion{display:flex;align-items:center;justify-content:space-between;gap:42px;padding:78px clamp(22px,6vw,96px);background:var(--matos-black);color:#fff}
+.premium-conversion>div{max-width:800px}.premium-conversion h2{margin:10px 0 14px;font-size:clamp(30px,4vw,48px);line-height:1.12}.premium-conversion p{max-width:680px;color:#cfcfcf;line-height:1.7}
+.whatsapp-cta{min-width:210px;padding:17px 24px;font-size:15px}
+.premium-services{background:#fff}.premium-service-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.premium-service-grid a{display:grid;gap:9px;padding:26px;border:1px solid var(--matos-line);border-radius:12px;background:#fff}.premium-service-grid a:hover{border-color:#cfcfcf;box-shadow:0 12px 30px rgba(0,0,0,.05)}.premium-service-grid strong{font-family:'Montserrat';font-size:19px}.premium-service-grid span{color:#707070;font-size:14px;line-height:1.55}
+.premium-footer{background:var(--matos-black);border-top:1px solid #242424}.footer-brand{display:flex;align-items:center;gap:15px}.footer-logo{width:54px;height:54px;border-radius:50%;object-fit:cover}.premium-footer strong{font-family:'Montserrat';letter-spacing:.04em}.premium-footer p,.premium-footer .footer-links a{color:#bdbdbd}.premium-footer .footer-note{border-color:#2d2d2d}
+.admin-shell{--crm-red:#A60311;--crm-red-dark:#590209;--crm-black:#0D0D0D;--crm-black-soft:#151515;--accent:#A60311;--accent-2:#590209;--ink:#2B2B2B;--line:#EAEAEA}
+.admin-shell .button,.login-card .button{background:#A60311;border-color:#A60311;box-shadow:0 8px 18px rgba(166,3,17,.14)}.admin-shell .button:hover,.login-card .button:hover{background:#590209}
+.admin-shell .admin-nav-section .admin-nav-section-items a.active,.admin-shell .admin-nav-section .admin-nav-section-items a:hover{box-shadow:inset 3px 0 0 #A60311;background:linear-gradient(90deg,rgba(166,3,17,.22),rgba(166,3,17,.04))}
+.property-tag-field{display:grid;gap:7px;min-width:190px}.property-tag-field select{min-height:40px;border:1px solid #d8dbe0;border-radius:8px;background:#fff;padding:0 10px}
+@media(max-width:1050px){.premium-service-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.premium-header{min-height:68px}.brand-logo{width:44px;height:44px}.brand-wordmark strong{font-size:16px}.client-area-button{font-size:11px;padding:9px 10px}.premium-hero{min-height:610px}.premium-hero-content{width:calc(100% - 40px);padding:58px 0}.premium-hero h1{font-size:40px}.premium-hero-content>p{font-size:16px}.premium-search .search-grid{grid-template-columns:1fr}.premium-conversion{align-items:flex-start;flex-direction:column;padding:62px 20px}.whatsapp-cta{width:100%}.premium-service-grid{grid-template-columns:1fr}.footer-brand{align-items:flex-start}}
