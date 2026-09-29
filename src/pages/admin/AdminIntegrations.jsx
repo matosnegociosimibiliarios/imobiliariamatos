@@ -102,7 +102,7 @@ export default function AdminIntegrations() {
       <div className="admin-page-header">
         <div>
           <span className="eyebrow">Integrações</span>
-          <h1>Instagram, WhatsApp e Meta</h1>
+          <h1>Instagram, WhatsApp, Messenger e Meta</h1>
         </div>
         <button className="admin-link-button" type="button" onClick={load}>
           Verificar conexão
@@ -134,6 +134,7 @@ export default function AdminIntegrations() {
                 ok={status?.whatsapp_phone_number_id}
                 label="Número do WhatsApp conectado"
               />
+              <Status ok={status?.messenger_page_access_token} label="Facebook Messenger" />
               <Status ok={status?.lead_ads_access_token} label="Formulários de anúncios" />
             </div>
           </section>
@@ -145,7 +146,7 @@ export default function AdminIntegrations() {
 
           <section className="admin-panel">
             <h2>Endereço do webhook</h2>
-            <p>Instagram e WhatsApp usam o mesmo endereço no painel da Meta:</p>
+            <p>Instagram, WhatsApp e Messenger usam o mesmo endereço no painel da Meta:</p>
             <code className="integration-code">
               {status?.webhook_url || `${window.location.origin}/api/meta-webhook`}
             </code>
@@ -182,6 +183,7 @@ export default function AdminIntegrations() {
             <h2>Como os contatos entram</h2>
             <p><strong>Instagram:</strong> uma nova mensagem do Direct cria ou atualiza o contato e registra a origem Instagram.</p>
             <p><strong>WhatsApp:</strong> uma nova mensagem recebida associa o número ao lead existente quando houver correspondência ou cria um novo contato com origem WhatsApp.</p>
+            <p><strong>Messenger:</strong> uma nova mensagem da Página cria ou atualiza o contato e registra a origem Facebook Messenger.</p>
             <p><strong>Site:</strong> continua identificado separadamente como origem Site, mesmo quando o cliente depois conversa pelo WhatsApp.</p>
           </section>
 
