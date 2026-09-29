@@ -20,6 +20,7 @@ export async function envStatus(req) {
     meta_app_secret: Boolean(process.env.META_APP_SECRET),
     instagram_access_token: Boolean(process.env.META_INSTAGRAM_ACCESS_TOKEN),
     lead_ads_access_token: Boolean(process.env.META_LEAD_ADS_ACCESS_TOKEN),
+    messenger_page_access_token: Boolean(process.env.META_MESSENGER_PAGE_ACCESS_TOKEN),
     instagram_user_id: Boolean(process.env.META_INSTAGRAM_USER_ID),
     whatsapp_access_token: Boolean(process.env.META_WHATSAPP_ACCESS_TOKEN || storedWhatsApp?.access_token),
     whatsapp_phone_number_id: Boolean(process.env.META_WHATSAPP_PHONE_NUMBER_ID || storedWhatsApp?.phone_number_id),
@@ -327,6 +328,32 @@ export async function upsertInstagramDirectLead({ senderId, messageId, text, tim
     } catch (error) { console.error('Falha ao salvar mensagem social', error); }
   }
   return lead;
+}
+
+
+export async function upsertMessengerInboundMessage({ senderId, pageId, messageId, text, timestamp, metadata = {} }) {
+  if (!senderId) return null;
+  const existing = await db(`leads?select=id,name,status,external_metadata&source_platform=eq.facebook&source_channel=eq.messenger&external_contact_id=eq.${encodeURIComponent(senderId)}&limit=1`);
+  const when = timestamp ? new Date(Number(timestamp)).toISOString() : new Date().toISOString();
+  let lead;
+  if (existing?.length) {
+    const rows = await db(`leads?id=eq.${encodeURIComponent(existing[0].id)}`, { method:'PATCH', body:{ last_inbound_message:text, last_inbound_at:when, last_source_platform:'facebook', last_source_channel:'messenger', last_source_detail:'Facebook Messenger', last_source_at:when, updated_at:new Date().toISOString(), external_metadata:{ ...(existing[0].external_metadata || {}), messenger:{ page_id:pageId || null, sender_id:String(senderId) }, ...metadata } }, prefer:'return=representation' });
+    lead = rows?.[0] || existing[0];
+  } else {
+    const rows = await db('leads', { method:'POST', body:{ name:`Contato Messenger ${String(senderId).slice(-6)}`, whatsapp:null, email:null, message:text, source:'facebook', source_detail:'Facebook Messenger', source_platform:'facebook', source_channel:'messenger', initial_source_platform:'facebook', initial_source_channel:'messenger', initial_source_detail:'Facebook Messenger', last_source_platform:'facebook', last_source_channel:'messenger', last_source_detail:'Facebook Messenger', last_source_at:when, external_contact_id:String(senderId), last_inbound_message:text, last_inbound_at:when, status:'new', external_metadata:{ messenger:{ page_id:pageId || null, sender_id:String(senderId) }, ...metadata } }, prefer:'return=representation' });
+    lead = rows?.[0];
+  }
+  if (lead?.id) await db('social_messages?on_conflict=platform,external_message_id', { method:'POST', body:{ lead_id:lead.id, platform:'facebook', channel:'messenger', external_message_id:messageId || null, external_sender_id:String(senderId), external_recipient_id:pageId ? String(pageId) : null, direction:'inbound', message_text:text, sent_at:when, delivery_status:'received', metadata }, prefer:'resolution=ignore-duplicates,return=minimal' });
+  return lead;
+}
+
+export async function storeMessengerOutboundEcho({ recipientId, pageId, messageId, text, timestamp, metadata = {} }) {
+  if (!recipientId) return null;
+  const existing = await db(`leads?select=id&source_platform=eq.facebook&source_channel=eq.messenger&external_contact_id=eq.${encodeURIComponent(recipientId)}&limit=1`);
+  if (!existing?.length) return null;
+  const when = timestamp ? new Date(Number(timestamp)).toISOString() : new Date().toISOString();
+  await db('social_messages?on_conflict=platform,external_message_id', { method:'POST', body:{ lead_id:existing[0].id, platform:'facebook', channel:'messenger', external_message_id:messageId || null, external_sender_id:pageId ? String(pageId) : null, external_recipient_id:String(recipientId), direction:'outbound', message_text:text, sent_at:when, delivery_status:'sent', metadata }, prefer:'resolution=ignore-duplicates,return=minimal' });
+  return existing[0];
 }
 
 function fieldValue(fieldData, names) {
