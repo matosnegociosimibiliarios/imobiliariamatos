@@ -281,3 +281,44 @@ export async function saveRentalProcess(payload, id = null) {
 export async function getRentalStageHistory(propertyId) {
   return supabase.from('rental_stage_history').select('*').eq('property_id', propertyId).order('created_at', { ascending: false });
 }
+
+
+export async function getRentalProcess(id) {
+  return supabase.from('rental_processes').select(`
+    *,
+    property:properties(id,code,title,public_location_text,rent_price,status,purpose),
+    lead:leads(id,name,whatsapp,email,message)
+  `).eq('id', id).maybeSingle();
+}
+
+export async function getRentalProcessHistory(processId) {
+  return supabase.from('rental_stage_history').select('*').eq('rental_case_id', processId).order('created_at', { ascending: false });
+}
+
+export async function convertRentalProcessToContract(process) {
+  if (!process?.id || !process?.property_id) return { data: null, error: new Error('Processo de locação inválido.') };
+  if (process.contract_id) return getRentalContract(process.contract_id);
+  const lead = process.lead || {};
+  const result = await saveRentalContract({
+    property_id: process.property_id,
+    lead_id: process.lead_id || null,
+    status: 'analysis',
+    tenant_name: lead.name || 'Locatário',
+    tenant_whatsapp: lead.whatsapp || null,
+    tenant_email: lead.email || null,
+    monthly_rent: numberOrNull(process.proposal_rent) ?? numberOrNull(process.property?.rent_price),
+    due_day: 10,
+    administration_fee_percent: 0,
+    placement_fee_value: 0,
+    condominium_amount: 0,
+    property_tax_amount: 0,
+    property_tax_payer: 'tenant',
+    guarantee_type: 'none',
+    adjustment_index: 'ipca',
+    assigned_to: process.assigned_to || null,
+  });
+  if (result.error) return result;
+  const processUpdate = await saveRentalProcess({ contract_id: result.data.id, stage: 'contract', stage_entered_at: new Date().toISOString() }, process.id);
+  if (processUpdate.error) return { data: result.data, error: processUpdate.error };
+  return result;
+}
