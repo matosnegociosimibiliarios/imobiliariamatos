@@ -5,6 +5,8 @@ import {
   updateWhatsAppDeliveryStatus,
   upsertWhatsAppInboundMessage,
   verifyMetaSignature,
+  upsertMessengerInboundMessage,
+  storeMessengerOutboundEcho,
 } from './_meta.js';
 import {
   getInstagramConnectionByUserId,
@@ -189,6 +191,23 @@ export default async function handler(req, res) {
     const tasks = [];
 
     for (const entry of payload.entry || []) {
+      // Facebook Messenger: payload.object === 'page' e entry.messaging contém as conversas da Página.
+      if (payload.object === 'page') {
+        for (const event of entry.messaging || []) {
+          if (!event?.message) continue;
+          const text = event.message.text || (event.message.attachments ? '[Mídia recebida no Messenger]' : '[Mensagem recebida no Messenger]');
+          const metadata = { page_id:String(entry.id || ''), sender_id:event.sender?.id || null, recipient_id:event.recipient?.id || null, attachments:event.message.attachments || [], is_echo:Boolean(event.message.is_echo) };
+          if (event.message.is_echo) {
+            const recipientId = event.recipient?.id;
+            if (!recipientId) continue;
+            tasks.push(storeMessengerOutboundEcho({ recipientId:String(recipientId), pageId:entry.id || null, messageId:event.message.mid || null, text, timestamp:event.timestamp || null, metadata }).then(() => logIntegration('messenger_outbound_echo', { externalEventId:event.message.mid || null, metadata })));
+          } else if (event.sender?.id) {
+            tasks.push(upsertMessengerInboundMessage({ senderId:String(event.sender.id), pageId:entry.id || null, messageId:event.message.mid || null, text, timestamp:event.timestamp || null, metadata }).then(() => logIntegration('messenger_message', { externalEventId:event.message.mid || null, metadata })));
+          }
+        }
+        continue;
+      }
+
       // Instagram Direct: entry.id identifica a conta profissional conectada.
       const instagramConnection = entry.id
         ? await getInstagramConnectionByUserId(String(entry.id))
