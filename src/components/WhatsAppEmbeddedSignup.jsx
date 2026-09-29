@@ -105,7 +105,7 @@ export default function WhatsAppEmbeddedSignup({ onConnected }) {
 
     try {
       const FB = await loadFacebookSdk(config.app_id);
-      FB.login(async (response) => {
+      FB.login((response) => {
         const code = response?.authResponse?.code;
 
         if (!code) {
@@ -114,26 +114,26 @@ export default function WhatsAppEmbeddedSignup({ onConnected }) {
           return;
         }
 
-        try {
-          const result = await completeWhatsAppEmbeddedSignup({
-            code,
-            wabaId: sessionRef.current.wabaId,
-            phoneNumberId: sessionRef.current.phoneNumberId,
-            displayPhoneNumber: sessionRef.current.displayPhoneNumber,
-            sessionEvent: sessionRef.current.wabaId ? 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING' : null,
+        completeWhatsAppEmbeddedSignup({
+          code,
+          wabaId: sessionRef.current.wabaId,
+          phoneNumberId: sessionRef.current.phoneNumberId,
+          displayPhoneNumber: sessionRef.current.displayPhoneNumber,
+          sessionEvent: sessionRef.current.wabaId ? 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING' : null,
+        })
+          .then((result) => {
+            setConnecting(false);
+            setMessage(
+              result.coexistence
+                ? 'WhatsApp conectado em coexistência com o aplicativo WhatsApp Business.'
+                : 'WhatsApp Business conectado ao CRM.'
+            );
+            onConnected?.(result);
+          })
+          .catch((error) => {
+            setConnecting(false);
+            setMessage(error.message);
           });
-
-          setConnecting(false);
-          setMessage(
-            result.coexistence
-              ? 'WhatsApp conectado em coexistência com o aplicativo WhatsApp Business.'
-              : 'WhatsApp Business conectado ao CRM.'
-          );
-          onConnected?.(result);
-        } catch (error) {
-          setConnecting(false);
-          setMessage(error.message);
-        }
       }, {
         config_id: config.config_id,
         response_type: 'code',
