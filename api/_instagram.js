@@ -39,6 +39,7 @@ export async function startInstagramOAuth(req, res) {
         user_id: admin.id,
         requested_username: requestedUsername || null,
         provider: 'instagram',
+        redirect_uri: redirectUri(),
         expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
       },
       prefer: 'return=minimal',
@@ -62,7 +63,7 @@ export async function startInstagramOAuth(req, res) {
   }
 }
 
-async function exchangeShortLivedToken(code, req) {
+async function exchangeShortLivedToken(code, oauthRedirectUri) {
   const secret = instagramAppSecret();
   if (!secret) throw safeError('Instagram App Secret não configurado no servidor.', 500);
 
@@ -70,7 +71,7 @@ async function exchangeShortLivedToken(code, req) {
   body.set('client_id', instagramAppId());
   body.set('client_secret', secret);
   body.set('grant_type', 'authorization_code');
-  body.set('redirect_uri', redirectUri());
+  body.set('redirect_uri', oauthRedirectUri);
   body.set('code', String(code).replace(/#_$/, ''));
 
   const response = await fetch('https://api.instagram.com/oauth/access_token', {
@@ -134,7 +135,7 @@ export async function instagramOAuthCallback(req, res) {
     if (!state || !code) throw safeError('Retorno do Instagram sem código ou state.', 400);
 
     const states = await db(
-      `meta_oauth_states?select=id,organization_id,user_id,requested_username,expires_at,consumed_at&state=eq.${encodeURIComponent(state)}&provider=eq.instagram&limit=1`
+      `meta_oauth_states?select=id,organization_id,user_id,requested_username,redirect_uri,expires_at,consumed_at&state=eq.${encodeURIComponent(state)}&provider=eq.instagram&limit=1`
     );
     const oauthState = states?.[0];
     if (!oauthState || oauthState.consumed_at || new Date(oauthState.expires_at).getTime() < Date.now()) {
@@ -147,7 +148,7 @@ export async function instagramOAuthCallback(req, res) {
       prefer: 'return=minimal',
     });
 
-    const short = await exchangeShortLivedToken(code, req);
+    const short = await exchangeShortLivedToken(code, oauthState.redirect_uri || redirectUri());
     const long = await exchangeLongLivedToken(short.access_token);
     const profile = await getInstagramProfile(long.access_token);
     const instagramUserId = String(profile.user_id || profile.id);
