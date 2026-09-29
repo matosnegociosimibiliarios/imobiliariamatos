@@ -57,3 +57,29 @@ begin
 end; $$;
 revoke all on function public.submit_public_lead(uuid,text,text,text,text,text,text,text,text,text,text) from public;
 grant execute on function public.submit_public_lead(uuid,text,text,text,text,text,text,text,text,text,text) to anon,authenticated;
+
+
+create or replace function public.sync_rental_property_status()
+returns trigger language plpgsql security definer set search_path=public as $$
+declare v_purpose text;
+begin
+  select purpose into v_purpose from public.properties where id=new.property_id;
+  if v_purpose in ('rent','sale_and_rent') then
+    if new.status='awaiting_signature' then
+      update public.properties set status='reserved' where id=new.property_id and status<>'reserved';
+    elsif new.status in ('active','ending') then
+      update public.properties set status='rented' where id=new.property_id and status<>'rented';
+    elsif new.status in ('ended','cancelled') then
+      update public.properties set status='published' where id=new.property_id and status in ('reserved','rented');
+    end if;
+  end if;
+  if new.status in ('active','ending') then
+    update public.rental_processes set stage='occupied' where contract_id=new.id and stage<>'occupied';
+  elsif new.status='ended' then
+    update public.rental_processes set stage='vacated' where contract_id=new.id and stage<>'vacated';
+  elsif new.status='cancelled' then
+    update public.rental_processes set stage='lost',lost_reason=coalesce(lost_reason,'Contrato cancelado') where contract_id=new.id and stage<>'lost';
+  end if;
+  return new;
+end; $$;
+revoke all on function public.sync_rental_property_status() from public,anon,authenticated;
