@@ -7,6 +7,13 @@ import {
   getFinanceAccounts,
   getFinanceCategories,
   getFinanceSummary,
+  getFinanceOverview,
+  getRecurringFinanceEntries,
+  saveRecurringFinanceEntry,
+  deleteRecurringFinanceEntry,
+  generateDueRecurringFinanceEntries,
+  createFinanceAccount,
+  createFinanceCategory,
   updateFinanceEntry,
   deleteFinanceEntry,
 } from '../../services/finance';
@@ -36,18 +43,19 @@ export default function AdminFinance() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [overview,setOverview]=useState({});
+  const [recurring,setRecurring]=useState([]);
 
   async function load() {
     setLoading(true);
-    const [summaryResult, categoriesResult] = await Promise.all([
-      getFinanceSummary({ startDate, endDate }),
-      getFinanceCategories(),
+    const [summaryResult, categoriesResult, overviewResult, recurringResult] = await Promise.all([
+      getFinanceSummary({ startDate, endDate }), getFinanceCategories(), getFinanceOverview(startDate,endDate), getRecurringFinanceEntries()
     ]);
     if (summaryResult.error || categoriesResult.error) {
       setMessage('Não foi possível carregar todos os dados financeiros.');
     }
     setSummary(summaryResult.data || { incomePaid: 0, expensePaid: 0, incomePending: 0, expensePending: 0, balance: 0, managedIncome: 0, managedExpense: 0, entries: [], managedEntries: [], accounts: [] });
-    setCategories(categoriesResult.data || []);
+    setCategories(categoriesResult.data || []); setOverview(overviewResult.data||{}); setRecurring(recurringResult.data||[]);
     setLoading(false);
   }
 
@@ -108,6 +116,12 @@ export default function AdminFinance() {
     else await load();
   }
 
+  async function addAccount(){ const name=window.prompt('Nome da conta financeira:','Conta principal'); if(!name)return; const r=await createFinanceAccount(name,'bank',0); if(r.error)setMessage(r.error.message); else await load(); }
+  async function addCategory(){ const name=window.prompt('Nome da categoria:'); if(!name)return; const direction=window.prompt('Tipo: income para receita ou expense para despesa:','expense'); if(!['income','expense'].includes(direction))return setMessage('Tipo de categoria inválido.'); const r=await createFinanceCategory(name,direction); if(r.error)setMessage(r.error.message); else await load(); }
+  async function addRecurring(){ if(!summary.accounts.length)return setMessage('Cadastre uma conta primeiro.'); const description=window.prompt('Descrição da recorrência:'); if(!description)return; const amount=Number(String(window.prompt('Valor:','0')||'').replace(',','.')); if(!(amount>0))return; const direction=window.prompt('Tipo: income ou expense:','expense'); if(!['income','expense'].includes(direction))return; const category=categories.find(x=>x.direction===direction||x.direction==='both'); const next_due_date=window.prompt('Primeiro vencimento (AAAA-MM-DD):',toInputDate(today)); if(!next_due_date)return; const r=await saveRecurringFinanceEntry({description,direction,amount,account_id:summary.accounts[0].id,category_id:category?.id||null,frequency:'monthly',next_due_date,active:true}); if(r.error)setMessage(r.error.message); else await load(); }
+  async function generateRecurring(){ const r=await generateDueRecurringFinanceEntries(endDate); if(r.error)setMessage(r.error.message); else{setMessage(`${r.data||0} lançamento(s) recorrente(s) gerado(s).`);await load();} }
+  async function removeRecurring(id){ if(!window.confirm('Excluir esta recorrência?'))return; const r=await deleteRecurringFinanceEntry(id); if(r.error)setMessage(r.error.message); else await load(); }
+
   return (
     <div className="admin-page">
       <header className="admin-page-header">
@@ -134,8 +148,12 @@ export default function AdminFinance() {
         <article className="admin-card"><span>A receber</span><strong>{formatCurrency(summary.incomePending)}</strong></article>
         <article className="admin-card"><span>A pagar</span><strong>{formatCurrency(summary.expensePending)}</strong></article>
         <article className="admin-card"><span>Recebimentos administrados</span><strong>{formatCurrency(summary.managedIncome)}</strong></article>
-        <article className="admin-card"><span>Repasses administrados</span><strong>{formatCurrency(summary.managedExpense)}</strong></article>
+        <article className="admin-card"><span>Repasses administrados</span><strong>{formatCurrency(summary.managedExpense)}</strong></article><article className="admin-card"><span>Receitas vencidas</span><strong>{formatCurrency(overview.overdue_income||0)}</strong></article><article className="admin-card"><span>Despesas vencidas</span><strong>{formatCurrency(overview.overdue_expense||0)}</strong></article>
       </div>
+
+      <section className="admin-panel"><div className="panel-title-row"><div><span className="eyebrow">Configuração</span><h2>Contas e categorias</h2></div><div className="admin-page-actions"><button type="button" className="button secondary" onClick={addAccount}>Nova conta</button><button type="button" className="button secondary" onClick={addCategory}>Nova categoria</button></div></div><p>{summary.accounts.length} conta(s) ativa(s) · {categories.length} categoria(s) ativa(s).</p></section>
+
+      <section className="admin-panel"><div className="panel-title-row"><div><span className="eyebrow">Automação</span><h2>Receitas e despesas recorrentes</h2></div><div className="admin-page-actions"><button type="button" className="button secondary" onClick={addRecurring}>Nova recorrência</button><button type="button" className="button" onClick={generateRecurring}>Gerar vencimentos</button></div></div>{recurring.length===0?<p>Nenhuma recorrência cadastrada.</p>:<div className="rental-contract-list">{recurring.map(item=><article className="rental-contract-card" key={item.id}><div><strong>{item.description}</strong><p>{FINANCE_DIRECTION_LABELS[item.direction]} · {item.frequency==='monthly'?'Mensal':item.frequency}</p><small>Próximo: {formatDate(item.next_due_date)}</small></div><div className="rental-contract-side"><strong>{formatCurrency(item.amount)}</strong><button type="button" className="button secondary" onClick={()=>removeRecurring(item.id)}>Excluir</button></div></article>)}</div>}</section>
 
       {summary.accounts.length === 0 ? (
         <section className="admin-card admin-placeholder-card">
