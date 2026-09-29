@@ -66,17 +66,15 @@ async function exchangeShortLivedToken(code, req) {
   const secret = instagramAppSecret();
   if (!secret) throw safeError('Instagram App Secret não configurado no servidor.', 500);
 
-  const body = new URLSearchParams({
-    client_id: instagramAppId(),
-    client_secret: secret,
-    grant_type: 'authorization_code',
-    redirect_uri: redirectUri(req),
-    code,
-  });
+  const body = new FormData();
+  body.set('client_id', instagramAppId());
+  body.set('client_secret', secret);
+  body.set('grant_type', 'authorization_code');
+  body.set('redirect_uri', redirectUri());
+  body.set('code', String(code).replace(/#_$/, ''));
 
   const response = await fetch('https://api.instagram.com/oauth/access_token', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
   });
   const data = await response.json().catch(() => ({}));
