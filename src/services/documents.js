@@ -30,6 +30,7 @@ export const DOCUMENT_CONTEXT_LABELS = {
   capture: 'Captação',
   proposal: 'Proposta',
   deal: 'Negócio fechado',
+  rental: 'Contrato de locação',
 };
 
 const CONTEXT_COLUMN = {
@@ -38,12 +39,14 @@ const CONTEXT_COLUMN = {
   capture: 'capture_id',
   proposal: 'proposal_id',
   deal: 'deal_id',
+  rental: 'rental_contract_id',
 };
 
 const CHECKLIST_COLUMN = {
   property: 'property_document_id',
   capture: 'capture_document_id',
   deal: 'deal_document_id',
+  rental: 'rental_document_id',
 };
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
@@ -84,6 +87,7 @@ function contextPayload(contextType, contextId) {
     capture_id: null,
     proposal_id: null,
     deal_id: null,
+    rental_contract_id: null,
   };
 
   const column = CONTEXT_COLUMN[contextType];
@@ -96,6 +100,7 @@ function checklistPayload(contextType, checklistId) {
     property_document_id: null,
     capture_document_id: null,
     deal_document_id: null,
+    rental_document_id: null,
   };
 
   const column = CHECKLIST_COLUMN[contextType];
@@ -175,7 +180,8 @@ export async function getDocuments(options = {}) {
       lead:leads(id,name,whatsapp,email),
       capture:owner_captures(id,owner_name,whatsapp,city_name,property_type),
       proposal:proposals(id,code,status,lead_id,property_id),
-      deal:deals(id,code,status,lead_id,property_id)
+      deal:deals(id,code,status,lead_id,property_id),
+      rental:rental_contracts(id,code,status,tenant_name,property_id)
     `)
     .order('created_at', { ascending: false });
 
@@ -229,15 +235,16 @@ export async function downloadCrmDocument(document) {
 }
 
 export async function getDocumentTargets() {
-  const [properties, leads, captures, proposals, deals] = await Promise.all([
+  const [properties, leads, captures, proposals, deals, rentals] = await Promise.all([
     supabase.from('properties').select('id,code,title').is('deleted_at', null).order('created_at', { ascending: false }),
     supabase.from('leads').select('id,name,whatsapp,email').order('created_at', { ascending: false }).limit(500),
     supabase.from('owner_captures').select('id,owner_name,city_name,property_type').order('created_at', { ascending: false }).limit(500),
     supabase.from('proposals').select('id,code,status,lead:leads(name),property:properties(code,title)').order('created_at', { ascending: false }).limit(500),
     supabase.from('deals').select('id,code,status,lead:leads(name),property:properties(code,title)').order('created_at', { ascending: false }).limit(500),
+    supabase.from('rental_contracts').select('id,code,status,tenant_name,property:properties(code,title)').order('created_at', { ascending: false }).limit(500),
   ]);
 
-  const error = properties.error || leads.error || captures.error || proposals.error || deals.error;
+  const error = properties.error || leads.error || captures.error || proposals.error || deals.error || rentals.error;
   if (error) return { data: null, error };
 
   return {
@@ -255,6 +262,10 @@ export async function getDocumentTargets() {
       deal: (deals.data || []).map((item) => ({
         id: item.id,
         label: `${item.code} — ${item.lead?.name || 'Cliente'}${item.property ? ` — ${item.property.code}` : ''}`,
+      })),
+      rental: (rentals.data || []).map((item) => ({
+        id: item.id,
+        label: `${item.code} — ${item.tenant_name || 'Locatário'}${item.property ? ` — ${item.property.code}` : ''}`,
       })),
     },
     error: null,
@@ -278,6 +289,14 @@ export async function getContextChecklist(contextType, contextId) {
       .select('id,label,status,document_type')
       .eq('capture_id', contextId)
       .order('label');
+  }
+
+  if (contextType === 'rental') {
+    return supabase
+      .from('rental_documents')
+      .select('id,label,status,document_type,display_order')
+      .eq('contract_id', contextId)
+      .order('display_order');
   }
 
   if (contextType === 'deal') {
@@ -358,7 +377,8 @@ export async function getDocumentAlerts(daysAhead = 30) {
       lead:leads(id,name),
       capture:owner_captures(id,owner_name),
       proposal:proposals(id,code),
-      deal:deals(id,code)
+      deal:deals(id,code),
+      rental:rental_contracts(id,code,tenant_name)
     `)
     .or(`expires_at.lte.${future.toISOString().slice(0, 10)},status.eq.rejected`)
     .order('expires_at', { ascending: true, nullsFirst: false });
@@ -408,6 +428,9 @@ export function documentContext(document) {
   }
   if (document.deal_id) {
     return { type: 'deal', label: document.deal?.code || 'Negócio fechado', href: `/admin/negocios/${document.deal_id}` };
+  }
+  if (document.rental_contract_id) {
+    return { type: 'rental', label: document.rental ? `${document.rental.code} — ${document.rental.tenant_name || 'Locatário'}` : 'Contrato de locação', href: `/admin/locacoes/${document.rental_contract_id}` };
   }
   return { type: 'general', label: 'Arquivo geral', href: '/admin/documentos' };
 }

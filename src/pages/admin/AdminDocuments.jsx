@@ -28,7 +28,7 @@ const EMPTY_FORM = {
 
 export default function AdminDocuments() {
   const [documents, setDocuments] = useState([]);
-  const [targets, setTargets] = useState({ property: [], lead: [], capture: [], proposal: [], deal: [] });
+  const [targets, setTargets] = useState({ property: [], lead: [], capture: [], proposal: [], deal: [], rental: [] });
   const [pendencies, setPendencies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -51,7 +51,7 @@ export default function AdminDocuments() {
     }
 
     setDocuments(docsResult.data || []);
-    setTargets(targetsResult.data || { property: [], lead: [], capture: [], proposal: [], deal: [] });
+    setTargets(targetsResult.data || { property: [], lead: [], capture: [], proposal: [], deal: [], rental: [] });
     setPendencies(pendenciesResult.data || []);
     setLoading(false);
   }
@@ -185,7 +185,7 @@ export default function AdminDocuments() {
         <div>
           <span className="eyebrow">Arquivo digital</span>
           <h1>Central de documentos</h1>
-          <p>Guarde documentos do imóvel, clientes, proprietários, propostas e negócios em um único lugar.</p>
+          <p>Guarde documentos de imóveis, clientes, proprietários, propostas, negócios e contratos de locação em um único lugar.</p>
         </div>
       </div>
 
