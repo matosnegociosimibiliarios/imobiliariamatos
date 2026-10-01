@@ -43,7 +43,7 @@ export default function Home() {
 
   return (
     <main id="inicio">
-      <SeoHead title="{agencyName} | Imóveis em Ressaquinha e região" description="Encontre imóveis para comprar, alugar, vender ou avaliar em Ressaquinha e região." canonicalPath="/" jsonLd={{ '@context':'https://schema.org', '@type':'RealEstateAgent', name:'{agencyName}', url:window.location.origin }} />
+      <SeoHead title={`${agencyName} | Imóveis em Ressaquinha e região`} description="Encontre imóveis para comprar, alugar, vender ou avaliar em Ressaquinha e região." canonicalPath="/" jsonLd={{ '@context':'https://schema.org', '@type':'RealEstateAgent', name:agencyName, url:window.location.origin }} />
 
       <section className="premium-hero">
         <div className="premium-hero-overlay" />
@@ -68,7 +68,7 @@ export default function Home() {
 
       <section className="section premium-showcase">
         <div className="section-heading">
-          <span className="eyebrow">Seleção Matos</span>
+          <span className="eyebrow">Seleção {agencyName}</span>
           <h2>Imóveis em destaque</h2>
           <p>Oportunidades selecionadas para morar, investir ou começar uma nova fase.</p>
         </div>
