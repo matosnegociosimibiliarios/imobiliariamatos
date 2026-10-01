@@ -48,7 +48,7 @@ const NAV_SECTIONS = [
     items: [
       { to: '/admin/equipe', label: 'Equipe e Permissões', permission: 'team.view' },
       { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage' },
-      { to: '/admin/identidade', label: 'Identidade da Imobiliária', permission: 'integrations.manage' },
+      { to: '/admin/identidade', label: 'Site da Imobiliária', permission: 'integrations.manage' },
       { to: '/admin/saude', label: 'Saúde do Sistema', permission: 'health.view' },
     ],
   },
@@ -77,7 +77,10 @@ export default function AdminLayout() {
     let active = true;
     Promise.all([getAccessContext(), getUserOrganizations()]).then(([accessResult, organizationsResult]) => {
       if (!active) return;
-      if (!accessResult.error) setAccess(accessResult.data || null);
+      if (!accessResult.error) {
+        setAccess(accessResult.data || null);
+        setPublicOrganizationSlug(accessResult.data?.organization_slug);
+      }
       if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
     });
     return () => { active = false; };
