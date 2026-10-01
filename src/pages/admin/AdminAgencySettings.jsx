@@ -43,6 +43,11 @@ export default function AdminAgencySettings() {
     setSettings((current) => ({ ...current, [field]: value }));
   }
 
+  function setColor(field, value) {
+    const normalized = value.startsWith('#') ? value : `#${value}`;
+    setField(field, normalized.toUpperCase());
+  }
+
   async function save(event) {
     event.preventDefault();
     setSaving(true);
@@ -85,6 +90,37 @@ export default function AdminAgencySettings() {
             </div>
           </section>
         ))}
+
+        <section className="admin-panel" style={{ marginBottom: 18 }}>
+          <div style={{ marginBottom: 18 }}>
+            <span className="eyebrow">Cores do site</span>
+            <h2 style={{ marginBottom: 6 }}>Paleta da imobiliária</h2>
+            <p>Escolha visualmente ou informe o código hexadecimal da sua marca.</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 18 }}>
+            {[['primary_color','Cor principal','#B4000C'],['secondary_color','Cor secundária','#1F2937']].map(([field,label,fallback]) => {
+              const value = /^#[0-9A-Fa-f]{6}$/.test(settings[field] || '') ? settings[field] : fallback;
+              return <div key={field} style={{ display:'grid', gap:8 }}>
+                <strong style={{ fontSize:13 }}>{label}</strong>
+                <div style={{ display:'grid', gridTemplateColumns:'64px 1fr', gap:10, alignItems:'center' }}>
+                  <input aria-label={`Selecionar ${label.toLowerCase()}`} type="color" value={value} onChange={(e)=>setColor(field,e.target.value)} style={{ width:64, height:46, padding:3, cursor:'pointer' }} />
+                  <input value={settings[field] || ''} onChange={(e)=>setColor(field,e.target.value)} placeholder={fallback} maxLength="7" pattern="^#[0-9A-Fa-f]{6}$" />
+                </div>
+                <small style={{ opacity:.7 }}>Use a paleta ou digite um código como {fallback}.</small>
+              </div>;
+            })}
+          </div>
+          <div style={{ marginTop:20, borderRadius:16, overflow:'hidden', border:'1px solid #ddd' }}>
+            <div style={{ background: /^#[0-9A-Fa-f]{6}$/.test(settings.primary_color || '') ? settings.primary_color : '#B4000C', color:'#fff', padding:'18px 20px' }}>
+              <strong>{settings.agency_name || 'Sua imobiliária'}</strong>
+              <div style={{ fontSize:13, opacity:.9, marginTop:4 }}>{settings.slogan || 'Prévia da identidade do seu site'}</div>
+            </div>
+            <div style={{ background: /^#[0-9A-Fa-f]{6}$/.test(settings.secondary_color || '') ? settings.secondary_color : '#1F2937', color:'#fff', padding:'12px 20px', fontSize:13 }}>
+              Cor secundária aplicada em elementos de apoio.
+            </div>
+          </div>
+        </section>
+
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button className="button" type="submit" disabled={saving}>{saving ? 'Salvando...' : 'Salvar identidade'}</button>
         </div>
