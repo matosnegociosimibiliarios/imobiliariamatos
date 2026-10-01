@@ -42,6 +42,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/kiwify-webhook",
+      "destination": "/api/meta-status?source=kiwify-webhook"
+    },
+    {
       "source": "/sitemap.xml",
       "destination": "/api/property-page?mode=sitemap"
     },
