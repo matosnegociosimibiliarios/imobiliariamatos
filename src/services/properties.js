@@ -18,6 +18,15 @@ export function setPublicOrganizationSlug(slug) {
   if (slug) window.localStorage.setItem('public_organization_slug', slug);
 }
 
+export function publicTenantPath(path = '/') {
+  const slug = getPublicOrganizationSlug();
+  const [pathname, search = ''] = String(path).split('?');
+  const params = new URLSearchParams(search);
+  if (slug) params.set('imobiliaria', slug);
+  const query = params.toString();
+  return `${pathname}${query ? `?${query}` : ''}`;
+}
+
 const cardFields = `
   id,
   code,
