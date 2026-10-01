@@ -100,6 +100,7 @@ export default function AdminDashboard() {
           <Link to="/admin/captacoes">Nova captação</Link>
           <div className="home-user-chip"><strong>Cleomar Matos</strong><small>Proprietário</small></div>
           <a href="/" target="_blank" rel="noreferrer">Ver Site Público</a>
+          <Link className="home-paid-version" to="/admin/plano">Comprar versão paga</Link>
         </div>
       </div>
 
