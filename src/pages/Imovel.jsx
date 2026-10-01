@@ -9,6 +9,7 @@ import {
   getPropertyImages,
   propertyLocation,
   propertyPrice,
+  publicTenantPath,
 } from '../services/properties';
 
 function Fact({ value, label }) {
@@ -102,7 +103,7 @@ export default function Imovel() {
         <div className="empty-state">
           <h1>Este imóvel não está disponível.</h1>
           <p>Ele pode ter sido removido ou ainda não estar publicado.</p>
-          <Link className="button" to="/comprar">
+          <Link className="button" to={publicTenantPath('/comprar')}>
             Ver outros imóveis
           </Link>
         </div>
@@ -164,7 +165,7 @@ export default function Imovel() {
       <SeoHead title={property.title} description={seoDescription} canonicalPath={`/imovel/${property.slug}`} image={mainImage?.publicUrl || null} type="article" jsonLd={propertyJsonLd} />
       <section className="property-top">
         <div>
-          <Link className="back-link" to="/comprar">
+          <Link className="back-link" to={publicTenantPath('/comprar')}>
             ← Voltar para imóveis
           </Link>
 
