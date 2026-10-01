@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { getCurrentSession, signIn } from '../../services/auth';
+import { getAccessContext } from '../../services/team';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function Login() {
   React.useEffect(() => {
     (async () => {
       const session = await getCurrentSession();
-      if (session) setAlreadyLogged(true);
+      if (session) { const access = await getAccessContext(); if (access.data && !access.error) setAlreadyLogged(true); else navigate('/onboarding', { replace: true }); }
     })();
   }, []);
 
@@ -36,6 +37,8 @@ export default function Login() {
       return;
     }
 
+    const access = await getAccessContext();
+    if (!access.data || access.error) { navigate('/onboarding', { replace: true }); return; }
     const target = location.state?.from || '/admin/gestao';
     navigate(target, { replace: true });
   }
