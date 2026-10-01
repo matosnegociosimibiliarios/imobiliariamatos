@@ -1,48 +1,45 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from '../services/auth';
 import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/admin';
 import { ROLE_LABELS, can, getAccessContext, getUserOrganizations, setActiveOrganization } from '../services/team';
 
 const NAV_SECTIONS = [
   {
-    title: 'Visão Geral',
+    title: 'Comercial',
     items: [
-      { to: '/admin/gestao', label: 'Metas', permission: 'management.view' },
-      { to: '/admin/relatorios', label: 'Relatórios', permission: 'reports.view' },
+      { to: '/admin/leads', label: 'Clientes e Leads', permission: 'leads.view' },
       { to: '/admin/funil', label: 'Funil Comercial', permission: 'leads.view' },
-      { to: '/admin/leads', label: 'Funil de Clientes', permission: 'leads.view' },
+      { to: '/admin/imoveis', label: 'Imóveis', permission: 'properties.view' },
+      { to: '/admin/captacoes', label: 'Captações', permission: 'captures.view' },
       { to: '/admin/propostas', label: 'Propostas', permission: 'proposals.view' },
       { to: '/admin/negocios', label: 'Negócios Fechados', permission: 'deals.view' },
     ],
   },
   {
-    title: 'Comercial',
+    title: 'Atendimento',
     items: [
-      { to: '/admin/acoes', label: 'Rotina de Hoje', permission: 'leads.view' },
-      { to: '/admin/agenda', label: 'Agenda e Tarefas', permission: 'appointments.view' },
       { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', badge: 'instagram' },
       { to: '/admin/whatsapp', label: 'WhatsApp', permission: 'messages.view', badge: 'whatsapp' },
-      { to: '/admin/agendamentos', label: 'Agendamentos', permission: 'appointments.view' },
-      { to: '/admin/imoveis', label: 'Imóveis', permission: 'properties.view' },
-      { to: '/admin/captacoes', label: 'Captação', permission: 'captures.view' },
-      { to: '/admin/documentos', label: 'Documentos', permission: 'documents.view' },
+      { to: '/admin/agenda', label: 'Agenda e Tarefas', permission: 'appointments.view' },
     ],
   },
   {
     title: 'Locação',
     items: [
-      { to: '/admin/locacoes', label: 'Locações', permission: 'rentals.view' },
-      { to: '/admin/locacoes/pipeline', label: 'Pipeline de Locação', permission: 'rentals.view' },
-      { to: '/admin/locacoes/operacao', label: 'Central de Operações', permission: 'rentals.manage' },
-      { to: '/admin/locacoes/relatorios', label: 'Relatórios de Locação', permission: 'rentals.view' },
-      { to: '/admin/locacoes/nova', label: 'Novo contrato', permission: 'rentals.manage' },
+      { to: '/admin/locacoes', label: 'Visão Geral', permission: 'rentals.view' },
+      { to: '/admin/locacoes/pipeline', label: 'Pipeline', permission: 'rentals.view' },
+      { to: '/admin/locacoes/operacao', label: 'Operações', permission: 'rentals.manage' },
+      { to: '/admin/locacoes/nova', label: 'Novo Contrato', permission: 'rentals.manage' },
+      { to: '/admin/locacoes/relatorios', label: 'Relatórios', permission: 'rentals.view' },
     ],
   },
   {
-    title: 'Financeiro',
+    title: 'Gestão',
     items: [
-      { to: '/admin/financeiro', label: 'Financeiro da empresa', permission: 'financial.view' },
+      { to: '/admin/gestao', label: 'Painel Gerencial e Metas', permission: 'management.view' },
+      { to: '/admin/relatorios', label: 'Relatórios', permission: 'reports.view' },
+      { to: '/admin/documentos', label: 'Documentos', permission: 'documents.view' },
     ],
   },
   {
@@ -58,6 +55,8 @@ const NAV_SECTIONS = [
 
 export default function AdminLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [openSections, setOpenSections] = useState({});
   const [unreadInstagram, setUnreadInstagram] = useState(0);
   const [unreadWhatsApp, setUnreadWhatsApp] = useState(0);
   const [access, setAccess] = useState(null);
@@ -141,6 +140,14 @@ export default function AdminLayout() {
     })).filter((section) => (section.items || []).length > 0);
   }, [access]);
 
+  function sectionIsActive(section) {
+    return section.items.some((item) => location.pathname === item.to || location.pathname.startsWith(item.to + '/'));
+  }
+
+  function toggleSection(title) {
+    setOpenSections((current) => ({ ...current, [title]: !(current[title] ?? false) }));
+  }
+
   function badgeValue(type) {
     const value = type === 'instagram' ? unreadInstagram : type === 'whatsapp' ? unreadWhatsApp : 0;
     if (!value) return null;
@@ -164,27 +171,50 @@ export default function AdminLayout() {
           </div>
         )}
 
-        <nav className="admin-nav" aria-label="Menu administrativo">
-          {visibleSections.map((section) => (
-            <section className="admin-nav-section" key={section.title}>
-              <h2 className="admin-nav-section-title">{section.title}</h2>
-              <div className="admin-nav-section-items">
-                {section.items.map((item) => (
-                  <NavLink key={item.to} end={item.end} to={item.to} className={item.badge ? 'admin-nav-with-badge' : undefined}>
-                    <span>{item.label}</span>
-                    {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
-                  </NavLink>
-                ))}
-              </div>
-            </section>
-          ))}
+        <nav className="admin-nav admin-nav-compact" aria-label="Menu administrativo">
+          {can(access, 'dashboard.view') && (
+            <NavLink to="/admin" end className="admin-home-link">
+              <span>Início</span>
+            </NavLink>
+          )}
+
+          {can(access, 'financial.view') && (
+            <NavLink to="/admin/financeiro">
+              <span>Financeiro</span>
+            </NavLink>
+          )}
+
+          {visibleSections.map((section) => {
+            const active = sectionIsActive(section);
+            const open = openSections[section.title] ?? active;
+            const totalBadge = section.items.reduce((sum, item) => sum + Number(item.badge ? (item.badge === 'instagram' ? unreadInstagram : unreadWhatsApp) : 0), 0);
+            return (
+              <section className={`admin-nav-section admin-nav-group ${active ? 'is-active' : ''}`} key={section.title}>
+                <button type="button" className="admin-nav-group-toggle" onClick={() => toggleSection(section.title)} aria-expanded={open}>
+                  <span>{section.title}</span>
+                  <span className="admin-nav-group-meta">
+                    {totalBadge > 0 && <b>{totalBadge > 99 ? '99+' : totalBadge}</b>}
+                    <i>{open ? '−' : '+'}</i>
+                  </span>
+                </button>
+                {open && (
+                  <div className="admin-nav-section-items admin-nav-submenu">
+                    {section.items.map((item) => (
+                      <NavLink key={item.to} end={item.end} to={item.to} className={item.badge ? 'admin-nav-with-badge' : undefined}>
+                        <span>{item.label}</span>
+                        {item.badge && badgeValue(item.badge) && <b>{badgeValue(item.badge)}</b>}
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </section>
+            );
+          })}
         </nav>
 
         <div className="admin-sidebar-bottom">
           {access && <div className="admin-current-user"><strong>{access.full_name || access.email || 'Usuário'}</strong><small>{ROLE_LABELS[access.role] || access.role}</small></div>}
           <a href="/" target="_blank" rel="noreferrer">Ver Site Público</a>
-          <NavLink to="/admin" end>Voltar ao Painel</NavLink>
-          <button type="button" className="admin-subscription-button" onClick={handleSubscription}>Assinar versão paga</button>
           <button type="button" onClick={handleLogout}>Sair</button>
         </div>
       </aside>

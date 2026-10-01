@@ -88,131 +88,24 @@ export default function AdminDashboard() {
     <div className="admin-page">
       <div className="admin-page-header">
         <div>
-          <span className="eyebrow">Últimos 30 dias</span>
-          <h1>Visão geral</h1>
+          <span className="eyebrow">Seu dia no CRM</span>
+          <h1>Início</h1>
+          <p>Veja primeiro o que precisa da sua atenção e acesse as funções mais usadas.</p>
         </div>
 
-        <Link className="button" to="/admin/imoveis/novo">
-          Novo imóvel
-        </Link>
+        <div className="admin-actions home-quick-actions">
+          <Link className="button" to="/admin/acoes">Rotina de hoje</Link>
+          <Link to="/admin/agenda">Nova tarefa</Link>
+          <Link to="/admin/imoveis/novo">Novo imóvel</Link>
+          <Link to="/admin/captacoes">Nova captação</Link>
+        </div>
       </div>
 
       {loading ? (
         <div className="admin-panel">Carregando dados...</div>
       ) : (
         <>
-          <div className="admin-stats admin-stats-wide">
-            {cards.map(([label, value]) => (
-              <article className="admin-stat-card" key={label}>
-                <span>{label}</span>
-                <strong>{value}</strong>
-              </article>
-            ))}
-          </div>
-
-          <div className="admin-dashboard-grid">
-            <section className="admin-panel">
-              <div className="panel-title-row">
-                <h2>Próximas ações</h2>
-                <Link to="/admin/acoes">Ver todas</Link>
-              </div>
-
-              {actions.length === 0 ? (
-                <p>Nenhuma ação cadastrada.</p>
-              ) : (
-                <div className="metric-list">
-                  {actions.map((item) => (
-                    <Link
-                      className="dashboard-action-row"
-                      to={`/admin/leads/${item.id}`}
-                      key={item.id}
-                    >
-                      <span>
-                        <strong>{item.name}</strong>
-                        <small>
-                          {item.next_action_text || 'Atender cliente'}
-                        </small>
-                      </span>
-
-                      <b>{formatDateTime(item.next_action_at)}</b>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section className="admin-panel">
-              <h2>Imóveis que mais geram leads</h2>
-
-              {topProperties.length === 0 ? (
-                <p>Ainda não há dados suficientes.</p>
-              ) : (
-                <div className="metric-list">
-                  {topProperties.map((item) => (
-                    <div key={item.property_id}>
-                      <span>{item.code} — {item.title}</span>
-                      <strong>{item.total}</strong>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section className="admin-panel">
-              <h2>Origem dos leads</h2>
-
-              {sources.length === 0 ? (
-                <p>Ainda não há leads.</p>
-              ) : (
-                <div className="metric-list">
-                  {sources.map((item) => (
-                    <div key={item.source}>
-                      <span>{item.source}</span>
-                      <strong>{item.total}</strong>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section className="admin-panel">
-              <h2>Por que perdemos clientes?</h2>
-
-              {lostReasons.length === 0 ? (
-                <p>Ainda não há negócios marcados como perdidos.</p>
-              ) : (
-                <div className="metric-list">
-                  {lostReasons.map((item) => (
-                    <div key={item.reason}>
-                      <span>{item.reason}</span>
-                      <strong>{item.total}</strong>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
-        </>
-      )}
-
-
-      {executive && (
-        <section className="admin-panel">
-          <div className="panel-title-row"><div><span className="eyebrow">CENTRO DE COMANDO</span><h2>Visão executiva</h2><small>Comercial, locação e caixa nos últimos 30 dias.</small></div><div className="admin-actions"><Link to="/admin/financeiro">Financeiro</Link><Link to="/admin/locacoes">Locação</Link></div></div>
-          <div className="management-metrics-grid">
-            <div className="admin-card"><span>Valor vendido</span><strong>{formatCurrency(executive.commercial?.won_value || 0)}</strong></div>
-            <div className="admin-card"><span>Comissão a receber</span><strong>{formatCurrency(executive.commercial?.commission_receivable || 0)}</strong></div>
-            <div className="admin-card"><span>Resultado de caixa</span><strong>{formatCurrency(Number(executive.finance?.income_paid || 0)-Number(executive.finance?.expense_paid || 0))}</strong></div>
-            <div className="admin-card"><span>Contas vencidas</span><strong>{formatCurrency(Number(executive.finance?.overdue_receivable || 0)+Number(executive.finance?.overdue_payable || 0))}</strong></div>
-            <div className="admin-card"><span>Inadimplência locação</span><strong>{formatCurrency(executive.rentals?.overdue_value || 0)}</strong></div>
-            <div className="admin-card"><span>Contratos vencendo</span><strong>{executive.rentals?.expiring_60_days || 0}</strong></div>
-            <div className="admin-card"><span>Manutenções abertas</span><strong>{executive.rentals?.open_maintenance || 0}</strong></div>
-            <div className="admin-card"><span>Propostas abertas</span><strong>{executive.commercial?.open_proposals || 0}</strong></div>
-          </div>
-        </section>
-      )}
-
-      <section className="admin-panel routine-dashboard-panel">
+          <section className="admin-panel routine-dashboard-panel">
         <div className="panel-title-row">
           <div>
             <span className="eyebrow">Centro de comando</span>
@@ -231,73 +124,28 @@ export default function AdminDashboard() {
           <Link to="/admin/acoes#propostas-vencendo"><span>Propostas vencendo</span><strong>{routineSummary?.proposal_expiring || 0}</strong></Link>
         </div>
       </section>
-
-      <section className="admin-panel">
-        <div className="panel-title-row">
-          <div>
-            <span className="eyebrow">Origem dos resultados</span>
-            <h2>Desempenho por canal nos últimos 30 dias</h2>
+          <div className="admin-stats admin-stats-wide">
+            {cards.slice(0, 8).map(([label, value]) => (
+              <article className="admin-stat-card" key={label}><span>{label}</span><strong>{value}</strong></article>
+            ))}
           </div>
-        </div>
 
-        {channelPerformance.length === 0 ? (
-          <p>Ainda não há dados suficientes.</p>
-        ) : (
-          <div className="channel-performance-table-wrap">
-            <table className="channel-performance-table">
-              <thead>
-                <tr>
-                  <th>Canal</th>
-                  <th>Leads</th>
-                  <th>Visitas</th>
-                  <th>Fechados</th>
-                  <th>Valor fechado</th>
-                  <th>Comissão</th>
-                </tr>
-              </thead>
-              <tbody>
-                {channelPerformance.map((item) => (
-                  <tr key={`${item.platform}-${item.channel}`}>
-                    <td>{originLabel(item.platform, item.channel)}</td>
-                    <td>{item.leads}</td>
-                    <td>{item.appointments}</td>
-                    <td>{item.won}</td>
-                    <td>{formatCurrency(item.deal_value)}</td>
-                    <td>{formatCurrency(item.commission_value)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="admin-dashboard-grid">
+            <section className="admin-panel">
+              <div className="panel-title-row"><h2>Próximas ações</h2><Link to="/admin/acoes">Ver todas</Link></div>
+              {actions.length === 0 ? <p>Nenhuma ação cadastrada.</p> : <div className="metric-list">{actions.map((item) => <Link className="dashboard-action-row" to={`/admin/leads/${item.id}`} key={item.id}><span><strong>{item.name}</strong><small>{item.next_action_text || 'Atender cliente'}</small></span><b>{formatDateTime(item.next_action_at)}</b></Link>)}</div>}
+            </section>
+            <section className="admin-panel">
+              <div className="panel-title-row"><h2>Acessos rápidos</h2></div>
+              <div className="home-shortcuts">
+                <Link to="/admin/leads">Clientes e Leads</Link><Link to="/admin/funil">Funil Comercial</Link><Link to="/admin/mensagens">Instagram</Link><Link to="/admin/whatsapp">WhatsApp</Link><Link to="/admin/propostas">Propostas</Link><Link to="/admin/locacoes">Locação</Link><Link to="/admin/financeiro">Financeiro</Link><Link to="/admin/gestao">Painel Gerencial</Link>
+              </div>
+            </section>
           </div>
-        )}
-      </section>
 
-      <section className="admin-panel">
-        <div className="panel-title-row"><div><span className="eyebrow">Aquisição</span><h2>Interações nos últimos 30 dias</h2></div><Link to="/admin/integracoes">Instagram / Meta</Link></div>
-        <div className="acquisition-grid">
-          <div><span>Buscas no site</span><strong>{acquisition?.search_clicks || 0}</strong></div>
-          <div><span>Cliques no WhatsApp</span><strong>{acquisition?.whatsapp_clicks || 0}</strong></div>
-          <div><span>Leads do site</span><strong>{acquisition?.lead_submits || 0}</strong></div>
-          <div><span>Pedidos de visita</span><strong>{acquisition?.appointment_submits || 0}</strong></div>
-          <div><span>Instagram Direct</span><strong>{acquisition?.instagram_direct_leads || 0}</strong></div>
-          <div><span>Meta Lead Ads</span><strong>{acquisition?.meta_lead_ads || 0}</strong></div>
-        </div>
-      </section>
-      <section className="admin-panel">
-        <h2>Ações rápidas</h2>
-
-        <div className="admin-actions">
-          <Link to="/admin/gestao">Painel gerencial</Link>
-          <Link to="/admin/mensagens">Mensagens Instagram</Link>
-          <Link to="/admin/leads">Abrir funil</Link>
-          <Link to="/admin/acoes">Rotina de hoje</Link>
-          <Link to="/admin/propostas">Propostas</Link>
-          <Link to="/admin/negocios">Negócios fechados</Link>
-          <Link to="/admin/agendamentos">Agendamentos</Link>
-          <Link to="/admin/captacoes">Captações</Link>
-          <Link to="/admin/imoveis">Imóveis</Link>
-        </div>
-      </section>
+          {executive && <section className="admin-panel"><div className="panel-title-row"><div><span className="eyebrow">Resumo executivo</span><h2>Situação do negócio</h2></div><Link to="/admin/gestao">Ver painel gerencial</Link></div><div className="management-metrics-grid"><div className="admin-card"><span>Valor vendido</span><strong>{formatCurrency(executive.commercial?.won_value || 0)}</strong></div><div className="admin-card"><span>Comissão a receber</span><strong>{formatCurrency(executive.commercial?.commission_receivable || 0)}</strong></div><div className="admin-card"><span>Resultado de caixa</span><strong>{formatCurrency(Number(executive.finance?.income_paid || 0)-Number(executive.finance?.expense_paid || 0))}</strong></div><div className="admin-card"><span>Propostas abertas</span><strong>{executive.commercial?.open_proposals || 0}</strong></div></div></section>}
+        </>
+      )}
     </div>
   );
 }
