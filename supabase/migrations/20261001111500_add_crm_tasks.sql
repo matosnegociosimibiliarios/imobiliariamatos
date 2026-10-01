@@ -1,0 +1,13 @@
+create table if not exists public.crm_tasks (
+ id uuid primary key default gen_random_uuid(), organization_id uuid not null default current_organization_id(), title text not null, description text, due_at timestamptz not null,
+ priority text not null default 'normal' check(priority in ('low','normal','high')), status text not null default 'pending' check(status in ('pending','completed','cancelled')),
+ assigned_to uuid, lead_id uuid references public.leads(id) on delete set null, property_id uuid references public.properties(id) on delete set null, capture_id uuid references public.owner_captures(id) on delete set null,
+ proposal_id uuid references public.proposals(id) on delete set null, deal_id uuid references public.deals(id) on delete set null, rental_contract_id uuid references public.rental_contracts(id) on delete set null,
+ created_by uuid default auth.uid(), completed_at timestamptz, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
+create index if not exists crm_tasks_org_due_idx on public.crm_tasks(organization_id,due_at);
+create index if not exists crm_tasks_assigned_status_idx on public.crm_tasks(assigned_to,status,due_at);
+alter table public.crm_tasks enable row level security; grant select,insert,update,delete on public.crm_tasks to authenticated;
+drop policy if exists crm_tasks_read on public.crm_tasks; create policy crm_tasks_read on public.crm_tasks for select to authenticated using (organization_id=current_organization_id() and has_permission('appointments.view'));
+drop policy if exists crm_tasks_manage on public.crm_tasks; create policy crm_tasks_manage on public.crm_tasks for all to authenticated using (organization_id=current_organization_id() and has_permission('appointments.manage')) with check (organization_id=current_organization_id() and has_permission('appointments.manage'));
+create or replace function public.crm_tasks_defaults() returns trigger language plpgsql set search_path='public' as $$ begin new.organization_id:=coalesce(new.organization_id,current_organization_id()); new.updated_at:=now(); if new.status='completed' and old.status is distinct from 'completed' then new.completed_at:=coalesce(new.completed_at,now()); end if; if new.status<>'completed' then new.completed_at:=null; end if; return new; end $$;
+drop trigger if exists crm_tasks_defaults_trigger on public.crm_tasks; create trigger crm_tasks_defaults_trigger before insert or update on public.crm_tasks for each row execute function public.crm_tasks_defaults();
