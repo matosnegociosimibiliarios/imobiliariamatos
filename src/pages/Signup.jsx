@@ -18,7 +18,7 @@ export default function Signup() {
     const { data, error } = await supabase.auth.signUp({
       email: form.email.trim(),
       password: form.password,
-      options: { data: { full_name: form.name.trim() } },
+      options: { data: { full_name: form.name.trim(), agency_name: form.agency.trim() } },
     });
     if (error) { setMessage(error.message || 'Não foi possível criar a conta.'); setBusy(false); return; }
     if (!data?.session) { setMessage('Conta criada. Confirme seu e-mail e depois entre para concluir o cadastro.'); setBusy(false); return; }
