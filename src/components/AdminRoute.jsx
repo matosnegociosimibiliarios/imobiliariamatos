@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { getCurrentSession } from '../services/auth';
 import { getAccessContext } from '../services/team';
+import { getSaasEntitlement } from '../services/saas';
 
 export default function AdminRoute() {
   const location = useLocation();
@@ -9,6 +10,7 @@ export default function AdminRoute() {
     loading: true,
     authenticated: false,
     authorized: false,
+    entitlement: null,
   });
 
   useEffect(() => {
@@ -19,20 +21,22 @@ export default function AdminRoute() {
         const session = await getCurrentSession();
 
         if (!session) {
-          if (active) setState({ loading: false, authenticated: false, authorized: false });
+          if (active) setState({ loading: false, authenticated: false, authorized: false, entitlement: null });
           return;
         }
 
         const accessResult = await getAccessContext();
+        const entitlementResult = accessResult.data && !accessResult.error ? await getSaasEntitlement() : { data: null };
         if (active) {
           setState({
             loading: false,
             authenticated: true,
             authorized: Boolean(accessResult.data && !accessResult.error),
+            entitlement: entitlementResult.data || null,
           });
         }
       } catch {
-        if (active) setState({ loading: false, authenticated: false, authorized: false });
+        if (active) setState({ loading: false, authenticated: false, authorized: false, entitlement: null });
       }
     })();
 
@@ -48,6 +52,10 @@ export default function AdminRoute() {
         <p>Seu usuário não está ativo em nenhuma empresa do CRM.</p>
       </div>
     );
+  }
+
+  if (state.entitlement && state.entitlement.access_allowed === false && location.pathname !== '/admin/plano') {
+    return <Navigate to="/admin/plano" replace state={{ subscriptionBlocked: true }} />;
   }
 
   return <Outlet />;
