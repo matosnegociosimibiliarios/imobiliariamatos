@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useOutletContext } from 'react-router-dom';
 import {
   getDashboardMetrics,
   getLeadSources,
@@ -19,6 +19,7 @@ import {
 import { buildRoutine } from '../../services/routine';
 
 export default function AdminDashboard() {
+  const { access } = useOutletContext();
   const [metrics, setMetrics] = useState(null);
   const [sources, setSources] = useState([]);
   const [lostReasons, setLostReasons] = useState([]);
@@ -98,9 +99,9 @@ export default function AdminDashboard() {
           <Link to="/admin/agenda">Nova tarefa</Link>
           <Link to="/admin/imoveis/novo">Novo imóvel</Link>
           <Link to="/admin/captacoes">Nova captação</Link>
-          <div className="home-user-chip"><strong>Cleomar Matos</strong><small>Proprietário</small></div>
+          <div className="home-user-chip"><strong>{access?.full_name || access?.email || 'Usuário'}</strong><small>{access?.role === 'owner' ? 'Proprietário' : access?.role === 'admin' ? 'Administrador' : access?.role === 'broker' ? 'Corretor' : 'Assistente'}</small></div>
           <a href="/" target="_blank" rel="noreferrer">Ver Site Público</a>
-          <Link className="home-paid-version" to="/admin/plano">Comprar versão paga</Link>
+          {access?.plan_code !== 'internal' && <Link className="home-paid-version" to="/admin/plano">Comprar versão paga</Link>}
         </div>
       </div>
 

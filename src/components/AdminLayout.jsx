@@ -216,7 +216,10 @@ export default function AdminLayout() {
           <button type="button" onClick={handleLogout}>Sair</button>
         </div>
       </aside>
-      <main className="admin-main"><Outlet context={{ access }} /></main>
+      <main className="admin-main">
+        {access?.organization_status === 'trial' && access?.trial_ends_at && <div className="admin-trial-banner">Teste gratuito ativo até {new Date(access.trial_ends_at).toLocaleDateString('pt-BR')}. <NavLink to="/admin/plano">Ver planos</NavLink></div>}
+        <Outlet context={{ access }} />
+      </main>
     </div>
   );
 }
