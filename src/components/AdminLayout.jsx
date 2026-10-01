@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from '../services/auth';
 import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/admin';
 import { ROLE_LABELS, can, getAccessContext, getUserOrganizations, setActiveOrganization } from '../services/team';
+import { setPublicOrganizationSlug } from '../services/properties';
 
 const NAV_SECTIONS = [
   {
@@ -65,7 +66,10 @@ export default function AdminLayout() {
 
   async function loadContext() {
     const [accessResult, organizationsResult] = await Promise.all([getAccessContext(), getUserOrganizations()]);
-    if (!accessResult.error) setAccess(accessResult.data || null);
+    if (!accessResult.error) {
+      setAccess(accessResult.data || null);
+      setPublicOrganizationSlug(accessResult.data?.organization_slug);
+    }
     if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
   }
 
