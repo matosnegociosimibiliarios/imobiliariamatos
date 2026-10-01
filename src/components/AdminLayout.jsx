@@ -213,8 +213,6 @@ export default function AdminLayout() {
         </nav>
 
         <div className="admin-sidebar-bottom">
-          {access && <div className="admin-current-user"><strong>{access.full_name || access.email || 'Usuário'}</strong><small>{ROLE_LABELS[access.role] || access.role}</small></div>}
-          <a href="/" target="_blank" rel="noreferrer">Ver Site Público</a>
           <button type="button" onClick={handleLogout}>Sair</button>
         </div>
       </aside>
