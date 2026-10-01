@@ -94,10 +94,12 @@ export default function AdminDashboard() {
         </div>
 
         <div className="admin-actions home-quick-actions">
-          <Link className="button" to="/admin/acoes">Rotina de hoje</Link>
+          <Link className="button home-primary-action" to="/admin/acoes">Rotina de hoje</Link>
           <Link to="/admin/agenda">Nova tarefa</Link>
           <Link to="/admin/imoveis/novo">Novo imóvel</Link>
           <Link to="/admin/captacoes">Nova captação</Link>
+          <div className="home-user-chip"><strong>Cleomar Matos</strong><small>Proprietário</small></div>
+          <a href="/" target="_blank" rel="noreferrer">Ver Site Público</a>
         </div>
       </div>
 
