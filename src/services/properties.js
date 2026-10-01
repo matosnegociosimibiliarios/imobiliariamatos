@@ -2,6 +2,11 @@ import { supabase, supabaseConfigured } from '../lib/supabase';
 
 export const PROPERTY_BUCKET = 'property-images';
 
+export function getPublicOrganizationSlug() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('imobiliaria') || import.meta.env.VITE_PUBLIC_ORGANIZATION_SLUG || 'matos-negocios-imobiliarios';
+}
+
 const cardFields = `
   id,
   code,
@@ -129,17 +134,14 @@ export async function getProperties({
     return { data: [], error: new Error('Supabase não configurado.') };
   }
 
-  let query = supabase
-    .from('properties')
-    .select(cardFields)
-    .eq('status', 'published')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-    .limit(limit);
+  const organizationSlug = getPublicOrganizationSlug();
+  const base = await supabase.rpc('get_public_properties', { p_organization_slug: organizationSlug, p_purpose: purpose || null, p_featured_only: featuredOnly, p_limit: limit });
+  if (base.error) return base;
+  const ids = (base.data || []).map((item) => item.id);
+  if (!ids.length) return { data: [], error: null };
+  let query = supabase.from('properties').select(cardFields).in('id', ids).order('created_at', { ascending: false }).limit(limit);
 
-  query = purposeFilter(query, purpose);
 
-  if (featuredOnly) query = query.eq('featured', true);
   if (propertyType) query = query.eq('property_type', propertyType);
   if (cityId) query = query.eq('city_id', cityId);
   if (minBedrooms) query = query.gte('bedrooms', Number(minBedrooms));
@@ -170,6 +172,9 @@ export async function getPropertyBySlug(slug) {
     return { data: null, error: new Error('Supabase não configurado.') };
   }
 
+  const organizationSlug = getPublicOrganizationSlug();
+  const resolved = await supabase.rpc('get_public_property_by_slug', { p_organization_slug: organizationSlug, p_property_slug: slug });
+  if (resolved.error || !resolved.data?.id) return { data: null, error: resolved.error };
   return supabase
     .from('properties')
     .select(`
@@ -187,7 +192,7 @@ export async function getPropertyBySlug(slug) {
         feature:features(id,key,label,active)
       )
     `)
-    .eq('slug', slug)
+    .eq('id', resolved.data.id)
     .eq('status', 'published')
     .is('deleted_at', null)
     .maybeSingle();
@@ -198,11 +203,7 @@ export async function getAgencySettings() {
     return { data: null, error: new Error('Supabase não configurado.') };
   }
 
-  return supabase
-    .from('agency_public_settings')
-    .select('*')
-    .eq('id', 1)
-    .maybeSingle();
+  return supabase.rpc('get_public_agency_settings', { p_organization_slug: getPublicOrganizationSlug() });
 }
 
 

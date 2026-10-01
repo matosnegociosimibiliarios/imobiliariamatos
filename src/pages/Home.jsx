@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import SeoHead from '../components/SeoHead';
 import { trackEvent } from '../services/tracking';
 import PropertyGrid from '../components/PropertyGrid';
@@ -7,6 +7,8 @@ import { getHomeProperties } from '../services/properties';
 
 export default function Home() {
   const navigate = useNavigate();
+  const { agency } = useOutletContext();
+  const agencyName = agency?.trade_name || agency?.agency_name || 'Imobiliária';
   const [search, setSearch] = useState({ purpose: 'sale', location: '', propertyType: '' });
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,13 +43,13 @@ export default function Home() {
 
   return (
     <main id="inicio">
-      <SeoHead title="Imobiliária Matos | Imóveis em Ressaquinha e região" description="Encontre imóveis para comprar, alugar, vender ou avaliar em Ressaquinha e região." canonicalPath="/" jsonLd={{ '@context':'https://schema.org', '@type':'RealEstateAgent', name:'Imobiliária Matos', url:window.location.origin }} />
+      <SeoHead title="{agencyName} | Imóveis em Ressaquinha e região" description="Encontre imóveis para comprar, alugar, vender ou avaliar em Ressaquinha e região." canonicalPath="/" jsonLd={{ '@context':'https://schema.org', '@type':'RealEstateAgent', name:'{agencyName}', url:window.location.origin }} />
 
       <section className="premium-hero">
         <div className="premium-hero-overlay" />
         <div className="premium-hero-content">
-          <span className="eyebrow eyebrow-light">Imobiliária Matos</span>
-          <h1>Encontre o imóvel perfeito para a sua história com a Imobiliária Matos.</h1>
+          <span className="eyebrow eyebrow-light">{agencyName}</span>
+          <h1>Encontre o imóvel perfeito para a sua história com a {agencyName}.</h1>
           <p>Compra, venda e locação com atendimento próximo, informação clara e segurança em cada etapa.</p>
 
           <form className="search-panel premium-search" onSubmit={submitSearch}>
@@ -81,14 +83,14 @@ export default function Home() {
         <div>
           <span className="eyebrow eyebrow-light">Venda e avaliação</span>
           <h2>Quer vender ou avaliar seu imóvel de forma rápida? Fale com nossos especialistas.</h2>
-          <p>Conte com a Imobiliária Matos para entender o mercado, organizar a apresentação do imóvel e conduzir o atendimento.</p>
+          <p>Conte com a {agencyName} para entender o mercado, organizar a apresentação do imóvel e conduzir o atendimento.</p>
         </div>
-        <a className="button whatsapp-cta" href="https://wa.me/5532935016786?text=Ol%C3%A1%2C%20quero%20vender%20ou%20avaliar%20meu%20im%C3%B3vel." target="_blank" rel="noreferrer" onClick={() => trackEvent('whatsapp_click', { metadata: { source:'home_cta' } })}>Falar no WhatsApp</a>
+        <a className="button whatsapp-cta" href={agency?.whatsapp ? `https://wa.me/${String(agency.whatsapp).replace(/\\D/g,'')}?text=${encodeURIComponent('Olá, quero vender ou avaliar meu imóvel.')}` : '#contato'} target="_blank" rel="noreferrer" onClick={() => trackEvent('whatsapp_click', { metadata: { source:'home_cta' } })}>Falar no WhatsApp</a>
       </section>
 
       <section className="section premium-services" id="sobre">
         <div className="section-heading">
-          <span className="eyebrow">Imobiliária Matos</span>
+          <span className="eyebrow">{agencyName}</span>
           <h2>Seu imóvel tratado como uma decisão importante.</h2>
           <p>Atendimento para quem quer comprar, alugar, anunciar ou avaliar um imóvel em Ressaquinha e região.</p>
         </div>
