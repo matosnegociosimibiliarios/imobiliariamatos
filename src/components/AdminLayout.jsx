@@ -20,6 +20,7 @@ const NAV_SECTIONS = [
     title: 'Comercial',
     items: [
       { to: '/admin/acoes', label: 'Rotina de Hoje', permission: 'leads.view' },
+      { to: '/admin/agenda', label: 'Agenda e Tarefas', permission: 'appointments.view' },
       { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', badge: 'instagram' },
       { to: '/admin/whatsapp', label: 'WhatsApp', permission: 'messages.view', badge: 'whatsapp' },
       { to: '/admin/agendamentos', label: 'Agendamentos', permission: 'appointments.view' },
