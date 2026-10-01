@@ -45,14 +45,7 @@ export default function AdminRoute() {
 
   if (state.loading) return <div className="admin-loading">Verificando acesso...</div>;
   if (!state.authenticated) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
-  if (!state.authorized) {
-    return (
-      <div className="admin-denied">
-        <h1>Acesso não autorizado</h1>
-        <p>Seu usuário não está ativo em nenhuma empresa do CRM.</p>
-      </div>
-    );
-  }
+  if (!state.authorized) return <Navigate to="/onboarding" replace />;
 
   if (state.entitlement && state.entitlement.access_allowed === false && location.pathname !== '/admin/plano') {
     return <Navigate to="/admin/plano" replace state={{ subscriptionBlocked: true }} />;
