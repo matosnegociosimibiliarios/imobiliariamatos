@@ -4,7 +4,18 @@ export const PROPERTY_BUCKET = 'property-images';
 
 export function getPublicOrganizationSlug() {
   const params = new URLSearchParams(window.location.search);
-  return params.get('imobiliaria') || import.meta.env.VITE_PUBLIC_ORGANIZATION_SLUG || 'matos-negocios-imobiliarios';
+  const querySlug = params.get('imobiliaria');
+  if (querySlug) {
+    window.localStorage.setItem('public_organization_slug', querySlug);
+    return querySlug;
+  }
+  return window.localStorage.getItem('public_organization_slug')
+    || import.meta.env.VITE_PUBLIC_ORGANIZATION_SLUG
+    || 'matos-negocios-imobiliarios';
+}
+
+export function setPublicOrganizationSlug(slug) {
+  if (slug) window.localStorage.setItem('public_organization_slug', slug);
 }
 
 const cardFields = `
