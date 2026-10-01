@@ -32,14 +32,34 @@ export async function saveMonthlyGoal(periodMonth, payload) {
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData?.user?.id || null;
 
+  const existing = await supabase
+    .from('crm_monthly_goals')
+    .select('id')
+    .eq('period_month', periodMonth)
+    .maybeSingle();
+
+  if (existing.error) return existing;
+
+  if (existing.data?.id) {
+    return supabase
+      .from('crm_monthly_goals')
+      .update({
+        ...payload,
+        updated_by: userId,
+      })
+      .eq('id', existing.data.id)
+      .select()
+      .single();
+  }
+
   return supabase
     .from('crm_monthly_goals')
-    .upsert({
+    .insert({
       period_month: periodMonth,
       ...payload,
       updated_by: userId,
       created_by: userId,
-    }, { onConflict: 'period_month' })
+    })
     .select()
     .single();
 }
