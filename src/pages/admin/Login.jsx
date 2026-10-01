@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { getCurrentSession, signIn } from '../../services/auth';
 
 export default function Login() {
@@ -84,6 +84,7 @@ export default function Login() {
             {submitting ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
+        <p className="login-signup-link">Ainda não possui conta? <Link to="/cadastro">Criar minha imobiliária</Link></p>
       </section>
     </main>
   );
