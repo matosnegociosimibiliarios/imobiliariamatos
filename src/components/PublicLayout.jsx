@@ -10,7 +10,7 @@ export default function PublicLayout() {
   const logo=agency?.logo_url||'/crm-beta-logo.webp';
   const creci=agency?.creci ? `CRECI: ${agency.creci}` : 'CRECI: cadastro institucional em atualização.';
   return (
-    <div className="site-shell" style={{'--agency-primary':agency?.primary_color||undefined,'--agency-secondary':agency?.secondary_color||undefined}}>
+    <div className="site-shell" style={{'--accent':agency?.primary_color||'#214d34','--accent-2':agency?.secondary_color||agency?.primary_color||'#173824','--agency-primary':agency?.primary_color||undefined,'--agency-secondary':agency?.secondary_color||undefined}}>
       <PageTracker />
       <header className="header premium-header">
         <Link className="brand premium-brand" to={publicTenantPath('/')}>
