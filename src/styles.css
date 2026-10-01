@@ -5522,3 +5522,10 @@ h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
   .home-quick-actions { justify-content: flex-start; }
 }
 @media (max-width: 520px) { .home-shortcuts { grid-template-columns: 1fr; } }
+
+.home-primary-action { background: #b20d13 !important; border-color: #b20d13 !important; color: #fff !important; }
+.home-primary-action:hover { background: #8f090e !important; color: #fff !important; }
+.home-user-chip { display: grid; gap: 1px; padding: 8px 13px; border: 1px solid var(--line); border-radius: 10px; background: #fff; min-width: 130px; }
+.home-user-chip strong { font-size: 13px; color: var(--ink); }
+.home-user-chip small { font-size: 11px; color: var(--muted); }
+.home-quick-actions > a:not(.button) { display: inline-flex; align-items: center; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--accent); font-weight: 700; }
