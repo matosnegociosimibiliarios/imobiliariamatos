@@ -3,7 +3,8 @@ import {Navigate} from 'react-router-dom';
 import {getPlatformAdminOverview,isPlatformAdmin} from '../../services/saas';
 
 const PLAN={internal:'Vitalício',starter:'Essencial',professional:'Profissional',business:'Empresarial'};
-const STATUS={active:'Ativo',trial:'Teste',past_due:'Em atraso',cancelled:'Cancelado',blocked:'Bloqueado'};
+const STATUS={active:'Ativo',trial:'Teste grátis',past_due:'Em atraso',cancelled:'Cancelado',blocked:'Bloqueado'};
+const STAGE={internal:'Vitalício',trial:'Teste grátis',paid:'Pago',inactive:'Inativo'};
 
 export default function PlatformAdmin(){
   const [allowed,setAllowed]=useState(null);
@@ -20,13 +21,14 @@ export default function PlatformAdmin(){
       <article className="admin-card"><small>Imobiliárias</small><h2>{data?.summary?.organizations??'—'}</h2></article>
       <article className="admin-card"><small>Ativas</small><h2>{data?.summary?.active??'—'}</h2></article>
       <article className="admin-card"><small>Em teste</small><h2>{data?.summary?.trial??'—'}</h2></article>
-      <article className="admin-card"><small>Assinaturas pagas</small><h2>{data?.summary?.paid_subscriptions??'—'}</h2></article>
+      <article className="admin-card"><small>CRMs pagos</small><h2>{data?.summary?.paid??'—'}</h2></article>
+      <article className="admin-card"><small>Receita mensal contratada</small><h2>{data?.summary?.mrr==null?'—':Number(data.summary.mrr).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</h2></article>
     </div>
     <section className="admin-panel" style={{marginTop:20}}>
       <div style={{display:'flex',gap:12,alignItems:'center',justifyContent:'space-between',flexWrap:'wrap'}}><div><h2 style={{marginBottom:4}}>Clientes do CRM</h2><p style={{margin:0}}>Sua Imobiliária Matos aparece como acesso Vitalício.</p></div><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar imobiliária ou plano" style={{minWidth:260,padding:'10px 12px'}}/></div>
-      <div style={{overflowX:'auto',marginTop:16}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr><th align="left">Imobiliária</th><th align="left">Plano</th><th align="left">Situação</th><th align="left">Assinatura</th><th>Usuários</th><th>Imóveis</th><th align="left">Criada em</th></tr></thead><tbody>
-      {organizations.map(o=><tr key={o.id} style={{borderTop:'1px solid rgba(127,127,127,.2)'}}><td style={{padding:'12px 8px'}}><strong>{o.name}</strong><br/><small>{o.slug}</small></td><td style={{padding:'12px 8px'}}>{PLAN[o.plan_code]||o.plan_code||'—'}</td><td style={{padding:'12px 8px'}}>{STATUS[o.status]||o.status||'—'}</td><td style={{padding:'12px 8px'}}>{o.plan_code==='internal'?'Vitalício':(STATUS[o.subscription_status]||o.subscription_status||'Sem pagamento')}</td><td align="center">{o.users}</td><td align="center">{o.properties}</td><td style={{padding:'12px 8px'}}>{o.created_at?new Date(o.created_at).toLocaleDateString('pt-BR'):'—'}</td></tr>)}
-      {!organizations.length&&<tr><td colSpan="7" style={{padding:20,textAlign:'center'}}>Nenhuma imobiliária encontrada.</td></tr>}
+      <div style={{overflowX:'auto',marginTop:16}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr><th align="left">Imobiliária</th><th align="left">Plano</th><th align="left">Situação</th><th align="left">Categoria</th><th align="left">Assinatura</th><th align="left">Valor/mês</th><th>Usuários</th><th>Imóveis</th><th align="left">Criada em</th></tr></thead><tbody>
+      {organizations.map(o=><tr key={o.id} style={{borderTop:'1px solid rgba(127,127,127,.2)'}}><td style={{padding:'12px 8px'}}><strong>{o.name}</strong><br/><small>{o.slug}</small></td><td style={{padding:'12px 8px'}}>{PLAN[o.plan_code]||o.plan_code||'—'}</td><td style={{padding:'12px 8px'}}>{STATUS[o.status]||o.status||'—'}</td><td style={{padding:'12px 8px'}}><strong>{STAGE[o.customer_stage]||o.customer_stage||'—'}</strong></td><td style={{padding:'12px 8px'}}>{o.plan_code==='internal'?'Vitalício':(STATUS[o.subscription_status]||o.subscription_status||'Sem pagamento')}</td><td style={{padding:'12px 8px'}}>{o.plan_code==='internal'?'—':Number(o.monthly_price||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td><td align="center">{o.users}</td><td align="center">{o.properties}</td><td style={{padding:'12px 8px'}}>{o.created_at?new Date(o.created_at).toLocaleDateString('pt-BR'):'—'}</td></tr>)}
+      {!organizations.length&&<tr><td colSpan="9" style={{padding:20,textAlign:'center'}}>Nenhuma imobiliária encontrada.</td></tr>}
       </tbody></table></div>
     </section>
   </div>;
