@@ -5529,3 +5529,29 @@ h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
 .home-user-chip strong { font-size: 13px; color: var(--ink); }
 .home-user-chip small { font-size: 11px; color: var(--muted); }
 .home-quick-actions > a:not(.button) { display: inline-flex; align-items: center; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--accent); font-weight: 700; }
+
+
+/* SaaS tenant theme: cores configuradas no CRM */
+.site-shell{
+  --matos-red:var(--agency-primary,#A60311);
+  --matos-red-dark:var(--agency-secondary,#590209);
+  --accent:var(--agency-primary,#A60311);
+  --accent-2:var(--agency-secondary,#590209);
+}
+.site-shell .button{background:var(--agency-primary,#A60311)}
+.site-shell .button:hover{background:var(--agency-secondary,#590209)}
+.site-shell .premium-header .nav a:hover,
+.site-shell .premium-header .nav a.active,
+.site-shell .eyebrow,
+.site-shell .property-card-code,
+.site-shell .property-card-price,
+.site-shell .type-icon,
+.site-shell .type-card a,
+.site-shell .back-link,
+.site-shell .share-button{color:var(--agency-primary,#A60311)!important}
+.site-shell .client-area-button:hover{border-color:var(--agency-primary,#A60311);color:var(--agency-primary,#A60311)}
+.site-shell .property-card-badge{background:var(--agency-primary,#A60311)!important}
+.site-shell .owner-section{background:var(--agency-primary,#A60311)}
+.site-shell .premium-search .tab.active{color:var(--agency-primary,#A60311)}
+.site-shell .button-outline-premium{color:var(--agency-primary,#A60311);border-color:var(--agency-primary,#A60311)}
+.site-shell .button-outline-premium:hover{background:var(--agency-primary,#A60311);color:#fff}
