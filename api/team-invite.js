@@ -86,14 +86,12 @@ export default async function handler(req, res) {
     const client = getAdminClient();
     let user = await findUserByEmail(client, email);
     const existing = Boolean(user);
-
-    if (!user) {
-      const host = req.headers['x-forwarded-host'] || req.headers.host || 'imobiliariamatos.vercel.app';
+    const orgRows = await db(`organizations?select=id,name,email_sender_name,email_reply_to&id=eq.${encodeURIComponent(organizationId)}&limit=1`);
+    const org = orgRows?.[0] || {};
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'imobiliariamatos.vercel.app';
       const protocol = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0];
       const redirectTo = `${protocol}://${host}/convite`;
 
-      const orgRows = await db(`organizations?select=id,name,email_sender_name,email_reply_to&id=eq.${encodeURIComponent(organizationId)}&limit=1`);
-      const org = orgRows?.[0] || {};
       const { data, error } = await client.auth.admin.generateLink({
         type: 'invite',
         email,
@@ -112,6 +110,15 @@ export default async function handler(req, res) {
         organizationName: org.email_sender_name || org.name,
         replyTo: org.email_reply_to,
         actionLink,
+      });
+    } else {
+      const loginLink = `${protocol}://${host}/login`;
+      await sendInviteEmail({
+        email,
+        fullName,
+        organizationName: org.email_sender_name || org.name,
+        replyTo: org.email_reply_to,
+        actionLink: loginLink,
       });
     }
 
