@@ -33,6 +33,7 @@ const initialForm = {
   exchange_allowed: false,
   featured: false,
   tag: '',
+  video_url: '',
 };
 
 function numberOrNull(value) {
@@ -90,6 +91,7 @@ export default function AdminPropertyForm() {
         exchange_allowed: Boolean(data.exchange_allowed),
         featured: Boolean(data.featured),
         tag: data.tag || '',
+        video_url: data.video_url || '',
       });
 
       setLoading(false);
@@ -149,6 +151,7 @@ export default function AdminPropertyForm() {
         exchange_allowed: form.exchange_allowed,
         featured: form.featured,
         tag: form.tag || null,
+        video_url: form.video_url.trim() || null,
         published_at:
           form.status === 'published'
             ? new Date().toISOString()
@@ -503,6 +506,21 @@ export default function AdminPropertyForm() {
               onChange={updateField}
             />
           </label>
+        </section>
+
+        <section className="admin-panel">
+          <h2>Vídeo do imóvel</h2>
+          <label>
+            Link do vídeo
+            <input
+              type="url"
+              name="video_url"
+              value={form.video_url}
+              onChange={updateField}
+              placeholder="Cole aqui o link do YouTube, Vimeo ou vídeo publicado"
+            />
+          </label>
+          <p className="admin-help-text">O vídeo será exibido na página pública do imóvel.</p>
         </section>
 
         <section className="admin-panel">
