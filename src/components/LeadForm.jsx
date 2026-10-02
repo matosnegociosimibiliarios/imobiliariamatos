@@ -104,7 +104,7 @@ export default function LeadForm({
       <div className="lead-success">
         <strong>Contato recebido.</strong>
         <p>
-          A Matos Negócios Imobiliários poderá entrar em contato pelos dados informados.
+          A imobiliária poderá entrar em contato pelos dados informados.
         </p>
       </div>
     );
