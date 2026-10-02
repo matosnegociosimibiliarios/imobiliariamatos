@@ -17,6 +17,32 @@ function getAdminClient() {
   });
 }
 
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
+}
+
+async function sendInviteEmail({ email, fullName, organizationName, replyTo, actionLink }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) throw new Error('Serviço de e-mail ainda não configurado.');
+
+  const safeOrg = escapeHtml(organizationName || 'CRM Imobiliário');
+  const safeName = escapeHtml(fullName);
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: `${organizationName || 'CRM Imobiliário'} <onboarding@resend.dev>`,
+      to: [email],
+      ...(replyTo ? { reply_to: replyTo } : {}),
+      subject: `Convite para acessar o CRM - ${organizationName || 'Imobiliária'}`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#202124"><h2>Convite para o CRM</h2><p>Olá, ${safeName}.</p><p>Você foi convidado(a) pela <strong>${safeOrg}</strong> para fazer parte da equipe no CRM.</p><p style="margin:28px 0"><a href="${escapeHtml(actionLink)}" style="background:#111827;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none">Criar senha e acessar o CRM</a></p><p style="font-size:13px;color:#666">Se você não esperava este convite, ignore este e-mail.</p></div>`,
+    }),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload?.message || 'Não foi possível enviar o e-mail de convite.');
+  return payload;
+}
+
 async function findUserByEmail(client, email) {
   for (let page = 1; page <= 10; page += 1) {
     const { data, error } = await client.auth.admin.listUsers({ page, perPage: 200 });
@@ -66,12 +92,27 @@ export default async function handler(req, res) {
       const protocol = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0];
       const redirectTo = `${protocol}://${host}/convite`;
 
-      const { data, error } = await client.auth.admin.inviteUserByEmail(email, {
-        data: { full_name: fullName },
-        redirectTo,
+      const orgRows = await db(`organizations?select=id,name,email_sender_name,email_reply_to&id=eq.${encodeURIComponent(organizationId)}&limit=1`);
+      const org = orgRows?.[0] || {};
+      const { data, error } = await client.auth.admin.generateLink({
+        type: 'invite',
+        email,
+        options: {
+          data: { full_name: fullName },
+          redirectTo,
+        },
       });
       if (error) throw error;
       user = data?.user || null;
+      const actionLink = data?.properties?.action_link;
+      if (!actionLink) throw new Error('Não foi possível gerar o link seguro do convite.');
+      await sendInviteEmail({
+        email,
+        fullName,
+        organizationName: org.email_sender_name || org.name,
+        replyTo: org.email_reply_to,
+        actionLink,
+      });
     }
 
     const userId = user?.id;
