@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getLeads, updateLeadStatus } from '../../services/admin';
+import { createManualLead, getLeads, updateLeadStatus } from '../../services/admin';
 import {
   LEAD_STATUSES,
   formatCurrency,
@@ -25,6 +25,9 @@ export default function AdminLeads() {
   const [search, setSearch] = useState('');
   const [origin, setOrigin] = useState('');
   const [message, setMessage] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name: '', whatsapp: '', email: '', message: '' });
 
   async function load() {
     setLoading(true);
@@ -69,6 +72,22 @@ export default function AdminLeads() {
     });
   }, [leads, search, origin]);
 
+  async function submitManualLead(event) {
+    event.preventDefault();
+    if (form.name.trim().length < 2 || form.whatsapp.replace(/\D/g, '').length < 10) {
+      setMessage('Informe o nome e um WhatsApp válido.');
+      return;
+    }
+    setSaving(true);
+    const { error } = await createManualLead(form);
+    setSaving(false);
+    if (error) { setMessage('Não foi possível cadastrar o cliente.'); return; }
+    setForm({ name: '', whatsapp: '', email: '', message: '' });
+    setShowForm(false);
+    setMessage('Cliente cadastrado com sucesso.');
+    await load();
+  }
+
   async function changeStatus(leadId, status) {
     const { error } = await updateLeadStatus(leadId, status);
     if (error) {
@@ -90,7 +109,23 @@ export default function AdminLeads() {
           <span className="eyebrow">CRM de atendimento</span>
           <h1>Funil de clientes</h1>
         </div>
+        <button type="button" className="admin-button" onClick={() => setShowForm((value) => !value)}>
+          {showForm ? 'Cancelar' : '+ Novo cliente'}
+        </button>
       </div>
+
+      {showForm && (
+        <form className="admin-panel" onSubmit={submitManualLead} style={{display:'grid',gap:12,marginBottom:16}}>
+          <h2 style={{margin:0}}>Cadastrar cliente</h2>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:12}}>
+            <label>Nome *<input required value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} /></label>
+            <label>WhatsApp *<input required placeholder="(32) 99999-9999" value={form.whatsapp} onChange={(e)=>setForm({...form,whatsapp:e.target.value})} /></label>
+            <label>E-mail<input type="email" value={form.email} onChange={(e)=>setForm({...form,email:e.target.value})} /></label>
+          </div>
+          <label>Observação<textarea rows="3" value={form.message} onChange={(e)=>setForm({...form,message:e.target.value})} /></label>
+          <div><button className="admin-button" type="submit" disabled={saving}>{saving?'Salvando...':'Salvar cliente'}</button></div>
+        </form>
+      )}
 
       <div className="crm-toolbar crm-toolbar-multichannel">
         <input
