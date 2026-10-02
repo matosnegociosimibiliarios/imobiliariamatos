@@ -1,4 +1,5 @@
 import { supabase, supabaseConfigured } from '../lib/supabase';
+import { getPublicOrganizationSlug } from './properties';
 
 const SESSION_KEY = 'matos_imobiliaria_session_id';
 
@@ -74,6 +75,7 @@ export async function submitLead({
   const sourceChannel = propertyId ? 'property_form' : 'form';
 
   const { data, error } = await supabase.rpc('submit_public_lead', {
+    p_organization_slug: getPublicOrganizationSlug(),
     p_property_id: propertyId,
     p_name: name.trim(),
     p_whatsapp: whatsapp.trim(),

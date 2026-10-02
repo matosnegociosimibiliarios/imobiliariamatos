@@ -1,0 +1,3 @@
+-- Public lead submission must resolve the tenant from the public site slug.
+-- The property, when present, must belong to the same tenant and be published.
+-- Production migration applied through Supabase as secure_public_lead_tenant.
