@@ -12,6 +12,26 @@ import {
   publicTenantPath,
 } from '../services/properties';
 
+function propertyVideoEmbed(url) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes('youtube.com')) {
+      const id = parsed.searchParams.get('v');
+      return id ? `https://www.youtube.com/embed/${id}` : null;
+    }
+    if (parsed.hostname === 'youtu.be') {
+      const id = parsed.pathname.split('/').filter(Boolean)[0];
+      return id ? `https://www.youtube.com/embed/${id}` : null;
+    }
+    if (parsed.hostname.includes('vimeo.com')) {
+      const id = parsed.pathname.split('/').filter(Boolean).pop();
+      return id ? `https://player.vimeo.com/video/${id}` : null;
+    }
+  } catch {}
+  return null;
+}
+
 function Fact({ value, label }) {
   if (value === null || value === undefined) return null;
 
@@ -120,6 +140,7 @@ export default function Imovel() {
 
   const mainImage = images[0];
   const secondaryImages = images.slice(1, 5);
+  const videoEmbed = propertyVideoEmbed(property.video_url);
 
   function openGallery(index = 0) {
     setActivePhoto(index);
@@ -253,6 +274,25 @@ export default function Imovel() {
               label="Área total"
             />
           </div>
+
+          {property.video_url && (
+            <section className="property-section">
+              <h2>Vídeo do imóvel</h2>
+              {videoEmbed ? (
+                <div style={{ position: 'relative', paddingTop: '56.25%', overflow: 'hidden', borderRadius: 16 }}>
+                  <iframe
+                    src={videoEmbed}
+                    title={`Vídeo - ${property.title}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+                  />
+                </div>
+              ) : (
+                <a className="button" href={property.video_url} target="_blank" rel="noreferrer">Assistir ao vídeo</a>
+              )}
+            </section>
+          )}
 
           {property.description && (
             <section className="property-section">
