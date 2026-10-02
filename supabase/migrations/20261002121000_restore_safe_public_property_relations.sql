@@ -1,0 +1,3 @@
+-- Public property RPCs expose only published tenant data, while preserving the nested data required by the public UI.
+-- Production migration: restore_safe_public_property_relations.
+-- Definitions are managed in Supabase migration history; this marker documents the production hardening in source control.
