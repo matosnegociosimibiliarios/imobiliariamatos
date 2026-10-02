@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { getSessionId } from './tracking';
+import { getPublicOrganizationSlug } from './properties';
 
 export const CAPTURE_STATUSES = [
   { value: 'new', label: 'Novo contato' },
@@ -15,9 +16,9 @@ export const CAPTURE_STATUS_LABELS = Object.fromEntries(
 );
 
 export async function submitOwnerCapture(payload) {
-  return supabase
-    .from('owner_captures')
-    .insert({
+  return supabase.rpc('submit_public_owner_capture', {
+    p_organization_slug: getPublicOrganizationSlug(),
+    p_payload: {
       owner_name: payload.owner_name.trim(),
       whatsapp: payload.whatsapp.trim(),
       email: payload.email?.trim() || null,
@@ -28,13 +29,10 @@ export async function submitOwnerCapture(payload) {
       state_code: (payload.state_code || 'MG').trim().toUpperCase(),
       neighborhood_name: payload.neighborhood_name?.trim() || null,
       address_text: payload.address_text?.trim() || null,
-      asking_value:
-        payload.asking_value === '' || payload.asking_value == null
-          ? null
-          : Number(payload.asking_value),
+      asking_value: payload.asking_value === '' || payload.asking_value == null ? null : Number(payload.asking_value),
       description: payload.description?.trim() || null,
       source: 'site',
       session_id: getSessionId(),
-      consent_at: new Date().toISOString(),
-    });
+    },
+  });
 }
