@@ -162,7 +162,7 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="admin-shell" style={{'--accent': access?.primary_color || undefined, '--accent-2': access?.secondary_color || undefined}}>
+    <div className="admin-shell" style={{'--agency-primary': access?.primary_color || '#A60311', '--agency-secondary': access?.secondary_color || '#590209', '--accent': access?.primary_color || '#A60311', '--accent-2': access?.secondary_color || '#590209', '--crm-red': access?.primary_color || '#A60311', '--crm-red-dark': access?.secondary_color || '#590209'}}>
       <aside className="admin-sidebar">
         <div className="admin-brand">
           <img className="admin-brand-logo" src="/crm-beta-logo.webp" alt="CRM Beta" />
