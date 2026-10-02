@@ -30,7 +30,7 @@ async function handleKiwify(req, res) {
   const signature = String(req.query?.signature || req.headers?.['x-kiwify-signature'] || '');
   const serialized = JSON.stringify(req.body || {});
   const expected = crypto.createHmac('sha1', config.webhook_token).update(serialized).digest('hex');
-  if (signature && !safeEqual(signature, expected)) return res.status(401).json({ error: 'Assinatura inválida.' });
+  if (!signature || !safeEqual(signature, expected)) return res.status(401).json({ error: 'Assinatura inválida.' });
 
   const body = req.body || {};
   const eventType = String(body.webhook_event_type || body.order_status || 'unknown');

@@ -43,18 +43,18 @@ export async function trackPageView({
 } = {}) {
   if (!supabaseConfigured || !supabase) return;
 
-  const payload = {
-    session_id: getSessionId(),
-    path: path || window.location.pathname,
-    page_type: pageType,
-    property_id: propertyId,
-    referrer: document.referrer || null,
-    ...getUtmParams(),
-  };
-
-  const { error } = await supabase
-    .from('site_visits')
-    .insert(payload);
+  const utm = getUtmParams();
+  const { error } = await supabase.rpc('track_public_page_view', {
+    p_organization_slug: getPublicOrganizationSlug(),
+    p_session_id: getSessionId(),
+    p_path: path || window.location.pathname,
+    p_page_type: pageType,
+    p_property_id: propertyId,
+    p_referrer: document.referrer || null,
+    p_utm_source: utm.utm_source,
+    p_utm_medium: utm.utm_medium,
+    p_utm_campaign: utm.utm_campaign,
+  });
 
   if (error) {
     console.warn('Falha ao registrar visita:', error.message);
@@ -101,29 +101,27 @@ export async function submitAppointment({
   requestedDate = null,
   requestedTime = null,
 }) {
-  return supabase
-    .from('appointments')
-    .insert({
-      lead_id: leadId,
-      property_id: propertyId,
-      requested_date: requestedDate || null,
-      requested_time: requestedTime || null,
-      status: 'requested',
-    })
-    .select('id')
-    .single();
+  const { data, error } = await supabase.rpc('submit_public_appointment', {
+    p_organization_slug: getPublicOrganizationSlug(),
+    p_lead_id: leadId,
+    p_property_id: propertyId,
+    p_requested_date: requestedDate || null,
+    p_requested_time: requestedTime || null,
+  });
+  return { data: data ? { id: data } : null, error };
 }
 
 
 export async function trackEvent(eventType, { propertyId = null, path = null, metadata = {} } = {}) {
   if (!supabaseConfigured || !supabase) return;
 
-  const { error } = await supabase.from('site_events').insert({
-    session_id: getSessionId(),
-    event_type: eventType,
-    property_id: propertyId,
-    path: path || window.location.pathname,
-    metadata,
+  const { error } = await supabase.rpc('track_public_event', {
+    p_organization_slug: getPublicOrganizationSlug(),
+    p_session_id: getSessionId(),
+    p_event_type: eventType,
+    p_property_id: propertyId,
+    p_path: path || window.location.pathname,
+    p_metadata: metadata,
   });
 
   if (error) console.warn('Falha ao registrar evento:', error.message);
