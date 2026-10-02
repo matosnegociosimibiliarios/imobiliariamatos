@@ -166,6 +166,18 @@ export default function AdminTeam() {
   const [message, setMessage] = useState('');
   const [inviting, setInviting] = useState(false);
   const [form, setForm] = useState({ fullName: '', email: '', role: 'broker' });
+  const [linkCopied, setLinkCopied] = useState(false);
+  const crmLoginLink = `${window.location.origin}/login`;
+
+  async function copyCrmLink() {
+    try {
+      await navigator.clipboard.writeText(crmLoginLink);
+      setLinkCopied(true);
+      window.setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      setMessage('Não foi possível copiar automaticamente. Selecione o link e copie manualmente.');
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -253,6 +265,22 @@ export default function AdminTeam() {
           </label>
           <button className="button" disabled={inviting}>{inviting ? 'Enviando...' : 'Enviar convite'}</button>
         </form>
+      </section>
+
+      <section className="admin-card team-invite-panel">
+        <div>
+          <span className="eyebrow">Acesso ao CRM</span>
+          <h2>Link para a equipe</h2>
+          <p>Copie este link e envie ao corretor ou colaborador que já foi convidado para acessar o CRM.</p>
+        </div>
+        <div className="team-invite-form">
+          <label className="full">Link de acesso
+            <input value={crmLoginLink} readOnly onFocus={(e) => e.target.select()} />
+          </label>
+          <button className="button" type="button" onClick={copyCrmLink}>
+            {linkCopied ? 'Link copiado' : 'Copiar link'}
+          </button>
+        </div>
       </section>
 
       <section className="team-members-section">
