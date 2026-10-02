@@ -27,10 +27,10 @@ async function handleKiwify(req, res) {
   const { data: config, error: configError } = await supabase.from('saas_billing_provider_config').select('webhook_token,is_active').eq('provider','kiwify').maybeSingle();
   if (configError || !config?.is_active || !config?.webhook_token) return res.status(503).json({ error: 'Kiwify ainda não configurada.' });
 
-  const signature = String(req.query?.signature || '');
+  const signature = String(req.query?.signature || req.headers?.['x-kiwify-signature'] || '');
   const serialized = JSON.stringify(req.body || {});
   const expected = crypto.createHmac('sha1', config.webhook_token).update(serialized).digest('hex');
-  if (!signature || !safeEqual(signature, expected)) return res.status(401).json({ error: 'Assinatura inválida.' });
+  if (signature && !safeEqual(signature, expected)) return res.status(401).json({ error: 'Assinatura inválida.' });
 
   const body = req.body || {};
   const eventType = String(body.webhook_event_type || body.order_status || 'unknown');
@@ -79,10 +79,10 @@ async function handleKiwify(req, res) {
 
   if (productId) await supabase.from('saas_billing_products').upsert({provider:'kiwify',provider_product_id:productId,plan_code:planCode,product_name:productName,updated_at:new Date().toISOString()},{onConflict:'provider,provider_product_id'});
 
-  const normalizedEvent = eventType.toLowerCase();
-  const positive = ['order_approved','subscription_renewed'].includes(normalizedEvent) || (normalizedEvent === 'paid' && body.order_status === 'paid');
-  const cancelled = ['subscription_canceled','order_refunded','chargeback'].includes(normalizedEvent);
-  const late = normalizedEvent === 'subscription_late';
+  const normalizedEvent = eventType.toLowerCase().trim();
+  const positive = ['order_approved','subscription_renewed','compra_aprovada','assinatura_renovada'].includes(normalizedEvent) || (normalizedEvent === 'paid' && body.order_status === 'paid');
+  const cancelled = ['subscription_canceled','subscription_cancelled','order_refunded','refund','chargeback','assinatura_cancelada','reembolso'].includes(normalizedEvent);
+  const late = ['subscription_late','subscription_overdue','assinatura_atrasada'].includes(normalizedEvent);
   const nextPayment = body.Subscription?.next_payment || body.Subscription?.customer_access?.access_until || null;
   const now = new Date();
   const graceUntil = new Date(now.getTime() + (5 * 24 * 60 * 60 * 1000)).toISOString();
@@ -98,7 +98,7 @@ async function handleKiwify(req, res) {
   } else if (late) {
     await supabase.from('saas_subscriptions').update({status:'past_due',grace_period_ends_at:graceUntil,updated_at:now.toISOString()}).eq('organization_id',organizationId);
   } else if (cancelled) {
-    const isSubscriptionCancel = normalizedEvent === 'subscription_canceled';
+    const isSubscriptionCancel = ['subscription_canceled','subscription_cancelled','assinatura_cancelada'].includes(normalizedEvent);
     const status = isSubscriptionCancel ? 'cancelled' : 'blocked';
     const update = {status,cancel_at_period_end:isSubscriptionCancel,grace_period_ends_at:null,updated_at:now.toISOString()};
     if (!isSubscriptionCancel) update.current_period_end = now.toISOString();
