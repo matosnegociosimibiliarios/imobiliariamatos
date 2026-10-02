@@ -4,6 +4,7 @@ import { signOut } from '../services/auth';
 import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/admin';
 import { ROLE_LABELS, can, getAccessContext, getUserOrganizations, setActiveOrganization } from '../services/team';
 import { setPublicOrganizationSlug } from '../services/properties';
+import { isPlatformAdmin } from '../services/saas';
 
 const NAV_SECTIONS = [
   {
@@ -63,6 +64,7 @@ export default function AdminLayout() {
   const [access, setAccess] = useState(null);
   const [organizations, setOrganizations] = useState([]);
   const [switchingOrganization, setSwitchingOrganization] = useState(false);
+  const [platformAdmin, setPlatformAdmin] = useState(false);
 
   async function loadContext() {
     const [accessResult, organizationsResult] = await Promise.all([getAccessContext(), getUserOrganizations()]);
@@ -71,11 +73,12 @@ export default function AdminLayout() {
       setPublicOrganizationSlug(accessResult.data?.organization_slug);
     }
     if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
+      if (!platformResult?.error) setPlatformAdmin(Boolean(platformResult?.data));
   }
 
   useEffect(() => {
     let active = true;
-    Promise.all([getAccessContext(), getUserOrganizations()]).then(([accessResult, organizationsResult]) => {
+    Promise.all([getAccessContext(), getUserOrganizations(), isPlatformAdmin()]).then(([accessResult, organizationsResult, platformResult]) => {
       if (!active) return;
       if (!accessResult.error) {
         setAccess(accessResult.data || null);
@@ -183,6 +186,10 @@ export default function AdminLayout() {
             <NavLink to="/admin" end className="admin-home-link">
               <span>Início</span>
             </NavLink>
+          )}
+
+          {platformAdmin && (
+            <NavLink to="/admin/plataforma"><span>Administração do CRM</span></NavLink>
           )}
 
           {can(access, 'financial.view') && (
