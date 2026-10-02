@@ -189,11 +189,12 @@ export default function AdminTeam() {
   const [inviting, setInviting] = useState(false);
   const [form, setForm] = useState({ fullName: '', email: '', role: 'broker' });
   const [linkCopied, setLinkCopied] = useState(false);
+  const [lastAccessLink, setLastAccessLink] = useState('');
   const crmLoginLink = `${window.location.origin}/login`;
 
   async function copyCrmLink() {
     try {
-      await navigator.clipboard.writeText(crmLoginLink);
+      await navigator.clipboard.writeText(lastAccessLink || crmLoginLink);
       setLinkCopied(true);
       window.setTimeout(() => setLinkCopied(false), 2000);
     } catch {
@@ -236,9 +237,10 @@ export default function AdminTeam() {
     setInviting(true);
     try {
       const result = await inviteTeamMember(form);
-      setMessage(result.existing
-        ? 'Usuário existente adicionado à equipe.'
-        : 'Convite enviado por e-mail.');
+      setLastAccessLink(result.access_link || crmLoginLink);
+      setMessage(result.email_sent
+        ? (result.existing ? 'Usuário adicionado à equipe e acesso enviado por e-mail.' : 'Convite enviado por e-mail.')
+        : 'Usuário adicionado. O envio por e-mail ficará disponível após a configuração do domínio. Copie o link abaixo e envie pelo WhatsApp.');
       setForm({ fullName: '', email: '', role: 'broker' });
       await load();
     } catch (error) {
@@ -273,7 +275,7 @@ export default function AdminTeam() {
         <div>
           <span className="eyebrow">Novo acesso</span>
           <h2>Convidar usuário</h2>
-          <p>A pessoa receberá um convite identificado com os dados da sua imobiliária. Depois terá somente as áreas liberadas para a função escolhida.</p>
+          <p>Cadastre o usuário e defina a função. Enquanto o envio profissional por e-mail não estiver configurado, use o link de acesso para enviar pelo WhatsApp.</p>
         </div>
         <form onSubmit={invite} className="team-invite-form">
           <label>Nome completo<input value={form.fullName} onChange={(e) => setForm((c) => ({ ...c, fullName: e.target.value }))} /></label>
@@ -297,7 +299,7 @@ export default function AdminTeam() {
         </div>
         <div className="team-invite-form">
           <label className="full">Link de acesso
-            <input value={crmLoginLink} readOnly onFocus={(e) => e.target.select()} />
+            <input value={lastAccessLink || crmLoginLink} readOnly onFocus={(e) => e.target.select()} />
           </label>
           <button className="button" type="button" onClick={copyCrmLink}>
             {linkCopied ? 'Link copiado' : 'Copiar link'}
