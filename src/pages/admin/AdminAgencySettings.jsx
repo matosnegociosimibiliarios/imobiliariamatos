@@ -9,7 +9,7 @@ const groups = [
   ]},
   { title: 'Contato e endereço', fields: [
     ['phone', 'Telefone', 'Telefone principal.'], ['whatsapp', 'WhatsApp', 'Número comercial do WhatsApp.'],
-    ['public_email', 'E-mail público', 'E-mail mostrado aos visitantes.'], ['website_url', 'Site', 'Endereço do site público.'],
+    ['public_email', 'E-mail da imobiliária', 'E-mail mostrado no site e usado como endereço de resposta nos convites da equipe.'], ['website_url', 'Site', 'Endereço do site público.'],
     ['public_address', 'Endereço', 'Endereço comercial mostrado no site.'],
   ]},
   { title: 'Redes sociais', fields: [

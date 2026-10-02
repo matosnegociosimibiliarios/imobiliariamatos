@@ -273,7 +273,7 @@ export default function AdminTeam() {
         <div>
           <span className="eyebrow">Novo acesso</span>
           <h2>Convidar usuário</h2>
-          <p>A pessoa receberá um e-mail para criar a senha. Depois terá somente as áreas liberadas para a função escolhida.</p>
+          <p>A pessoa receberá um convite identificado com os dados da sua imobiliária. Depois terá somente as áreas liberadas para a função escolhida.</p>
         </div>
         <form onSubmit={invite} className="team-invite-form">
           <label>Nome completo<input value={form.fullName} onChange={(e) => setForm((c) => ({ ...c, fullName: e.target.value }))} /></label>
