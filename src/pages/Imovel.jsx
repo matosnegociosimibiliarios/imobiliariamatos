@@ -288,6 +288,10 @@ export default function Imovel() {
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
                   />
                 </div>
+              ) : /\.(mp4|webm|mov)(\?|$)/i.test(property.video_url) || property.video_url.includes('/storage/v1/object/public/property-videos/') ? (
+                <video controls playsInline preload="metadata" style={{ width: '100%', borderRadius: 16 }} src={property.video_url}>
+                  Seu navegador não conseguiu reproduzir este vídeo.
+                </video>
               ) : (
                 <a className="button" href={property.video_url} target="_blank" rel="noreferrer">Assistir ao vídeo</a>
               )}
