@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { submitOwnerCapture } from '../services/captures';
+import { publicTenantPath } from '../services/properties';
 import SeoHead from '../components/SeoHead';
 import { trackEvent } from '../services/tracking';
 
@@ -103,7 +104,7 @@ export default function OwnerCapture({ requestType = 'listing' }) {
             informado para dar continuidade.
           </p>
 
-          <Link className="button" to="/">
+          <Link className="button" to={publicTenantPath("/")}>
             Voltar para o início
           </Link>
         </section>
