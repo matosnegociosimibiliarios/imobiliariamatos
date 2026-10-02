@@ -22,6 +22,20 @@ const TABLE_LABELS = {
   crm_documents: 'documento',
 };
 
+function friendlyTeamError(error, fallback = 'Não foi possível concluir a operação.') {
+  const text = String(error?.message || error || '').toLowerCase();
+  if (text.includes('limite de usuários') || text.includes('limite de usuarios')) {
+    return 'Limite de usuários atingido. Seu plano atual não permite adicionar mais usuários. Para ampliar sua equipe, faça upgrade do plano.';
+  }
+  if (text.includes('already') || text.includes('já existe') || text.includes('ja existe')) {
+    return 'Este e-mail já está vinculado a um usuário.';
+  }
+  if (text.includes('email') && (text.includes('invalid') || text.includes('inválid'))) {
+    return 'Informe um endereço de e-mail válido.';
+  }
+  return fallback;
+}
+
 function formatDate(value) {
   if (!value) return '—';
   return new Date(value).toLocaleString('pt-BR');
@@ -45,7 +59,7 @@ function MemberCard({ member, currentAccess, onSaved }) {
       status,
       permissions: overrides,
     });
-    if (result.error) setMessage(result.error.message || 'Não foi possível salvar.');
+    if (result.error) setMessage(friendlyTeamError(result.error, 'Não foi possível salvar as alterações.'));
     else {
       clearPermissionCache();
       setMessage('Permissões atualizadas.');
@@ -194,7 +208,7 @@ export default function AdminTeam() {
       setForm({ fullName: '', email: '', role: 'broker' });
       await load();
     } catch (error) {
-      setMessage(error.message || 'Não foi possível enviar o convite.');
+      setMessage(friendlyTeamError(error, 'Não foi possível enviar o convite. Verifique os dados e tente novamente.'));
     } finally {
       setInviting(false);
     }
