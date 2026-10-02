@@ -8,6 +8,7 @@ import {
   getTeamMembers,
   inviteTeamMember,
   updateTeamMember,
+  removeTeamMember,
 } from '../../services/team';
 import { clearPermissionCache } from '../../components/PermissionRoute';
 
@@ -50,6 +51,22 @@ function MemberCard({ member, currentAccess, onSaved }) {
   const isSelf = member.user_id === currentAccess?.user_id;
   const isOwner = member.role === 'owner';
   const canEditOwner = currentAccess?.role === 'owner';
+
+  async function removeMember() {
+    if (isSelf || isOwner) return;
+    const confirmed = window.confirm(`Excluir ${member.profile?.full_name || 'este usuário'} da equipe? O acesso desta pessoa a esta imobiliária será removido.`);
+    if (!confirmed) return;
+    setSaving(true);
+    setMessage('');
+    const result = await removeTeamMember(member.id);
+    if (result.error) {
+      setMessage(friendlyTeamError(result.error, 'Não foi possível excluir este usuário da equipe.'));
+    } else {
+      clearPermissionCache();
+      onSaved?.();
+    }
+    setSaving(false);
+  }
 
   async function save() {
     setSaving(true);
@@ -150,6 +167,11 @@ function MemberCard({ member, currentAccess, onSaved }) {
 
       <div className="team-member-footer">
         {message && <span>{message}</span>}
+        {!isSelf && !isOwner && (
+          <button type="button" className="danger" onClick={removeMember} disabled={saving}>
+            Excluir da equipe
+          </button>
+        )}
         <button type="button" className="button" onClick={save} disabled={saving || (isOwner && !canEditOwner)}>
           {saving ? 'Salvando...' : 'Salvar acesso'}
         </button>
