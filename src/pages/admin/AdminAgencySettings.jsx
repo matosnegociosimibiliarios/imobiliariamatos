@@ -19,7 +19,6 @@ const groups = [
   { title: 'Marca visual', fields: [
     ['logo_url', 'Logo', 'URL da logo. O upload gerenciado entra na próxima camada de armazenamento.'],
     ['favicon_url', 'Favicon', 'URL do favicon.'], ['cover_image_url', 'Imagem de capa', 'URL da imagem institucional.'],
-    ['primary_color', 'Cor principal', 'Hexadecimal, por exemplo #111827.'], ['secondary_color', 'Cor secundária', 'Hexadecimal, por exemplo #E5E7EB.'],
   ]},
 ];
 
@@ -57,6 +56,7 @@ export default function AdminAgencySettings() {
     else {
       setSettings((current) => ({ ...current, ...(result.data || {}) }));
       setMessage('Identidade da imobiliária atualizada.');
+      window.dispatchEvent(new CustomEvent('agency-settings-updated', { detail: result.data || settings }));
     }
     setSaving(false);
   }
