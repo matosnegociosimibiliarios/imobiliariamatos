@@ -150,31 +150,18 @@ export async function getProperties({
   maxPrice,
   minBedrooms,
 } = {}) {
-  if (!supabaseConfigured) {
-    return { data: [], error: new Error('Supabase não configurado.') };
-  }
-
+  if (!supabaseConfigured) return { data: [], error: new Error('Supabase não configurado.') };
   const organizationSlug = getPublicOrganizationSlug();
   const base = await supabase.rpc('get_public_properties', { p_organization_slug: organizationSlug, p_purpose: purpose || null, p_featured_only: featuredOnly, p_limit: limit });
   if (base.error) return base;
-  const ids = (base.data || []).map((item) => item.id);
-  if (!ids.length) return { data: [], error: null };
-  let query = supabase.from('properties').select(cardFields).in('id', ids).order('created_at', { ascending: false }).limit(limit);
-
-
-  if (propertyType) query = query.eq('property_type', propertyType);
-  if (cityId) query = query.eq('city_id', cityId);
-  if (minBedrooms) query = query.gte('bedrooms', Number(minBedrooms));
-
-  if (purpose === 'rent') {
-    if (minPrice) query = query.gte('rent_price', Number(minPrice));
-    if (maxPrice) query = query.lte('rent_price', Number(maxPrice));
-  } else if (purpose === 'sale') {
-    if (minPrice) query = query.gte('sale_price', Number(minPrice));
-    if (maxPrice) query = query.lte('sale_price', Number(maxPrice));
-  }
-
-  return query;
+  let rows = base.data || [];
+  if (propertyType) rows = rows.filter(x => x.property_type === propertyType);
+  if (cityId) rows = rows.filter(x => x.city_id === cityId);
+  if (minBedrooms) rows = rows.filter(x => Number(x.bedrooms || 0) >= Number(minBedrooms));
+  const priceKey = purpose === 'rent' ? 'rent_price' : 'sale_price';
+  if (minPrice) rows = rows.filter(x => Number(x[priceKey] || 0) >= Number(minPrice));
+  if (maxPrice) rows = rows.filter(x => Number(x[priceKey] || 0) <= Number(maxPrice));
+  return { data: rows, error: null };
 }
 
 export async function getHomeProperties() {
@@ -188,34 +175,12 @@ export async function getHomeProperties() {
 }
 
 export async function getPropertyBySlug(slug) {
-  if (!supabaseConfigured) {
-    return { data: null, error: new Error('Supabase não configurado.') };
-  }
-
+  if (!supabaseConfigured) return { data: null, error: new Error('Supabase não configurado.') };
   const organizationSlug = getPublicOrganizationSlug();
   const resolved = await supabase.rpc('get_public_property_by_slug', { p_organization_slug: organizationSlug, p_property_slug: slug });
-  if (resolved.error || !resolved.data?.id) return { data: null, error: resolved.error };
-  return supabase
-    .from('properties')
-    .select(`
-      *,
-      city:cities(id,name,state_code,slug),
-      neighborhood:neighborhoods(name),
-      property_images(
-        id,
-        storage_path,
-        alt_text,
-        display_order,
-        is_cover
-      ),
-      property_features(
-        feature:features(id,key,label,active)
-      )
-    `)
-    .eq('id', resolved.data.id)
-    .eq('status', 'published')
-    .is('deleted_at', null)
-    .maybeSingle();
+  if (resolved.error) return { data: null, error: resolved.error };
+  const row = Array.isArray(resolved.data) ? resolved.data[0] : resolved.data;
+  return { data: row || null, error: null };
 }
 
 export async function getAgencySettings() {
