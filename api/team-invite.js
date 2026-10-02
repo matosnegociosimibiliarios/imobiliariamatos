@@ -23,7 +23,7 @@ function escapeHtml(value) {
 
 async function sendInviteEmail({ email, fullName, organizationName, replyTo, actionLink }) {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) throw new Error('Serviço de e-mail ainda não configurado.');
+  if (!apiKey) return { sent: false, reason: 'not_configured' };
 
   const safeOrg = escapeHtml(organizationName || 'CRM Imobiliário');
   const safeName = escapeHtml(fullName);
@@ -39,8 +39,8 @@ async function sendInviteEmail({ email, fullName, organizationName, replyTo, act
     }),
   });
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload?.message || 'Não foi possível enviar o e-mail de convite.');
-  return payload;
+  if (!response.ok) return { sent: false, reason: 'provider_rejected', message: payload?.message || null };
+  return { sent: true, id: payload?.id || null };
 }
 
 async function findUserByEmail(client, email) {
@@ -91,6 +91,9 @@ export default async function handler(req, res) {
     const host = req.headers['x-forwarded-host'] || req.headers.host || 'imobiliariamatos.vercel.app';
     const protocol = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0];
 
+    let emailDelivery = { sent: false, reason: 'not_attempted' };
+    let accessLink = `${protocol}://${host}/login`;
+
     if (!user) {
       const redirectTo = `${protocol}://${host}/convite`;
 
@@ -106,7 +109,8 @@ export default async function handler(req, res) {
       user = data?.user || null;
       const actionLink = data?.properties?.action_link;
       if (!actionLink) throw new Error('Não foi possível gerar o link seguro do convite.');
-      await sendInviteEmail({
+      accessLink = actionLink;
+      emailDelivery = await sendInviteEmail({
         email,
         fullName,
         organizationName: org.email_sender_name || org.name,
@@ -115,7 +119,8 @@ export default async function handler(req, res) {
       });
     } else {
       const loginLink = `${protocol}://${host}/login`;
-      await sendInviteEmail({
+      accessLink = loginLink;
+      emailDelivery = await sendInviteEmail({
         email,
         fullName,
         organizationName: org.email_sender_name || org.name,
@@ -156,7 +161,7 @@ export default async function handler(req, res) {
       prefer: 'resolution=merge-duplicates,return=minimal',
     });
 
-    return res.status(200).json({ ok: true, existing, user_id: userId });
+    return res.status(200).json({ ok: true, existing, user_id: userId, email_sent: Boolean(emailDelivery?.sent), access_link: accessLink });
   } catch (error) {
     console.error('team-invite', error);
     return res.status(error.statusCode || 500).json({ error: error.message || 'Erro ao convidar usuário.' });
