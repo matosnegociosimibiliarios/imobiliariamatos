@@ -79,24 +79,30 @@ async function handleKiwify(req, res) {
 
   if (productId) await supabase.from('saas_billing_products').upsert({provider:'kiwify',provider_product_id:productId,plan_code:planCode,product_name:productName,updated_at:new Date().toISOString()},{onConflict:'provider,provider_product_id'});
 
-  const positive = ['order_approved','subscription_renewed'].includes(eventType) || (eventType === 'paid' && body.order_status === 'paid');
-  const cancelled = ['subscription_canceled','order_refunded','chargeback'].includes(eventType);
-  const late = eventType === 'subscription_late';
+  const normalizedEvent = eventType.toLowerCase();
+  const positive = ['order_approved','subscription_renewed'].includes(normalizedEvent) || (normalizedEvent === 'paid' && body.order_status === 'paid');
+  const cancelled = ['subscription_canceled','order_refunded','chargeback'].includes(normalizedEvent);
+  const late = normalizedEvent === 'subscription_late';
   const nextPayment = body.Subscription?.next_payment || body.Subscription?.customer_access?.access_until || null;
+  const now = new Date();
+  const graceUntil = new Date(now.getTime() + (5 * 24 * 60 * 60 * 1000)).toISOString();
 
   if (positive) {
     await supabase.from('saas_subscriptions').upsert({
       organization_id:organizationId, plan_code:planCode, status:'active', billing_cycle:'monthly',
       provider:'kiwify', provider_subscription_id:subscriptionId || null,
-      current_period_start:new Date().toISOString(), current_period_end:nextPayment,
-      cancel_at_period_end:false, updated_at:new Date().toISOString()
+      current_period_start:now.toISOString(), current_period_end:nextPayment,
+      grace_period_ends_at:null, cancel_at_period_end:false, updated_at:now.toISOString()
     },{onConflict:'organization_id'});
     await supabase.from('organizations').update({status:'active',plan_code:planCode,updated_at:new Date().toISOString()}).eq('id',organizationId);
   } else if (late) {
-    await supabase.from('saas_subscriptions').update({status:'past_due',updated_at:new Date().toISOString()}).eq('organization_id',organizationId);
+    await supabase.from('saas_subscriptions').update({status:'past_due',grace_period_ends_at:graceUntil,updated_at:now.toISOString()}).eq('organization_id',organizationId);
   } else if (cancelled) {
-    const status = eventType === 'subscription_canceled' ? 'cancelled' : 'blocked';
-    await supabase.from('saas_subscriptions').update({status,cancel_at_period_end:eventType === 'subscription_canceled',updated_at:new Date().toISOString()}).eq('organization_id',organizationId);
+    const isSubscriptionCancel = normalizedEvent === 'subscription_canceled';
+    const status = isSubscriptionCancel ? 'cancelled' : 'blocked';
+    const update = {status,cancel_at_period_end:isSubscriptionCancel,grace_period_ends_at:null,updated_at:now.toISOString()};
+    if (!isSubscriptionCancel) update.current_period_end = now.toISOString();
+    await supabase.from('saas_subscriptions').update(update).eq('organization_id',organizationId);
   }
 
   await supabase.from('saas_billing_webhook_events').update({processed:true,processing_error:null}).eq('provider','kiwify').eq('event_key',eventKey);
