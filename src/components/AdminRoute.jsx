@@ -11,6 +11,7 @@ export default function AdminRoute() {
     authenticated: false,
     authorized: false,
     entitlement: null,
+    error: false,
   });
 
   useEffect(() => {
@@ -21,7 +22,7 @@ export default function AdminRoute() {
         const session = await getCurrentSession();
 
         if (!session) {
-          if (active) setState({ loading: false, authenticated: false, authorized: false, entitlement: null });
+          if (active) setState({ loading: false, authenticated: false, authorized: false, entitlement: null, error: false });
           return;
         }
 
@@ -33,10 +34,11 @@ export default function AdminRoute() {
             authenticated: true,
             authorized: Boolean(accessResult.data && !accessResult.error),
             entitlement: entitlementResult.data || null,
+            error: Boolean(accessResult.error),
           });
         }
       } catch {
-        if (active) setState({ loading: false, authenticated: false, authorized: false, entitlement: null });
+        if (active) setState({ loading: false, authenticated: true, authorized: false, entitlement: null, error: true });
       }
     })();
 
@@ -45,6 +47,7 @@ export default function AdminRoute() {
 
   if (state.loading) return <div className="admin-loading">Verificando acesso...</div>;
   if (!state.authenticated) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (state.error) return <div className="admin-loading">Não foi possível verificar seu acesso agora. Atualize a página em alguns instantes.</div>;
   if (!state.authorized) return <Navigate to="/onboarding" replace />;
 
   if (state.entitlement && state.entitlement.access_allowed === false && location.pathname !== '/admin/plano') {
