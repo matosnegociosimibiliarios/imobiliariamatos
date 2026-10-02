@@ -89,7 +89,9 @@ export default async function handler(req, res) {
     const orgRows = await db(`organizations?select=id,name,email_sender_name,email_reply_to&id=eq.${encodeURIComponent(organizationId)}&limit=1`);
     const org = orgRows?.[0] || {};
     const host = req.headers['x-forwarded-host'] || req.headers.host || 'imobiliariamatos.vercel.app';
-      const protocol = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0];
+    const protocol = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0];
+
+    if (!user) {
       const redirectTo = `${protocol}://${host}/convite`;
 
       const { data, error } = await client.auth.admin.generateLink({
