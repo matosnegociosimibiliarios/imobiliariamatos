@@ -140,6 +140,13 @@ export async function updateTeamMember(memberId, payload) {
     .single();
 }
 
+export async function removeTeamMember(memberId) {
+  return supabase
+    .from('organization_members')
+    .delete()
+    .eq('id', memberId);
+}
+
 export async function getRecentTeamActivity(limit = 80) {
   return withSupabaseRetry(() => supabase
     .from('team_activity_log')
