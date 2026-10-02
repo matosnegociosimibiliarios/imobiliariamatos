@@ -277,6 +277,32 @@ export async function getLeads() {
     .order('created_at', { ascending: false });
 }
 
+export async function createManualLead({ name, whatsapp, email, message }) {
+  const { data: organizationId, error: orgError } = await supabase.rpc('current_organization_id');
+  if (orgError) return { data: null, error: orgError };
+
+  return supabase
+    .from('leads')
+    .insert({
+      organization_id: organizationId,
+      name: name.trim(),
+      whatsapp: whatsapp?.trim() || null,
+      email: email?.trim() || null,
+      message: message?.trim() || null,
+      source: 'manual',
+      source_platform: 'manual',
+      source_channel: 'manual',
+      initial_source_platform: 'manual',
+      initial_source_channel: 'manual',
+      last_source_platform: 'manual',
+      last_source_channel: 'manual',
+      last_source_at: new Date().toISOString(),
+      status: 'new',
+    })
+    .select()
+    .single();
+}
+
 export async function updateLeadStatus(id, status) {
   return supabase
     .from('leads')
