@@ -1,0 +1,5 @@
+-- Public site writes are tenant-scoped through SECURITY DEFINER RPCs.
+-- Applied to production as secure_public_tracking_and_appointments.
+-- Direct anonymous INSERT privileges on site_visits, site_events and appointments are revoked.
+-- RPCs validate the active organization slug and, when supplied, require the property to be published in that same organization.
+-- submit_public_appointment also requires the lead to belong to the same organization.
