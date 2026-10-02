@@ -222,6 +222,23 @@ export async function uploadPropertyImages(property, files) {
   return uploaded;
 }
 
+export async function uploadPropertyVideo(property, file) {
+  if (!file) return null;
+  if (file.size > 100 * 1024 * 1024) throw new Error('O vídeo deve ter no máximo 100 MB.');
+  const allowed = ['video/mp4', 'video/webm', 'video/quicktime'];
+  if (file.type && !allowed.includes(file.type)) throw new Error('Use um vídeo MP4, WebM ou MOV.');
+
+  const extension = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+  const storagePath = `${property.code.toLowerCase()}/${Date.now()}-video.${extension}`;
+  const { error } = await supabase.storage.from('property-videos').upload(storagePath, file, {
+    upsert: false,
+    contentType: file.type || undefined,
+  });
+  if (error) throw error;
+  const { data } = supabase.storage.from('property-videos').getPublicUrl(storagePath);
+  return data?.publicUrl || null;
+}
+
 export async function setCoverImage(propertyId, imageId) {
   await supabase
     .from('property_images')
