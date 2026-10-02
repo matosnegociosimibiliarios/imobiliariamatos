@@ -8,6 +8,7 @@ import {
   saveProperty,
   setCoverImage,
   uploadPropertyImages,
+  uploadPropertyVideo,
 } from '../../services/admin';
 import { getPublicImageUrl } from '../../services/properties';
 
@@ -50,6 +51,7 @@ export default function AdminPropertyForm() {
   const [property, setProperty] = useState(null);
   const [existingImages, setExistingImages] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
+  const [newVideo, setNewVideo] = useState(null);
   const [loading, setLoading] = useState(editing);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -123,6 +125,7 @@ export default function AdminPropertyForm() {
         form.public_location_text.trim() ||
         `${neighborhood.name} - ${city.name}/${city.state_code || 'MG'}`;
 
+      let videoUrl = form.video_url.trim() || null;
       const payload = {
         title: form.title.trim(),
         purpose: form.purpose,
@@ -151,7 +154,7 @@ export default function AdminPropertyForm() {
         exchange_allowed: form.exchange_allowed,
         featured: form.featured,
         tag: form.tag || null,
-        video_url: form.video_url.trim() || null,
+        video_url: videoUrl,
         published_at:
           form.status === 'published'
             ? new Date().toISOString()
@@ -163,6 +166,13 @@ export default function AdminPropertyForm() {
       if (error) throw error;
 
       let savedProperty = data;
+
+      if (newVideo) {
+        videoUrl = await uploadPropertyVideo(savedProperty, newVideo);
+        const videoResult = await saveProperty({ video_url: videoUrl }, savedProperty.id);
+        if (videoResult.error) throw videoResult.error;
+        savedProperty = videoResult.data;
+      }
 
       if (newFiles.length > 0) {
         await uploadPropertyImages(savedProperty, newFiles);
@@ -521,6 +531,15 @@ export default function AdminPropertyForm() {
             />
           </label>
           <p className="admin-help-text">O vídeo será exibido na página pública do imóvel.</p>
+          <label className="admin-upload">
+            Ou enviar vídeo do computador/celular
+            <input
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+              onChange={(event) => setNewVideo(event.target.files?.[0] || null)}
+            />
+          </label>
+          {newVideo && <p>Vídeo selecionado: {newVideo.name} (máximo 100 MB).</p>}
         </section>
 
         <section className="admin-panel">
