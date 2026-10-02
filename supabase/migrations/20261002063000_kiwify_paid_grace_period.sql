@@ -1,0 +1,44 @@
+alter table public.saas_subscriptions
+  add column if not exists grace_period_ends_at timestamptz;
+
+create or replace function public.current_saas_entitlement()
+returns jsonb
+language sql
+stable
+security definer
+set search_path='public'
+as $$
+with x as (
+ select o.id organization_id,o.status organization_status,coalesce(s.plan_code,o.plan_code) plan_code,s.status subscription_status,
+ coalesce(s.trial_ends_at,o.trial_ends_at) trial_ends_at,s.current_period_end,s.grace_period_ends_at,s.cancel_at_period_end,p.limits,p.features
+ from public.organizations o
+ left join public.saas_subscriptions s on s.organization_id=o.id
+ left join public.saas_plans p on p.code=coalesce(s.plan_code,o.plan_code)
+ where o.id=public.current_organization_id()
+ limit 1
+)
+select jsonb_build_object(
+ 'organization_id',organization_id,
+ 'organization_status',organization_status,
+ 'plan_code',plan_code,
+ 'subscription_status',coalesce(subscription_status,case when organization_status='active' then 'active' else 'blocked' end),
+ 'trial_ends_at',trial_ends_at,
+ 'current_period_end',current_period_end,
+ 'grace_period_ends_at',grace_period_ends_at,
+ 'cancel_at_period_end',coalesce(cancel_at_period_end,false),
+ 'limits',coalesce(limits,'{}'),
+ 'features',coalesce(features,'{}'),
+ 'access_allowed',case
+   when plan_code='internal' then true
+   when subscription_status='active' then true
+   when subscription_status='trialing' and trial_ends_at>now() then true
+   when subscription_status='past_due' and grace_period_ends_at>now() then true
+   when subscription_status='cancelled' and current_period_end>now() then true
+   else false
+ end
+)
+from x
+$$;
+
+revoke all on function public.current_saas_entitlement() from public,anon;
+grant execute on function public.current_saas_entitlement() to authenticated;
