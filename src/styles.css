@@ -5555,3 +5555,21 @@ h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
 .site-shell .premium-search .tab.active{color:var(--agency-primary,#A60311)}
 .site-shell .button-outline-premium{color:var(--agency-primary,#A60311);border-color:var(--agency-primary,#A60311)}
 .site-shell .button-outline-premium:hover{background:var(--agency-primary,#A60311);color:#fff}
+
+
+/* SaaS tenant theme: páginas públicas legadas */
+.site-shell .owner-capture-hero{
+  background:
+    radial-gradient(circle at 80% 20%,rgba(255,255,255,.12),transparent 30%),
+    var(--agency-secondary,var(--accent-2,#173c27))!important;
+}
+.site-shell .owner-capture-hero .eyebrow,
+.site-shell .owner-capture-content .eyebrow{color:var(--agency-primary,var(--accent))!important}
+.site-shell .owner-capture-hero .eyebrow-light{color:var(--agency-primary,var(--accent))!important}
+.site-shell .owner-process-list article>strong{color:var(--agency-primary,var(--accent));background:color-mix(in srgb,var(--agency-primary,var(--accent)) 12%,white)}
+.site-shell .listing-hero{background:linear-gradient(135deg,color-mix(in srgb,var(--agency-primary,var(--accent)) 6%,white),color-mix(in srgb,var(--agency-secondary,var(--accent-2)) 8%,white))}
+.site-shell .filter-button,
+.site-shell .full-button{background:var(--agency-primary,var(--accent))!important}
+.site-shell .filter-button:hover,
+.site-shell .full-button:hover{background:var(--agency-secondary,var(--accent-2))!important}
+.site-shell .footer{background:var(--agency-secondary,var(--accent-2))!important}
