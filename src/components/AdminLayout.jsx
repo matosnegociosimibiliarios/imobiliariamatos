@@ -73,7 +73,6 @@ export default function AdminLayout() {
       setPublicOrganizationSlug(accessResult.data?.organization_slug);
     }
     if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
-      if (!platformResult?.error) setPlatformAdmin(Boolean(platformResult?.data));
   }
 
   useEffect(() => {
@@ -85,6 +84,7 @@ export default function AdminLayout() {
         setPublicOrganizationSlug(accessResult.data?.organization_slug);
       }
       if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
+      if (!platformResult?.error) setPlatformAdmin(Boolean(platformResult?.data));
     });
     return () => { active = false; };
   }, []);
