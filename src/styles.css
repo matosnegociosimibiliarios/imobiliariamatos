@@ -5573,3 +5573,42 @@ h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
 .site-shell .filter-button:hover,
 .site-shell .full-button:hover{background:var(--agency-secondary,var(--accent-2))!important}
 .site-shell .footer{background:var(--agency-secondary,var(--accent-2))!important}
+
+
+/* SaaS tenant theme: CRM completo */
+.admin-shell{
+  --crm-red:var(--agency-primary,#A60311);
+  --crm-red-dark:var(--agency-secondary,#590209);
+  --accent:var(--agency-primary,#A60311);
+  --accent-2:var(--agency-secondary,#590209);
+}
+.admin-shell .admin-sidebar{
+  background:
+    radial-gradient(circle at 50% -10%,color-mix(in srgb,var(--agency-primary,#A60311) 24%,transparent),transparent 34%),
+    linear-gradient(180deg,#080808 0%,color-mix(in srgb,var(--agency-secondary,#590209) 18%,#111111) 58%,#050505 100%);
+}
+.admin-shell .admin-sidebar::before{
+  background:linear-gradient(90deg,var(--agency-secondary,#590209),var(--agency-primary,#A60311),#c9cdd2,var(--agency-primary,#A60311),var(--agency-secondary,#590209));
+}
+.admin-shell .admin-nav-group.is-active>.admin-nav-group-toggle,
+.admin-shell .admin-nav-group-toggle:hover,
+.admin-shell .admin-nav-compact>a:hover,
+.admin-shell .admin-nav-compact>a.active{
+  background:color-mix(in srgb,var(--agency-primary,#A60311) 24%,#111);
+}
+.admin-shell .admin-nav-submenu a.active,
+.admin-shell .admin-nav-submenu a:hover{
+  border-left-color:var(--agency-primary,#A60311);
+  background:color-mix(in srgb,var(--agency-primary,#A60311) 16%,#111);
+}
+.admin-shell .admin-home-link,
+.admin-shell .home-primary-action{
+  background:var(--agency-primary,#A60311)!important;
+  border-color:var(--agency-primary,#A60311)!important;
+}
+.admin-shell .home-primary-action:hover{background:var(--agency-secondary,#590209)!important}
+.admin-shell .admin-nav-group-meta b,
+.admin-shell .admin-nav-with-badge b{background:var(--agency-primary,#A60311)}
+.admin-shell .admin-main{
+  background:radial-gradient(circle at 100% 0%,color-mix(in srgb,var(--agency-primary,#A60311) 4%,transparent),transparent 25%),var(--crm-page);
+}
