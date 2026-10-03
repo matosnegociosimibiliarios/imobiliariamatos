@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
 import PropertyFilters from '../components/PropertyFilters';
 import PropertyGrid from '../components/PropertyGrid';
 import EmptyProperties from '../components/EmptyProperties';
@@ -8,6 +8,10 @@ import { getProperties, getPublicOrganizationSlug } from '../services/properties
 import { trackEvent } from '../services/tracking';
 
 export default function Alugar() {
+  const { agency } = useOutletContext();
+  const agencyName = agency?.trade_name || agency?.agency_name || 'Imobiliária';
+  const serviceArea = agency?.service_area || 'sua região';
+  const organizationSlug = getPublicOrganizationSlug();
   const [searchParams, setSearchParams] = useSearchParams();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +27,7 @@ export default function Alugar() {
   function apply(e) { e.preventDefault(); const q = new URLSearchParams(); q.set('imobiliaria', getPublicOrganizationSlug()); if (filters.location) q.set('local', filters.location); if (filters.propertyType) q.set('tipo', filters.propertyType); if (filters.bedrooms) q.set('quartos', filters.bedrooms); setSearchParams(q); trackEvent('search_click', { metadata: { purpose: 'rent', ...filters } }); }
   function clear() { setFilters({ location:'', propertyType:'', bedrooms:'' }); setSearchParams({ imobiliaria: getPublicOrganizationSlug() }); }
 
-  return <main className="listing-page"><SeoHead title="Imóveis para alugar" description="Imóveis para alugar com fotos, preços e informações organizadas." canonicalPath="/alugar" />
+  return <main className="listing-page"><SeoHead title={`Imóveis para alugar em ${serviceArea}`} description={`Imóveis para alugar com fotos, preços e informações organizadas pela ${agencyName}. Atendimento em ${serviceArea}.`} canonicalPath="/alugar" siteName={agencyName} organizationSlug={organizationSlug} websiteUrl={agency?.website_url} faviconUrl={agency?.favicon_url} image={agency?.cover_image_url || agency?.logo_url || null} />
     <section className="listing-hero"><span className="eyebrow">Alugar</span><h1>Imóveis para alugar</h1><p>Pesquise opções de locação de forma simples.</p></section>
     <PropertyFilters finalidade="aluguel" values={filters} onChange={change} onSubmit={apply} onClear={clear} />
     <section className="section listing-content"><div className="listing-toolbar"><div><strong>{loading ? 'Carregando...' : `${filtered.length} imóvel${filtered.length === 1 ? '' : 'is'} encontrado${filtered.length === 1 ? '' : 's'}`}</strong><span>Somente imóveis publicados.</span></div></div>
