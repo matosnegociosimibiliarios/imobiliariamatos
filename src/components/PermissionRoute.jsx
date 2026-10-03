@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getAccessContext, can } from '../services/team';
 import { getSaasEntitlement, hasSaasFeature } from '../services/saas';
-import { getSaasEntitlement, hasSaasFeature } from '../services/saas';
 
 const accessCache = { value: null, at: 0 };
 
@@ -34,13 +33,14 @@ export default function PermissionRoute({ permission, children }) {
     (async () => {
       try {
         const access = await loadAccess();
-        const entitlementResult = await getSaasEntitlement();
-        const entitlement = entitlementResult?.data || null;
+        const feature = PERMISSION_FEATURE[permission];
         let planAllowed = true;
-        if (permission?.startsWith('rentals.')) planAllowed = hasSaasFeature(entitlement, 'rentals');
-        if (permission?.startsWith('financial.')) planAllowed = hasSaasFeature(entitlement, 'finance');
-        if (permission === 'integrations.manage') planAllowed = hasSaasFeature(entitlement, 'integrations');
-        if (active) setState({ loading: false, allowed: can(access, permission) && planAllowed });
+        if (feature) {
+          const entitlementResult = await getSaasEntitlement();
+          if (entitlementResult.error) throw entitlementResult.error;
+          planAllowed = hasSaasFeature(entitlementResult.data, feature);
+        }
+        if (active) setState({ loading: false, allowed: can(access, permission) && planAllowed, planBlocked: !planAllowed });
       } catch {
         if (active) setState({ loading: false, allowed: false, planBlocked: false });
       }
