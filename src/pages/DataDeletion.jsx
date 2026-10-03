@@ -1,15 +1,23 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useOutletContext } from 'react-router-dom';
 import SeoHead from '../components/SeoHead';
+import { getPublicOrganizationSlug, publicTenantPath } from '../services/properties';
 
 export default function DataDeletion() {
+  const { agency } = useOutletContext();
+  const agencyName = agency?.trade_name || agency?.agency_name || 'Imobiliária';
+  const organizationSlug = getPublicOrganizationSlug();
   return (
     <main className="legal-page">
       <SeoHead
         title="Exclusão de Dados"
-        description="Instruções para solicitar exclusão de dados da Matos Negócios Imobiliários."
+        description={`Instruções para solicitar exclusão de dados da ${agencyName}.`}
         canonicalPath="/exclusao-de-dados"
         robots="noindex,follow"
+        siteName={agencyName}
+        organizationSlug={organizationSlug}
+        websiteUrl={agency?.website_url}
+        faviconUrl={agency?.favicon_url}
       />
 
       <section className="legal-hero">
@@ -17,7 +25,7 @@ export default function DataDeletion() {
         <h1>Solicitação de exclusão de dados</h1>
         <p>
           Saiba como solicitar a exclusão de dados relacionados ao atendimento
-          realizado pela Matos Negócios Imobiliários.
+          realizado pela {agencyName}.
         </p>
       </section>
 
@@ -25,7 +33,7 @@ export default function DataDeletion() {
         <article>
           <h2>Como solicitar</h2>
           <p>
-            Entre em contato pelos canais oficiais da Matos Negócios Imobiliários
+            Entre em contato pelos canais oficiais da {agencyName}
             e informe que deseja solicitar a exclusão de seus dados pessoais.
           </p>
           <p>
@@ -51,7 +59,7 @@ export default function DataDeletion() {
             adicionais.
           </p>
 
-          <Link className="admin-link-button" to="/politica-de-privacidade">
+          <Link className="admin-link-button" to={publicTenantPath("/politica-de-privacidade")}>
             Voltar para a Política de Privacidade
           </Link>
         </article>
