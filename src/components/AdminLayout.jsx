@@ -66,7 +66,6 @@ export default function AdminLayout() {
   const [switchingOrganization, setSwitchingOrganization] = useState(false);
   const [platformAdmin, setPlatformAdmin] = useState(false);
   const [entitlement, setEntitlement] = useState(null);
-  const [entitlement, setEntitlement] = useState(null);
 
   async function loadContext() {
     const [accessResult, organizationsResult] = await Promise.all([getAccessContext(), getUserOrganizations()]);
@@ -87,7 +86,6 @@ export default function AdminLayout() {
       }
       if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
       if (!platformResult?.error) setPlatformAdmin(Boolean(platformResult?.data));
-      if (!entitlementResult?.error) setEntitlement(entitlementResult?.data || null);
       if (!entitlementResult?.error) setEntitlement(entitlementResult?.data || null);
     });
     return () => { active = false; };
