@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 export const EMPTY_AGENCY_SETTINGS = {
   agency_name: '', legal_name: '', trade_name: '', creci: '', cnpj: '', phone: '', whatsapp: '',
   public_email: '', public_address: '', website_url: '', instagram: '', facebook: '', tiktok: '',
-  youtube: '', logo_url: '', favicon_url: '', cover_image_url: '', slogan: '', primary_color: '', secondary_color: '',
+  youtube: '', logo_url: '', favicon_url: '', cover_image_url: '', slogan: '', primary_color: '', secondary_color: '', service_area: '',
 };
 
 export async function getAgencySettings() { return supabase.rpc('get_agency_public_settings'); }
@@ -18,6 +18,7 @@ export async function updateAgencySettings(settings) {
     p_youtube: settings.youtube || null, p_logo_url: settings.logo_url || null, p_favicon_url: settings.favicon_url || null,
     p_cover_image_url: settings.cover_image_url || null, p_slogan: settings.slogan || null,
     p_primary_color: settings.primary_color || null, p_secondary_color: settings.secondary_color || null,
+    p_service_area: settings.service_area || null,
   });
 }
 
