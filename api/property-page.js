@@ -72,6 +72,7 @@ async function serveSitemap(req,res){
   const rows=await publicRpc('get_public_seo_sitemap_rows');
   const typeMap={Casa:'casas',Apartamento:'apartamentos',Terreno:'terrenos','Sítio':'sitios',Comercial:'imoveis-comerciais'};
   const entries=new Map();
+  entries.set(`${origin}/goi`,'2026-10-03');
 
   function add(slug,website,path,lastmod){
     const configured=website ? validUrl(website) : null;
@@ -110,8 +111,53 @@ async function serveSitemap(req,res){
   res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`);
 }
 
+
+async function serveGoiPage(req,res){
+  const host=req.headers['x-forwarded-host']||req.headers.host||'imobiliariamatos.vercel.app';
+  const origin=`https://${host}`;
+  const baseHtml=await fetch(`${origin}/index.html`).then(r=>r.text());
+  const canonical=`${origin}/goi`;
+  const title='GOI | CRM e Sistema de Gestão para Imobiliárias';
+  const description='Sistema de gestão para imobiliárias com CRM imobiliário, funil comercial, imóveis, captações, propostas, locação, financeiro, equipe e site integrado. Teste o GOI grátis por 14 dias.';
+  const image=`${origin}/goi-logo.svg`;
+  const html=inject(baseHtml,{title,description,canonical,image,siteName:'GOI'})
+    .replace('</head>', `<script type="application/ld+json">${JSON.stringify({
+      '@context':'https://schema.org',
+      '@graph':[
+        {
+          '@type':'SoftwareApplication',
+          name:'GOI — Gerenciador de Operações Imobiliárias',
+          applicationCategory:'BusinessApplication',
+          operatingSystem:'Web',
+          description,
+          url:canonical,
+          image,
+          offers:[
+            {'@type':'Offer',name:'Plano Essencial',priceCurrency:'BRL',price:'49.90',url:`${origin}/cadastro`},
+            {'@type':'Offer',name:'Plano Profissional',priceCurrency:'BRL',price:'99.90',url:`${origin}/cadastro`},
+            {'@type':'Offer',name:'Plano Empresarial',priceCurrency:'BRL',price:'199.90',url:`${origin}/cadastro`}
+          ]
+        },
+        {
+          '@type':'FAQPage',
+          mainEntity:[
+            ['Preciso instalar alguma coisa?','Não. O GOI funciona pela internet e pode ser acessado pelo navegador no computador ou celular.'],
+            ['O teste realmente é gratuito?','Sim. A imobiliária pode testar o sistema por 14 dias antes de contratar um plano.'],
+            ['Posso cadastrar minha equipe?','Sim. A quantidade de usuários depende do plano contratado e os acessos podem ser organizados por função e permissão.'],
+            ['O site mostra a marca do GOI?','Não como marca principal. O site público utiliza a identidade da própria imobiliária.'],
+            ['Meus dados ficam misturados com os de outras imobiliárias?','Não. Cada imobiliária possui sua própria organização e o sistema aplica isolamento de dados por organização.']
+          ].map(([name,text])=>({'@type':'Question',name,acceptedAnswer:{'@type':'Answer',text}}))
+        }
+      ]
+    })}</script></head>`);
+  res.setHeader('Content-Type','text/html; charset=utf-8');
+  res.setHeader('Cache-Control','public, max-age=0, s-maxage=900, stale-while-revalidate=3600');
+  res.status(200).send(html);
+}
+
 export default async function handler(req,res) {
   if (req.query.mode === 'sitemap') return serveSitemap(req,res);
+  if (req.query.mode === 'goi') return serveGoiPage(req,res);
   try {
     const slug=String(req.query.slug||'').trim();
     const organizationSlug=String(req.query.imobiliaria||process.env.VITE_PUBLIC_ORGANIZATION_SLUG||'matos-negocios-imobiliarios').trim().toLowerCase();
