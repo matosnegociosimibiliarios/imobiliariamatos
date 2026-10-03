@@ -29,7 +29,7 @@ export default function Signup() {
   }
 
   return <main className="login-page"><section className="login-card">
-    <div className="admin-brand login-brand"><img className="admin-brand-logo login-brand-logo" src="/crm-beta-logo.webp" alt="CRM" /><div><strong>CRM Imobiliário</strong><small>Nova imobiliária</small></div></div>
+    <div className="admin-brand login-brand"><img className="admin-brand-logo login-brand-logo" src="/goi-logo.svg" alt="GOI" /><div><strong>GOI</strong><small>Gerenciador de Operações Imobiliárias</small></div></div>
     <h1>Começar teste gratuito</h1><p>Crie sua imobiliária e tenha 14 dias para testar o sistema.</p>
     <form onSubmit={submit} className="admin-form">
       <label>Seu nome<input required value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} /></label>
