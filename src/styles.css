@@ -5809,3 +5809,284 @@ h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
   .crm-sales-footer { grid-template-columns:1fr; padding:32px 20px; }
   .crm-sales-footer p { grid-column:1; }
 }
+
+
+/* GOI - Central global de notificações */
+.goi-notification-center {
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  z-index: 120;
+}
+.goi-notification-bell {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d9dde2;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(16,18,23,.12);
+  cursor: pointer;
+  font-size: 19px;
+}
+.goi-notification-bell.has-unread {
+  border-color: rgba(198,0,18,.32);
+}
+.goi-notification-bell b {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #c60012;
+  color: #fff;
+  border: 2px solid #fff;
+  font-size: 10px;
+  line-height: 1;
+}
+.goi-notification-panel {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  width: min(390px, calc(100vw - 28px));
+  max-height: min(650px, calc(100vh - 86px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #d9dde2;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 26px 70px rgba(11,13,17,.22);
+}
+.goi-notification-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 17px 18px 14px;
+  border-bottom: 1px solid #eceef1;
+}
+.goi-notification-panel-head > div {
+  display: grid;
+  gap: 2px;
+}
+.goi-notification-panel-head strong {
+  font-size: 16px;
+}
+.goi-notification-panel-head small {
+  color: #70757d;
+  font-size: 11px;
+}
+.goi-notification-panel-head button,
+.goi-notification-actions button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: #b00010;
+  font-weight: 800;
+}
+.goi-notification-panel-head button {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #f4f5f7;
+  color: #30343a;
+}
+.goi-notification-settings {
+  display: grid;
+  gap: 10px;
+  padding: 15px 18px;
+  background: #fafbfc;
+  border-bottom: 1px solid #eceef1;
+}
+.goi-notification-settings > strong {
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+.goi-notification-settings label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  color: #3d4249;
+  font-size: 13px;
+}
+.goi-notification-settings input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #c60012;
+}
+.goi-notification-settings small {
+  color: #7a8088;
+}
+.goi-notification-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 18px;
+  border-bottom: 1px solid #eceef1;
+  font-size: 11px;
+  font-weight: 800;
+  color: #747981;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.goi-notification-actions button {
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.goi-notification-list {
+  overflow-y: auto;
+}
+.goi-notification-item {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  align-items: start;
+  gap: 11px;
+  padding: 14px 16px;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid #f0f1f3;
+  background: #fff;
+  cursor: pointer;
+}
+.goi-notification-item:hover {
+  background: #fafbfc;
+}
+.goi-notification-item.unread {
+  background: #fff8f8;
+}
+.goi-notification-kind,
+.goi-notification-toast-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+}
+.goi-notification-kind.instagram,
+.goi-notification-toast.instagram .goi-notification-toast-icon {
+  background: linear-gradient(135deg,#833ab4,#e1306c,#f77737);
+}
+.goi-notification-kind.whatsapp,
+.goi-notification-toast.whatsapp .goi-notification-toast-icon {
+  background: #1fa855;
+}
+.goi-notification-kind.form,
+.goi-notification-toast.form .goi-notification-toast-icon {
+  background: #b00010;
+}
+.goi-notification-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.goi-notification-copy strong {
+  color: #1d2025;
+  font-size: 13px;
+}
+.goi-notification-copy > span {
+  color: #5f646c;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.goi-notification-copy small {
+  color: #8a8f96;
+  font-size: 10px;
+}
+.goi-notification-item > i {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: #c60012;
+}
+.goi-notification-empty {
+  padding: 34px 18px;
+  text-align: center;
+  color: #777c84;
+  font-size: 13px;
+}
+.goi-notification-toast {
+  position: fixed;
+  top: 70px;
+  right: 18px;
+  z-index: 130;
+  width: min(390px, calc(100vw - 28px));
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid #d8dce1;
+  border-radius: 15px;
+  background: #fff;
+  color: #20242a;
+  box-shadow: 0 22px 60px rgba(12,14,18,.24);
+  text-align: left;
+  cursor: pointer;
+  animation: goi-notification-in .22s ease-out;
+}
+.goi-notification-toast > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.goi-notification-toast strong {
+  font-size: 13px;
+}
+.goi-notification-toast small {
+  color: #62676f;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.goi-notification-toast > i {
+  font-style: normal;
+  color: #858a91;
+  font-size: 18px;
+}
+@keyframes goi-notification-in {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 700px) {
+  .goi-notification-center {
+    top: 9px;
+    right: 10px;
+  }
+  .goi-notification-bell {
+    width: 40px;
+    height: 40px;
+  }
+  .goi-notification-toast {
+    top: 58px;
+    right: 10px;
+    width: calc(100vw - 20px);
+  }
+  .goi-notification-panel {
+    top: 48px;
+    right: 0;
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 70px);
+  }
+}

@@ -5,6 +5,7 @@ import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/adm
 import { ROLE_LABELS, can, getAccessContext, getUserOrganizations, setActiveOrganization } from '../services/team';
 import { setPublicOrganizationSlug } from '../services/properties';
 import { getSaasEntitlement, hasSaasFeature, isPlatformAdmin } from '../services/saas';
+import NotificationCenter from './NotificationCenter';
 
 const NAV_SECTIONS = [
   {
@@ -238,6 +239,7 @@ export default function AdminLayout() {
         </div>
       </aside>
       <main className="admin-main">
+        {access && <NotificationCenter access={access} />}
         {access?.organization_status === 'trial' && access?.trial_ends_at && <div className="admin-trial-banner">Teste gratuito ativo até {new Date(access.trial_ends_at).toLocaleDateString('pt-BR')}. <NavLink to="/admin/plano">Ver planos</NavLink></div>}
         <Outlet context={{ access }} />
       </main>
