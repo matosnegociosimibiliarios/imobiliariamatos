@@ -47,9 +47,9 @@ export default function Login() {
     <main className="login-page">
       <section className="login-card">
         <div className="admin-brand login-brand">
-          <img className="admin-brand-logo login-brand-logo" src="/crm-beta-logo.webp" alt="CRM Beta" />
+          <img className="admin-brand-logo login-brand-logo" src="/crm-beta-logo.webp" alt="CRM Imobiliário" />
           <div>
-            <strong>CRM Beta</strong>
+            <strong>CRM Imobiliário</strong>
             <small>Acesso administrativo</small>
           </div>
         </div>
