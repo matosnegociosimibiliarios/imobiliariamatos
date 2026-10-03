@@ -4,6 +4,7 @@ import { can } from '../services/team';
 import {
   getNotificationFeed,
   getNotificationPreferences,
+  getUnreadNotificationCounts,
   markNotificationRead,
   markNotificationsRead,
   notificationEnabled,
@@ -32,6 +33,7 @@ export default function NotificationCenter({ access }) {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [preferences, setPreferences] = useState(null);
+  const [counts, setCounts] = useState({ instagram: 0, whatsapp: 0, form: 0, total: 0 });
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [toast, setToast] = useState(null);
@@ -52,12 +54,14 @@ export default function NotificationCenter({ access }) {
 
   async function load() {
     if (!organizationId) return;
-    const [feedResult, prefResult] = await Promise.all([
+    const [feedResult, prefResult, countResult] = await Promise.all([
       getNotificationFeed(organizationId),
       getNotificationPreferences(organizationId),
+      getUnreadNotificationCounts(organizationId),
     ]);
     if (!feedResult.error) setItems(feedResult.data || []);
     if (!prefResult.error) setPreferences(prefResult.data);
+    if (!countResult.error) setCounts(countResult.data);
   }
 
   useEffect(() => {
@@ -70,6 +74,11 @@ export default function NotificationCenter({ access }) {
     const channel = subscribeToNotifications(organizationId, (notification) => {
       const item = { ...notification, read: false };
       setItems((current) => [item, ...current].slice(0, 60));
+      setCounts((current) => ({
+        ...current,
+        [item.kind]: Number(current[item.kind] || 0) + 1,
+        total: Number(current.total || 0) + 1,
+      }));
 
       if (itemVisible(item, preferences)) {
         setToast(item);
@@ -97,12 +106,24 @@ export default function NotificationCenter({ access }) {
   );
 
   const unreadItems = visibleItems.filter((item) => !item.read);
-  const unreadCount = unreadItems.length;
+  const unreadCount = useMemo(() => {
+    if (!preferences?.enabled) return 0;
+    let total = 0;
+    if (preferences.instagram_enabled !== false && kindAllowed('instagram')) total += Number(counts.instagram || 0);
+    if (preferences.whatsapp_enabled !== false && kindAllowed('whatsapp')) total += Number(counts.whatsapp || 0);
+    if (preferences.forms_enabled !== false && kindAllowed('form')) total += Number(counts.form || 0);
+    return total;
+  }, [counts, preferences, access]);
 
   async function openNotification(item) {
     if (!item.read) {
       await markNotificationRead(item.id);
       setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, read: true } : entry));
+      setCounts((current) => ({
+        ...current,
+        [item.kind]: Math.max(0, Number(current[item.kind] || 0) - 1),
+        total: Math.max(0, Number(current.total || 0) - 1),
+      }));
     }
     setOpen(false);
     setToast(null);
@@ -114,6 +135,8 @@ export default function NotificationCenter({ access }) {
     if (!ids.length) return;
     await markNotificationsRead(ids);
     setItems((current) => current.map((item) => ids.includes(item.id) ? { ...item, read: true } : item));
+    const refreshed = await getUnreadNotificationCounts(organizationId);
+    if (!refreshed.error) setCounts(refreshed.data);
   }
 
   async function updatePreference(key, value) {
