@@ -38,7 +38,7 @@ export default function LocalProperties({ purpose }) {
   if (loading) return <main className="section"><div className="loading-box">Carregando imóveis...</div></main>;
 
   if (notFound || !city) {
-    return <main className="section"><SeoHead title="Página não encontrada" description="Página não encontrada." canonicalPath={window.location.pathname} robots="noindex,nofollow" /><div className="empty-state"><h1>Localização não encontrada.</h1><Link className="button" to={purpose === 'rent' ? '/alugar' : '/comprar'}>Ver imóveis</Link></div></main>;
+    return <main className="section"><SeoHead title="Página não encontrada" description="Página não encontrada." canonicalPath={window.location.pathname} robots="noindex,nofollow" siteName={agencyName} organizationSlug={organizationSlug} websiteUrl={agency?.website_url} faviconUrl={agency?.favicon_url} /><div className="empty-state"><h1>Localização não encontrada.</h1><Link className="button" to={publicTenantPath(purpose === 'rent' ? '/alugar' : '/comprar')}>Ver imóveis</Link></div></main>;
   }
 
   const sale = purpose === 'sale';
