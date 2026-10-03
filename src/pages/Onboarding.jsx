@@ -28,8 +28,8 @@ export default function Onboarding() {
   if(state.loading)return <div className="admin-loading">Preparando sua conta...</div>;
   if(!state.authenticated)return <Navigate to="/login" replace />;
   return <main className="login-page"><section className="login-card">
-    <div className="admin-brand login-brand"><img className="admin-brand-logo login-brand-logo" src="/crm-beta-logo.webp" alt="CRM"/><div><strong>CRM Imobiliário</strong><small>Configuração inicial</small></div></div>
-    <h1>Concluir cadastro</h1><p>Informe o nome da sua imobiliária para criar seu ambiente no CRM.</p>
+    <div className="admin-brand login-brand"><img className="admin-brand-logo login-brand-logo" src="/goi-logo.svg" alt="GOI"/><div><strong>GOI</strong><small>Gerenciador de Operações Imobiliárias</small></div></div>
+    <h1>Concluir cadastro</h1><p>Informe o nome da sua imobiliária para criar seu ambiente no GOI.</p>
     <form onSubmit={submit} className="admin-form"><label>Nome da imobiliária<input required value={agency} onChange={e=>setAgency(e.target.value)}/></label>
     {message&&<div className="admin-error">{message}</div>}<button className="button full-button" disabled={busy}>{busy?'Criando...':'Criar minha imobiliária'}</button></form>
   </section></main>;
