@@ -1,21 +1,29 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useOutletContext } from 'react-router-dom';
 import SeoHead from '../components/SeoHead';
+import { getPublicOrganizationSlug, publicTenantPath } from '../services/properties';
 
 export default function PrivacyPolicy() {
+  const { agency } = useOutletContext();
+  const agencyName = agency?.trade_name || agency?.agency_name || 'Imobiliária';
+  const organizationSlug = getPublicOrganizationSlug();
   return (
     <main className="legal-page">
       <SeoHead
         title="Política de Privacidade"
-        description="Política de Privacidade da Matos Negócios Imobiliários."
+        description={`Política de Privacidade da ${agencyName}.`}
         canonicalPath="/politica-de-privacidade"
+        siteName={agencyName}
+        organizationSlug={organizationSlug}
+        websiteUrl={agency?.website_url}
+        faviconUrl={agency?.favicon_url}
       />
 
       <section className="legal-hero">
         <span className="eyebrow">Privacidade</span>
         <h1>Política de Privacidade</h1>
         <p>
-          Esta política explica como a Matos Negócios Imobiliários trata dados
+          Esta política explica como a {agencyName} trata dados
           pessoais recebidos pelo site, formulários e integrações autorizadas.
         </p>
       </section>
@@ -24,7 +32,7 @@ export default function PrivacyPolicy() {
         <article>
           <h2>1. Quem somos</h2>
           <p>
-            A Matos Negócios Imobiliários utiliza este site para divulgar imóveis,
+            A {agencyName} utiliza este site para divulgar imóveis,
             receber contatos de interessados, captar imóveis de proprietários,
             organizar agendamentos e acompanhar atendimentos em seu CRM.
           </p>
@@ -46,7 +54,7 @@ export default function PrivacyPolicy() {
           <h2>3. Instagram e Meta</h2>
           <p>
             Quando o usuário inicia uma conversa com o perfil profissional da
-            Matos Negócios Imobiliários no Instagram e autoriza ou utiliza recursos
+            {agencyName} no Instagram e autoriza ou utiliza recursos
             disponibilizados pela Meta, podemos receber dados da interação por meio
             das APIs oficiais da Meta para organizar o atendimento no CRM.
           </p>
@@ -96,14 +104,14 @@ export default function PrivacyPolicy() {
             específica abaixo.
           </p>
 
-          <Link className="admin-link-button" to="/exclusao-de-dados">
+          <Link className="admin-link-button" to={publicTenantPath("/exclusao-de-dados")}>
             Ver instruções para exclusão de dados
           </Link>
 
           <h2>9. Contato</h2>
           <p>
             Solicitações relacionadas à privacidade podem ser feitas pelos canais
-            oficiais de contato da Matos Negócios Imobiliários divulgados neste
+            oficiais de contato da {agencyName} divulgados neste
             site e no perfil profissional da empresa.
           </p>
 
