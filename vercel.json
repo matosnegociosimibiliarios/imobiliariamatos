@@ -38,6 +38,33 @@
           "value": "noindex, nofollow, noarchive"
         }
       ]
+    },
+    {
+      "source": "/cadastro",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/onboarding",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/convite",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
     }
   ],
   "rewrites": [
@@ -48,6 +75,10 @@
     {
       "source": "/sitemap.xml",
       "destination": "/api/property-page?mode=sitemap"
+    },
+    {
+      "source": "/goi",
+      "destination": "/api/property-page?mode=goi"
     },
     {
       "source": "/imovel/:slug",
@@ -62,6 +93,13 @@
     {
       "path": "/api/instagram-refresh",
       "schedule": "0 5 * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/matos-crm",
+      "destination": "/goi",
+      "permanent": true
     }
   ]
 }
