@@ -26,16 +26,16 @@ function propertyArea(item) {
 function scoreComparable(item, subject) {
   let score = 0;
 
-  if (sameText(item.property_type, subject.property_type)) score += 30;
-  if (sameText(item.city?.name, subject.city)) score += 20;
-  if (sameText(item.neighborhood?.name, subject.neighborhood)) score += 20;
+  if (sameText(item.property_type, subject.property_type)) score += 25;
+  if (sameText(item.city?.name, subject.city)) score += 15;
+  if (sameText(item.neighborhood?.name, subject.neighborhood)) score += 25;
 
   const targetArea = number(subject.area);
   const area = propertyArea(item);
   if (targetArea > 0 && area > 0) {
     const ratio = Math.abs(area - targetArea) / targetArea;
     if (ratio <= 0.10) score += 20;
-    else if (ratio <= 0.20) score += 14;
+    else if (ratio <= 0.20) score += 15;
     else if (ratio <= 0.35) score += 8;
   }
 
@@ -43,9 +43,21 @@ function scoreComparable(item, subject) {
   if (bedroomDiff === 0) score += 5;
   else if (bedroomDiff === 1) score += 3;
 
+  const bathroomDiff = Math.abs(number(item.bathrooms) - number(subject.bathrooms));
+  if (bathroomDiff === 0) score += 4;
+  else if (bathroomDiff === 1) score += 2;
+
   const parkingDiff = Math.abs(number(item.parking_spaces) - number(subject.parking_spaces));
-  if (parkingDiff === 0) score += 5;
-  else if (parkingDiff === 1) score += 2;
+  if (parkingDiff === 0) score += 3;
+  else if (parkingDiff === 1) score += 1;
+
+  const createdAt = item.created_at ? new Date(item.created_at).getTime() : 0;
+  if (createdAt) {
+    const months = (Date.now() - createdAt) / (1000 * 60 * 60 * 24 * 30.4);
+    if (months <= 6) score += 3;
+    else if (months <= 12) score += 2;
+    else if (months <= 24) score += 1;
+  }
 
   return Math.max(10, Math.min(100, score));
 }
@@ -143,6 +155,11 @@ export async function getQuickValuationComparables(subject) {
         same_city: sameCity,
         area_difference_pct: areaDifferencePct,
         reference_date: deal?.completed_at || item.created_at,
+        listed_price: number(item.sale_price),
+        closed_price: deal ? number(deal.sale_value) : null,
+        discount_pct: deal && number(item.sale_price) > 0
+          ? Math.max(-50, Math.min(50, (number(item.sale_price) - number(deal.sale_value)) / number(item.sale_price) * 100))
+          : null,
       };
     })
     .filter((item) => item.area > 0 && item.value > 0)
