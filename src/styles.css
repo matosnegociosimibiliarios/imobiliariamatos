@@ -6361,3 +6361,90 @@ h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
     order: -1;
   }
 }
+
+
+/* GOI - modos de avaliação rápida e completa */
+.valuation-mode-switch{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:0 0 16px;
+}
+.valuation-mode-switch button{
+  display:grid;
+  gap:4px;
+  padding:16px 18px;
+  text-align:left;
+  border:1px solid #dfe2e6;
+  border-radius:14px;
+  background:#fff;
+  cursor:pointer;
+}
+.valuation-mode-switch button strong{
+  font-size:15px;
+  color:#20242a;
+}
+.valuation-mode-switch button small{
+  color:#71767d;
+  font-size:11px;
+}
+.valuation-mode-switch button.active{
+  border-color:rgba(198,0,18,.42);
+  background:#fff8f8;
+  box-shadow:inset 3px 0 0 #c60012;
+}
+.valuation-technical-meta{
+  margin-bottom:14px;
+  padding-bottom:14px;
+  border-bottom:1px solid #eceef1;
+}
+.valuation-technical-factors{
+  margin-top:18px;
+  padding:16px;
+  border:1px solid #e2e5e8;
+  border-radius:14px;
+  background:#fafbfc;
+}
+.valuation-technical-factors h3{
+  margin:3px 0 4px;
+}
+.valuation-technical-factors p{
+  margin:0 0 14px;
+  color:#6d737a;
+  font-size:12px;
+}
+.valuation-technical-notes{
+  margin-top:16px;
+}
+.valuation-complete-stats{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+  margin-top:16px;
+}
+.valuation-complete-stats article{
+  display:grid;
+  gap:5px;
+  padding:13px;
+  border:1px solid #e3e5e8;
+  border-radius:12px;
+  background:#fafbfc;
+}
+.valuation-complete-stats span{
+  color:#737980;
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.valuation-complete-stats strong{
+  color:#20242a;
+  font-size:16px;
+}
+@media(max-width:900px){
+  .valuation-complete-stats{grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+@media(max-width:620px){
+  .valuation-mode-switch{grid-template-columns:1fr;}
+  .valuation-complete-stats{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
