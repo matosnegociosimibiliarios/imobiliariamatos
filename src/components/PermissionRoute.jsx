@@ -18,7 +18,7 @@ export function clearPermissionCache() {
   accessCache.at = 0;
 }
 
-const PERMISSION_FEATURE = {
+// SaaS plan gates are checked in addition to role permissions.\nconst PERMISSION_FEATURE = {
   'financial.view': 'finance',
   'rentals.view': 'rentals',
   'rentals.manage': 'rentals',
