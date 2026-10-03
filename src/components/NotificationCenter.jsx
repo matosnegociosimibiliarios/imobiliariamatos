@@ -6,6 +6,7 @@ import {
   getNotificationPreferences,
   getUnreadNotificationCounts,
   markNotificationRead,
+  markAllNotificationsRead,
   markNotificationsRead,
   notificationEnabled,
   saveNotificationPreferences,
@@ -131,10 +132,10 @@ export default function NotificationCenter({ access }) {
   }
 
   async function markAllRead() {
-    const ids = unreadItems.map((item) => item.id);
-    if (!ids.length) return;
-    await markNotificationsRead(ids);
-    setItems((current) => current.map((item) => ids.includes(item.id) ? { ...item, read: true } : item));
+    if (!unreadCount) return;
+    const result = await markAllNotificationsRead(organizationId);
+    if (result.error) return;
+    setItems((current) => current.map((item) => itemVisible(item) ? { ...item, read: true } : item));
     const refreshed = await getUnreadNotificationCounts(organizationId);
     if (!refreshed.error) setCounts(refreshed.data);
   }
