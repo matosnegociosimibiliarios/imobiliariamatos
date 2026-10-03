@@ -52,7 +52,9 @@ export default function SeoHead({
   useEffect(() => {
     const cleanSiteName = siteName || 'Imobiliária';
     const finalTitle = title.includes(cleanSiteName) ? title : `${title} | ${cleanSiteName}`;
-    const customBase = normalizeBaseUrl(websiteUrl);
+    const configuredBase = normalizeBaseUrl(websiteUrl);
+    const currentOrigin = window.location.origin;
+    const customBase = configuredBase && new URL(configuredBase).host === window.location.host ? configuredBase : null;
     const path = canonicalPath || window.location.pathname;
     const canonical = customBase
       ? new URL(path, customBase).toString()
