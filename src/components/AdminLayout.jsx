@@ -29,11 +29,11 @@ const NAV_SECTIONS = [
   {
     title: 'Locação',
     items: [
-      { to: '/admin/locacoes', label: 'Visão Geral', permission: 'rentals.view' },
-      { to: '/admin/locacoes/pipeline', label: 'Pipeline', permission: 'rentals.view' },
-      { to: '/admin/locacoes/operacao', label: 'Operações', permission: 'rentals.manage' },
-      { to: '/admin/locacoes/nova', label: 'Novo Contrato', permission: 'rentals.manage' },
-      { to: '/admin/locacoes/relatorios', label: 'Relatórios', permission: 'rentals.view' },
+      { to: '/admin/locacoes', label: 'Visão Geral', permission: 'rentals.view', feature: 'rentals' },
+      { to: '/admin/locacoes/pipeline', label: 'Pipeline', permission: 'rentals.view', feature: 'rentals' },
+      { to: '/admin/locacoes/operacao', label: 'Operações', permission: 'rentals.manage', feature: 'rentals' },
+      { to: '/admin/locacoes/nova', label: 'Novo Contrato', permission: 'rentals.manage', feature: 'rentals' },
+      { to: '/admin/locacoes/relatorios', label: 'Relatórios', permission: 'rentals.view', feature: 'rentals' },
     ],
   },
   {
@@ -48,7 +48,7 @@ const NAV_SECTIONS = [
     title: 'Administração',
     items: [
       { to: '/admin/equipe', label: 'Equipe e Permissões', permission: 'team.view' },
-      { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage' },
+      { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage', feature: 'integrations' },
       { to: '/admin/identidade', label: 'Site da Imobiliária', permission: 'integrations.manage' },
       { to: '/admin/saude', label: 'Saúde do Sistema', permission: 'health.view' },
     ],
@@ -65,6 +65,7 @@ export default function AdminLayout() {
   const [organizations, setOrganizations] = useState([]);
   const [switchingOrganization, setSwitchingOrganization] = useState(false);
   const [platformAdmin, setPlatformAdmin] = useState(false);
+  const [entitlement, setEntitlement] = useState(null);
   const [entitlement, setEntitlement] = useState(null);
 
   async function loadContext() {
@@ -86,6 +87,7 @@ export default function AdminLayout() {
       }
       if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
       if (!platformResult?.error) setPlatformAdmin(Boolean(platformResult?.data));
+      if (!entitlementResult?.error) setEntitlement(entitlementResult?.data || null);
       if (!entitlementResult?.error) setEntitlement(entitlementResult?.data || null);
     });
     return () => { active = false; };
@@ -156,7 +158,7 @@ export default function AdminLayout() {
         return true;
       }),
     })).filter((section) => (section.items || []).length > 0);
-  }, [access]);
+  }, [access, entitlement]);
 
   function sectionIsActive(section) {
     return section.items.some((item) => location.pathname === item.to || location.pathname.startsWith(item.to + '/'));
