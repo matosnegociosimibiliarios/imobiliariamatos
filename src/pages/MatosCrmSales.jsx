@@ -10,7 +10,7 @@ const features = [
   ['Financeiro','Tenha visão das receitas, despesas, lançamentos e operação financeira da imobiliária.'],
   ['WhatsApp e Instagram','Centralize integrações e mensagens dentro da operação comercial.'],
   ['Equipe e Permissões','Organize usuários, funções e acessos por responsabilidade.'],
-  ['Site da Imobiliária','Publique imóveis em um site conectado ao CRM e receba leads direto no sistema.'],
+  ['Site da Imobiliária','Publique imóveis em um site conectado ao GOI e receba leads direto no sistema.'],
   ['Agenda e Tarefas','Não deixe retornos, visitas e compromissos importantes se perderem.'],
   ['Relatórios e Gestão','Acompanhe indicadores para tomar decisões com mais clareza.'],
   ['Multi-imobiliária','Cada imobiliária usa seu próprio ambiente, com dados e configurações separados.'],
@@ -188,7 +188,7 @@ export default function MatosCrmSales(){
     </section>
 
     <footer className="crm-sales-footer">
-      <div className="crm-sales-brand"><img src="/goi-logo.svg" alt="GOI" /><div><strong>GOI</strong><small>Gestão completa para imobiliárias</small></div></div>
+      <div className="crm-sales-brand"><img src="/goi-logo.svg" alt="GOI" /><div><strong>GOI</strong><small>Gerenciador de Operações Imobiliárias</small></div></div>
       <div><Link to="/login">Entrar</Link><Link to="/cadastro">Criar conta</Link></div>
       <p>© {new Date().getFullYear()} GOI — Gerenciador de Operações Imobiliárias.</p>
     </footer>
