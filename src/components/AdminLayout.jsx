@@ -21,19 +21,19 @@ const NAV_SECTIONS = [
   {
     title: 'Atendimento',
     items: [
-      { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', feature: 'integrations', badge: 'instagram' },
-      { to: '/admin/whatsapp', label: 'WhatsApp', permission: 'messages.view', feature: 'integrations', badge: 'whatsapp' },
+      { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', badge: 'instagram' },
+      { to: '/admin/whatsapp', label: 'WhatsApp', permission: 'messages.view', badge: 'whatsapp' },
       { to: '/admin/agenda', label: 'Agenda e Tarefas', permission: 'appointments.view' },
     ],
   },
   {
     title: 'Locação',
     items: [
-      { to: '/admin/locacoes', label: 'Visão Geral', permission: 'rentals.view', feature: 'rentals' },
-      { to: '/admin/locacoes/pipeline', label: 'Pipeline', permission: 'rentals.view', feature: 'rentals' },
-      { to: '/admin/locacoes/operacao', label: 'Operações', permission: 'rentals.manage', feature: 'rentals' },
-      { to: '/admin/locacoes/nova', label: 'Novo Contrato', permission: 'rentals.manage', feature: 'rentals' },
-      { to: '/admin/locacoes/relatorios', label: 'Relatórios', permission: 'rentals.view', feature: 'rentals' },
+      { to: '/admin/locacoes', label: 'Visão Geral', permission: 'rentals.view' },
+      { to: '/admin/locacoes/pipeline', label: 'Pipeline', permission: 'rentals.view' },
+      { to: '/admin/locacoes/operacao', label: 'Operações', permission: 'rentals.manage' },
+      { to: '/admin/locacoes/nova', label: 'Novo Contrato', permission: 'rentals.manage' },
+      { to: '/admin/locacoes/relatorios', label: 'Relatórios', permission: 'rentals.view' },
     ],
   },
   {
@@ -48,7 +48,7 @@ const NAV_SECTIONS = [
     title: 'Administração',
     items: [
       { to: '/admin/equipe', label: 'Equipe e Permissões', permission: 'team.view' },
-      { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage', feature: 'integrations' },
+      { to: '/admin/integracoes', label: 'Integrações', permission: 'integrations.manage' },
       { to: '/admin/identidade', label: 'Site da Imobiliária', permission: 'integrations.manage' },
       { to: '/admin/saude', label: 'Saúde do Sistema', permission: 'health.view' },
     ],
@@ -152,11 +152,11 @@ export default function AdminLayout() {
         if (!can(access, item.permission)) return false;
         if (item.permission?.startsWith('rentals.')) return hasSaasFeature(entitlement, 'rentals');
         if (item.permission?.startsWith('financial.')) return hasSaasFeature(entitlement, 'finance');
-        if (item.permission === 'integrations.manage' || item.permission?.startsWith('messages.')) return hasSaasFeature(entitlement, 'integrations');
+        if (item.permission === 'integrations.manage') return hasSaasFeature(entitlement, 'integrations');
         return true;
       }),
     })).filter((section) => (section.items || []).length > 0);
-  }, [access, entitlement]);
+  }, [access]);
 
   function sectionIsActive(section) {
     return section.items.some((item) => location.pathname === item.to || location.pathname.startsWith(item.to + '/'));
