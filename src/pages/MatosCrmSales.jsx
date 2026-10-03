@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import SeoHead from '../components/SeoHead';
 
 const features = [
   ['Clientes e Leads','Centralize contatos, origens, próximos passos e histórico de atendimento.'],
@@ -14,6 +15,15 @@ const features = [
   ['Agenda e Tarefas','Não deixe retornos, visitas e compromissos importantes se perderem.'],
   ['Relatórios e Gestão','Acompanhe indicadores para tomar decisões com mais clareza.'],
   ['Multi-imobiliária','Cada imobiliária usa seu próprio ambiente, com dados e configurações separados.'],
+];
+
+const faqItems = [
+  ['Preciso instalar alguma coisa?','Não. O GOI funciona pela internet e pode ser acessado pelo navegador no computador ou celular.'],
+  ['O teste realmente é gratuito?','Sim. A imobiliária pode testar o sistema por 14 dias antes de contratar um plano.'],
+  ['Posso cadastrar minha equipe?','Sim. A quantidade de usuários depende do plano contratado e os acessos podem ser organizados por função e permissão.'],
+  ['O site mostra a marca do GOI?','Não como marca principal. O site público utiliza a identidade da própria imobiliária, incluindo nome, logo e informações públicas configuradas por ela.'],
+  ['O que acontece se meu acesso expirar?','O sistema pode bloquear o acesso comercial até a regularização, mas os dados da imobiliária não são apagados automaticamente por causa da expiração.'],
+  ['Meus dados ficam misturados com os de outras imobiliárias?','Não. Cada imobiliária possui sua própria organização e o sistema aplica isolamento de dados por organização.'],
 ];
 
 const plans = [
@@ -32,7 +42,46 @@ const plans = [
 ];
 
 export default function MatosCrmSales(){
+  const seoDescription = 'Sistema de gestão para imobiliárias com CRM imobiliário, funil comercial, imóveis, captações, propostas, locação, financeiro, equipe e site integrado. Teste o GOI grátis por 14 dias.';
+  const seoJsonLd = {
+    '@context':'https://schema.org',
+    '@graph':[
+      {
+        '@type':'SoftwareApplication',
+        name:'GOI — Gerenciador de Operações Imobiliárias',
+        applicationCategory:'BusinessApplication',
+        operatingSystem:'Web',
+        description:seoDescription,
+        url:`${window.location.origin}/goi`,
+        image:`${window.location.origin}/goi-logo.svg`,
+        offers: plans.map((plan)=>({
+          '@type':'Offer',
+          name:`Plano ${plan.name}`,
+          priceCurrency:'BRL',
+          price:plan.price.replace('R$ ','').replace(',','.'),
+          url:`${window.location.origin}/cadastro`,
+        })),
+      },
+      {
+        '@type':'FAQPage',
+        mainEntity:faqItems.map(([question,answer])=>({
+          '@type':'Question',
+          name:question,
+          acceptedAnswer:{ '@type':'Answer', text:answer },
+        })),
+      },
+    ],
+  };
+
   return <main className="crm-sales">
+    <SeoHead
+      title="GOI | CRM e Sistema de Gestão para Imobiliárias"
+      description={seoDescription}
+      canonicalPath="/goi"
+      siteName="GOI"
+      image={`${window.location.origin}/goi-logo.svg`}
+      jsonLd={seoJsonLd}
+    />
     <header className="crm-sales-header">
       <Link className="crm-sales-brand" to="/goi">
         <img src="/goi-logo.svg" alt="GOI" />
@@ -53,7 +102,7 @@ export default function MatosCrmSales(){
       <div className="crm-sales-hero-copy">
         <span className="crm-sales-kicker">Gerenciador de Operações Imobiliárias</span>
         <h1>Mais controle, mais previsibilidade e menos esforço para gerir sua imobiliária.</h1>
-        <p>O GOI centraliza a operação da imobiliária para reduzir perdas, dar mais visão sobre o negócio e facilitar a gestão no dia a dia.</p>
+        <p>O GOI é um sistema de gestão para imobiliárias que reúne CRM imobiliário, imóveis, atendimento, equipe e operação em um só lugar para reduzir perdas, aumentar o controle e facilitar a gestão no dia a dia.</p>
         <div className="crm-sales-actions">
           <Link className="crm-sales-cta" to="/cadastro">Começar teste grátis por 14 dias</Link>
           <a className="crm-sales-secondary" href="#recursos">Conhecer recursos</a>
@@ -173,12 +222,7 @@ export default function MatosCrmSales(){
     <section className="crm-sales-faq" id="duvidas">
       <div className="crm-sales-section-heading"><span className="crm-sales-kicker">Dúvidas frequentes</span><h2>Antes de começar</h2></div>
       <div className="crm-sales-faq-grid">
-        <details><summary>Preciso instalar alguma coisa?</summary><p>Não. O GOI funciona pela internet e pode ser acessado pelo navegador no computador ou celular.</p></details>
-        <details><summary>O teste realmente é gratuito?</summary><p>Sim. A imobiliária pode testar o sistema por 14 dias antes de contratar um plano.</p></details>
-        <details><summary>Posso cadastrar minha equipe?</summary><p>Sim. A quantidade de usuários depende do plano contratado e os acessos podem ser organizados por função e permissão.</p></details>
-        <details><summary>O site mostra a marca do GOI?</summary><p>Não como marca principal. O site público utiliza a identidade da própria imobiliária, incluindo nome, logo e informações públicas configuradas por ela.</p></details>
-        <details><summary>O que acontece se meu acesso expirar?</summary><p>O sistema pode bloquear o acesso comercial até a regularização, mas os dados da imobiliária não são apagados automaticamente por causa da expiração.</p></details>
-        <details><summary>Meus dados ficam misturados com os de outras imobiliárias?</summary><p>Não. Cada imobiliária possui sua própria organização e o sistema aplica isolamento de dados por organização.</p></details>
+        {faqItems.map(([question,answer])=><details key={question}><summary>{question}</summary><p>{answer}</p></details>)}
       </div>
     </section>
 
