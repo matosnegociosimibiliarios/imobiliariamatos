@@ -3,12 +3,14 @@ import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import SeoHead from '../components/SeoHead';
 import { trackEvent } from '../services/tracking';
 import PropertyGrid from '../components/PropertyGrid';
-import { getHomeProperties, publicTenantPath } from '../services/properties';
+import { getHomeProperties, getPublicOrganizationSlug, publicTenantPath } from '../services/properties';
 
 export default function Home() {
   const navigate = useNavigate();
   const { agency } = useOutletContext();
   const agencyName = agency?.trade_name || agency?.agency_name || 'Imobiliária';
+  const serviceArea = agency?.service_area || 'sua região';
+  const organizationSlug = getPublicOrganizationSlug();
   const [search, setSearch] = useState({ purpose: 'sale', location: '', propertyType: '' });
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,30 @@ export default function Home() {
 
   return (
     <main id="inicio">
-      <SeoHead title={`${agencyName} | Imóveis em Ressaquinha e região`} description="Encontre imóveis para comprar, alugar, vender ou avaliar em Ressaquinha e região." canonicalPath="/" jsonLd={{ '@context':'https://schema.org', '@type':'RealEstateAgent', name:agencyName, url:window.location.origin }} />
+      <SeoHead
+        title={`${agencyName} | Imóveis em ${serviceArea}`}
+        description={`Encontre imóveis para comprar, alugar, vender ou avaliar com a ${agencyName}. Atendimento em ${serviceArea}.`}
+        canonicalPath="/"
+        siteName={agencyName}
+        organizationSlug={organizationSlug}
+        websiteUrl={agency?.website_url}
+        faviconUrl={agency?.favicon_url}
+        image={agency?.cover_image_url || agency?.logo_url || null}
+        jsonLd={{
+          '@context':'https://schema.org',
+          '@type':'RealEstateAgent',
+          name:agencyName,
+          legalName:agency?.legal_name || undefined,
+          image:agency?.logo_url || undefined,
+          logo:agency?.logo_url || undefined,
+          telephone:agency?.phone || agency?.whatsapp || undefined,
+          email:agency?.public_email || undefined,
+          address:agency?.public_address || undefined,
+          areaServed:serviceArea,
+          url:agency?.website_url || window.location.href.split('?')[0],
+          sameAs:[agency?.instagram,agency?.facebook,agency?.youtube,agency?.tiktok].filter(Boolean),
+        }}
+      />
 
       <section className="premium-hero">
         <div className="premium-hero-overlay" />
@@ -92,10 +117,10 @@ export default function Home() {
         <div className="section-heading">
           <span className="eyebrow">{agencyName}</span>
           <h2>Seu imóvel tratado como uma decisão importante.</h2>
-          <p>Atendimento para quem quer comprar, alugar, anunciar ou avaliar um imóvel em Ressaquinha e região.</p>
+          <p>Atendimento para quem quer comprar, alugar, anunciar ou avaliar um imóvel em ${serviceArea}.</p>
         </div>
         <div className="premium-service-grid">
-          <Link to="/comprar"><strong>Comprar</strong><span>Encontre oportunidades para morar ou investir.</span></Link>
+          <Link to={publicTenantPath('/comprar')}><strong>Comprar</strong><span>Encontre oportunidades para morar ou investir.</span></Link>
           <Link to={publicTenantPath('/alugar')}><strong>Alugar</strong><span>Veja imóveis disponíveis para locação.</span></Link>
           <Link to={publicTenantPath('/anuncie-seu-imovel')}><strong>Vender</strong><span>Cadastre seu imóvel para iniciar o atendimento.</span></Link>
           <Link to={publicTenantPath('/avaliacao-do-imovel')}><strong>Avaliar</strong><span>Solicite uma análise do seu imóvel.</span></Link>
