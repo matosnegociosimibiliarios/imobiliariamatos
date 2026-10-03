@@ -10,7 +10,7 @@ const features = [
   ['Financeiro','Tenha visão das receitas, despesas, lançamentos e operação financeira da imobiliária.'],
   ['WhatsApp e Instagram','Centralize integrações e mensagens dentro da operação comercial.'],
   ['Equipe e Permissões','Organize usuários, funções e acessos por responsabilidade.'],
-  ['Site da Imobiliária','Publique imóveis em um site conectado ao CRM e receba leads direto no sistema.'],
+  ['Site da Imobiliária','Publique imóveis em um site conectado ao GOI e receba leads direto no sistema.'],
   ['Agenda e Tarefas','Não deixe retornos, visitas e compromissos importantes se perderem.'],
   ['Relatórios e Gestão','Acompanhe indicadores para tomar decisões com mais clareza.'],
   ['Multi-imobiliária','Cada imobiliária usa seu próprio ambiente, com dados e configurações separados.'],
@@ -34,9 +34,9 @@ const plans = [
 export default function MatosCrmSales(){
   return <main className="crm-sales">
     <header className="crm-sales-header">
-      <Link className="crm-sales-brand" to="/matos-crm">
-        <img src="/matos-crm-logo.svg" alt="Matos CRM" />
-        <div><strong>Matos CRM</strong><small>Gestão completa para imobiliárias</small></div>
+      <Link className="crm-sales-brand" to="/goi">
+        <img src="/goi-logo.svg" alt="GOI" />
+        <div><strong>GOI</strong><small>Gerenciador de Operações Imobiliárias</small></div>
       </Link>
       <nav>
         <a href="#recursos">Recursos</a>
@@ -51,9 +51,9 @@ export default function MatosCrmSales(){
 
     <section className="crm-sales-hero">
       <div className="crm-sales-hero-copy">
-        <span className="crm-sales-kicker">CRM + site + gestão imobiliária</span>
-        <h1>Sua imobiliária inteira em um só lugar.</h1>
-        <p>Organize clientes, imóveis, vendas, locações, equipe e financeiro em uma única plataforma, com o site da imobiliária conectado ao CRM.</p>
+        <span className="crm-sales-kicker">Gerenciador de Operações Imobiliárias</span>
+        <h1>Mais controle, mais previsibilidade e menos esforço para gerir sua imobiliária.</h1>
+        <p>O GOI centraliza a operação da imobiliária para reduzir perdas, dar mais visão sobre o negócio e facilitar a gestão no dia a dia.</p>
         <div className="crm-sales-actions">
           <Link className="crm-sales-cta" to="/cadastro">Começar teste grátis por 14 dias</Link>
           <a className="crm-sales-secondary" href="#recursos">Conhecer recursos</a>
@@ -63,8 +63,8 @@ export default function MatosCrmSales(){
         </div>
       </div>
 
-      <div className="crm-sales-preview" aria-label="Prévia do painel Matos CRM">
-        <div className="crm-preview-top"><span></span><span></span><span></span><b>Matos CRM</b></div>
+      <div className="crm-sales-preview" aria-label="Prévia do painel GOI">
+        <div className="crm-preview-top"><span></span><span></span><span></span><b>GOI</b></div>
         <div className="crm-preview-body">
           <aside>
             <strong>Início</strong>
@@ -75,7 +75,7 @@ export default function MatosCrmSales(){
             <span>Administração</span>
           </aside>
           <div className="crm-preview-content">
-            <div className="crm-preview-heading"><div><small>SEU DIA NO CRM</small><h3>Início</h3></div><button>Rotina de hoje</button></div>
+            <div className="crm-preview-heading"><div><small>SEU DIA NO GOI</small><h3>Início</h3></div><button>Rotina de hoje</button></div>
             <div className="crm-preview-panel">
               <small>CENTRO DE COMANDO</small>
               <h4>O que precisa de atenção hoje</h4>
@@ -96,7 +96,7 @@ export default function MatosCrmSales(){
       <div className="crm-sales-section-heading">
         <span className="crm-sales-kicker">Menos improviso. Mais controle.</span>
         <h2>Quando a operação fica espalhada, oportunidades se perdem.</h2>
-        <p>O Matos CRM foi pensado para tirar a imobiliária da dependência de planilhas, anotações soltas e informações espalhadas em vários lugares.</p>
+        <p>O GOI foi pensado para transformar uma operação espalhada e dependente de controles manuais em uma gestão mais organizada, previsível e fácil de acompanhar.</p>
       </div>
       <div className="crm-sales-problem-grid">
         {['Lead sem retorno','Imóvel perdido em planilha','Proposta esquecida','Corretor sem acompanhamento','Locação sem organização','Financeiro sem visão clara'].map((x,i)=><article key={x}><b>{String(i+1).padStart(2,'0')}</b><span>{x}</span></article>)}
@@ -107,7 +107,7 @@ export default function MatosCrmSales(){
       <div>
         <span className="crm-sales-kicker light">Uma operação conectada</span>
         <h2>Do primeiro contato ao contrato, tudo no mesmo fluxo.</h2>
-        <p>O lead chega pelo site, entra no CRM, passa pelo atendimento, funil, proposta, negócio e acompanhamento. A equipe trabalha com o mesmo histórico e a gestão enxerga o que está acontecendo.</p>
+        <p>O lead chega pelo site, entra no GOI, passa pelo atendimento, funil, proposta, negócio e acompanhamento. A equipe trabalha com o mesmo histórico e a gestão enxerga o que está acontecendo.</p>
         <Link className="crm-sales-cta light" to="/cadastro">Criar minha imobiliária</Link>
       </div>
       <div className="crm-flow">
@@ -128,12 +128,12 @@ export default function MatosCrmSales(){
     <section className="crm-sales-site-section">
       <div className="crm-sales-site-card">
         <div>
-          <span className="crm-sales-kicker">CRM + site público</span>
+          <span className="crm-sales-kicker">GOI + site público</span>
           <h2>Seu site trabalha conectado ao seu atendimento.</h2>
-          <p>A imobiliária pode usar sua própria marca no site público, publicar imóveis e receber interessados diretamente dentro do CRM.</p>
+          <p>A imobiliária pode usar sua própria marca no site público, publicar imóveis e receber interessados diretamente dentro do GOI.</p>
           <ul>
             <li>Identidade da própria imobiliária no site</li>
-            <li>Imóveis publicados integrados ao CRM</li>
+            <li>Imóveis publicados integrados ao GOI</li>
             <li>Formulários de compra, venda e locação</li>
             <li>Origem do lead registrada</li>
           </ul>
@@ -165,32 +165,32 @@ export default function MatosCrmSales(){
     </section>
 
     <section className="crm-sales-trial">
-      <img src="/matos-crm-logo.svg" alt="" />
-      <div><span className="crm-sales-kicker light">Teste antes de decidir</span><h2>Use o Matos CRM por 14 dias grátis.</h2><p>Cadastre sua imobiliária, conheça o sistema e veja se ele faz sentido para sua operação antes de assinar.</p></div>
+      <img src="/goi-logo.svg" alt="" />
+      <div><span className="crm-sales-kicker light">Teste antes de decidir</span><h2>Use o GOI por 14 dias grátis.</h2><p>Cadastre sua imobiliária, conheça o sistema e veja se ele faz sentido para sua operação antes de assinar.</p></div>
       <Link className="crm-sales-cta light" to="/cadastro">Começar agora</Link>
     </section>
 
     <section className="crm-sales-faq" id="duvidas">
       <div className="crm-sales-section-heading"><span className="crm-sales-kicker">Dúvidas frequentes</span><h2>Antes de começar</h2></div>
       <div className="crm-sales-faq-grid">
-        <details><summary>Preciso instalar alguma coisa?</summary><p>Não. O Matos CRM funciona pela internet e pode ser acessado pelo navegador no computador ou celular.</p></details>
+        <details><summary>Preciso instalar alguma coisa?</summary><p>Não. O GOI funciona pela internet e pode ser acessado pelo navegador no computador ou celular.</p></details>
         <details><summary>O teste realmente é gratuito?</summary><p>Sim. A imobiliária pode testar o sistema por 14 dias antes de contratar um plano.</p></details>
         <details><summary>Posso cadastrar minha equipe?</summary><p>Sim. A quantidade de usuários depende do plano contratado e os acessos podem ser organizados por função e permissão.</p></details>
-        <details><summary>O site mostra a marca do Matos CRM?</summary><p>Não como marca principal. O site público utiliza a identidade da própria imobiliária, incluindo nome, logo e informações públicas configuradas por ela.</p></details>
+        <details><summary>O site mostra a marca do GOI?</summary><p>Não como marca principal. O site público utiliza a identidade da própria imobiliária, incluindo nome, logo e informações públicas configuradas por ela.</p></details>
         <details><summary>O que acontece se meu acesso expirar?</summary><p>O sistema pode bloquear o acesso comercial até a regularização, mas os dados da imobiliária não são apagados automaticamente por causa da expiração.</p></details>
         <details><summary>Meus dados ficam misturados com os de outras imobiliárias?</summary><p>Não. Cada imobiliária possui sua própria organização e o sistema aplica isolamento de dados por organização.</p></details>
       </div>
     </section>
 
     <section className="crm-sales-final">
-      <div><span className="crm-sales-kicker light">Matos CRM</span><h2>Organize a operação antes que o crescimento vire desorganização.</h2><p>Comece agora e teste o sistema por 14 dias.</p></div>
+      <div><span className="crm-sales-kicker light">GOI</span><h2>Organize a operação antes que o crescimento vire desorganização.</h2><p>Comece agora e teste o sistema por 14 dias.</p></div>
       <Link className="crm-sales-cta light" to="/cadastro">Começar teste gratuito</Link>
     </section>
 
     <footer className="crm-sales-footer">
-      <div className="crm-sales-brand"><img src="/matos-crm-logo.svg" alt="Matos CRM" /><div><strong>Matos CRM</strong><small>Gestão completa para imobiliárias</small></div></div>
+      <div className="crm-sales-brand"><img src="/goi-logo.svg" alt="GOI" /><div><strong>GOI</strong><small>Gerenciador de Operações Imobiliárias</small></div></div>
       <div><Link to="/login">Entrar</Link><Link to="/cadastro">Criar conta</Link></div>
-      <p>© {new Date().getFullYear()} Matos CRM.</p>
+      <p>© {new Date().getFullYear()} GOI — Gerenciador de Operações Imobiliárias.</p>
     </footer>
   </main>
 }
