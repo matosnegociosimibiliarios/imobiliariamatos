@@ -18,33 +18,23 @@ export function clearPermissionCache() {
   accessCache.at = 0;
 }
 
-// SaaS plan gates are checked in addition to role permissions.\nconst PERMISSION_FEATURE = {
-  'financial.view': 'finance',
-  'rentals.view': 'rentals',
-  'rentals.manage': 'rentals',
-  'integrations.manage': 'integrations',
-  'messages.view': 'integrations',
-  'messages.respond': 'integrations',
-};
-
 export default function PermissionRoute({ permission, children }) {
-  const [state, setState] = useState({ loading: true, allowed: false, planBlocked: false });
+  const [state, setState] = useState({ loading: true, allowed: false });
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
         const access = await loadAccess();
-        const feature = PERMISSION_FEATURE[permission];
+        const entitlementResult = await getSaasEntitlement();
+        const entitlement = entitlementResult?.data || null;
         let planAllowed = true;
-        if (feature) {
-          const entitlementResult = await getSaasEntitlement();
-          if (entitlementResult.error) throw entitlementResult.error;
-          planAllowed = hasSaasFeature(entitlementResult.data, feature);
-        }
-        if (active) setState({ loading: false, allowed: can(access, permission) && planAllowed, planBlocked: !planAllowed });
+        if (permission?.startsWith('rentals.')) planAllowed = hasSaasFeature(entitlement, 'rentals');
+        if (permission?.startsWith('financial.')) planAllowed = hasSaasFeature(entitlement, 'finance');
+        if (permission === 'integrations.manage') planAllowed = hasSaasFeature(entitlement, 'integrations');
+        if (active) setState({ loading: false, allowed: can(access, permission) && planAllowed });
       } catch {
-        if (active) setState({ loading: false, allowed: false, planBlocked: false });
+        if (active) setState({ loading: false, allowed: false });
       }
     })();
     return () => { active = false; };
@@ -54,8 +44,8 @@ export default function PermissionRoute({ permission, children }) {
   if (!state.allowed) {
     return (
       <div className="admin-denied">
-        <h1>{state.planBlocked ? 'Recurso não incluído no seu plano' : 'Acesso restrito'}</h1>
-        <p>{state.planBlocked ? 'Este módulo está disponível em um plano superior. Consulte os planos para liberar o recurso.' : 'Seu perfil não possui permissão para abrir esta área.'}</p>
+        <h1>Acesso restrito</h1>
+        <p>Seu perfil não possui permissão para abrir esta área.</p>
       </div>
     );
   }
