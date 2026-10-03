@@ -83,8 +83,10 @@ async function handleKiwify(req, res) {
   const positive = ['order_approved','subscription_renewed','compra_aprovada','assinatura_renovada'].includes(normalizedEvent) || (normalizedEvent === 'paid' && body.order_status === 'paid');
   const cancelled = ['subscription_canceled','subscription_cancelled','order_refunded','refund','chargeback','assinatura_cancelada','reembolso'].includes(normalizedEvent);
   const late = ['subscription_late','subscription_overdue','assinatura_atrasada'].includes(normalizedEvent);
-  const nextPayment = body.Subscription?.next_payment || body.Subscription?.customer_access?.access_until || null;
   const now = new Date();
+  const defaultPeriodEnd = new Date(now);
+  defaultPeriodEnd.setMonth(defaultPeriodEnd.getMonth() + 1);
+  const nextPayment = body.Subscription?.next_payment || body.Subscription?.customer_access?.access_until || defaultPeriodEnd.toISOString();
   const graceUntil = new Date(now.getTime() + (5 * 24 * 60 * 60 * 1000)).toISOString();
 
   if (positive) {
