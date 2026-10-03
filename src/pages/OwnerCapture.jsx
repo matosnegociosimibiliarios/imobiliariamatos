@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useOutletContext } from 'react-router-dom';
 import { submitOwnerCapture } from '../services/captures';
-import { publicTenantPath } from '../services/properties';
+import { getPublicOrganizationSlug, publicTenantPath } from '../services/properties';
 import SeoHead from '../components/SeoHead';
 import { trackEvent } from '../services/tracking';
 
@@ -15,6 +15,9 @@ const PROPERTY_TYPES = [
 ];
 
 export default function OwnerCapture({ requestType = 'listing' }) {
+  const { agency } = useOutletContext();
+  const agencyName = agency?.trade_name || agency?.agency_name || 'Imobiliária';
+  const organizationSlug = getPublicOrganizationSlug();
   const isValuation = requestType === 'valuation';
 
   const [form, setForm] = useState({
@@ -91,7 +94,7 @@ export default function OwnerCapture({ requestType = 'listing' }) {
   if (state.success) {
     return (
       <main className="owner-capture-page">
-        <SeoHead title={isValuation ? 'Solicitar avaliação de imóvel' : 'Anuncie seu imóvel'} description={isValuation ? 'Solicite uma avaliação do seu imóvel.' : 'Cadastre seu imóvel para venda ou aluguel.'} canonicalPath={isValuation ? '/avaliacao-do-imovel' : '/anuncie-seu-imovel'} />
+        <SeoHead title={isValuation ? 'Solicitar avaliação de imóvel' : 'Anuncie seu imóvel'} description={isValuation ? `Solicite uma avaliação do seu imóvel com a ${agencyName}.` : `Cadastre seu imóvel para venda ou aluguel com a ${agencyName}.`} canonicalPath={isValuation ? '/avaliacao-do-imovel' : '/anuncie-seu-imovel'} siteName={agencyName} organizationSlug={organizationSlug} websiteUrl={agency?.website_url} faviconUrl={agency?.favicon_url} image={agency?.cover_image_url || agency?.logo_url || null} />
         <section className="owner-capture-success">
           <span className="eyebrow">Dados recebidos</span>
           <h1>
@@ -114,7 +117,7 @@ export default function OwnerCapture({ requestType = 'listing' }) {
 
   return (
     <main className="owner-capture-page">
-      <SeoHead title={isValuation ? 'Avaliação de imóvel' : 'Anuncie seu imóvel'} description={isValuation ? 'Solicite uma avaliação do seu imóvel.' : 'Envie os dados do seu imóvel para venda ou aluguel.'} canonicalPath={isValuation ? '/avaliacao-do-imovel' : '/anuncie-seu-imovel'} />
+      <SeoHead title={isValuation ? 'Avaliação de imóvel' : 'Anuncie seu imóvel'} description={isValuation ? `Solicite uma avaliação do seu imóvel com a ${agencyName}. Atendimento em ${agency?.service_area || 'sua região'}.` : `Envie os dados do seu imóvel para venda ou aluguel com a ${agencyName}.`} canonicalPath={isValuation ? '/avaliacao-do-imovel' : '/anuncie-seu-imovel'} siteName={agencyName} organizationSlug={organizationSlug} websiteUrl={agency?.website_url} faviconUrl={agency?.favicon_url} image={agency?.cover_image_url || agency?.logo_url || null} />
       <section className="owner-capture-hero">
         <div>
           <span className="eyebrow eyebrow-light">

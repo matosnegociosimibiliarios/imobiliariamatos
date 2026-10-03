@@ -5,6 +5,7 @@ import { trackEvent, trackPageView } from '../services/tracking';
 import { Link, useParams } from 'react-router-dom';
 import {
   getAgencySettings,
+  getPublicOrganizationSlug,
   getPropertyBySlug,
   getPropertyImages,
   propertyLocation,
@@ -45,6 +46,7 @@ function Fact({ value, label }) {
 
 export default function Imovel() {
   const { slug } = useParams();
+  const organizationSlug = getPublicOrganizationSlug();
 
   const [property, setProperty] = useState(null);
   const [agency, setAgency] = useState(null);
@@ -172,18 +174,24 @@ export default function Imovel() {
   }
 
   const seoDescription = property.description?.slice(0, 155) || `${property.property_type} em ${propertyLocation(property)}. Veja preço, fotos e características.`;
+  const agencyName = agency?.trade_name || agency?.agency_name || 'Imobiliária';
+  const offerPrice = pricePurpose === 'rent' ? property.rent_price : property.sale_price;
   const propertyJsonLd = {
     '@context':'https://schema.org',
     '@type': property.property_type === 'Apartamento' ? 'Apartment' : property.property_type === 'Casa' ? 'House' : 'Place',
     name: property.title,
     description: seoDescription,
-    url: window.location.href.split('?')[0],
     image: images.map((image) => image.publicUrl),
+    address: propertyLocation(property),
+    floorSize: property.built_area ? { '@type':'QuantitativeValue', value:Number(property.built_area), unitCode:'MTK' } : undefined,
+    numberOfRooms: property.bedrooms || undefined,
+    offers: offerPrice ? { '@type':'Offer', price:Number(offerPrice), priceCurrency:'BRL', availability:'https://schema.org/InStock' } : undefined,
+    provider: { '@type':'RealEstateAgent', name:agencyName, telephone:agency?.phone || agency?.whatsapp || undefined, areaServed:agency?.service_area || undefined },
   };
 
   return (
     <main className="property-page">
-      <SeoHead title={property.title} description={seoDescription} canonicalPath={`/imovel/${property.slug}`} image={mainImage?.publicUrl || null} type="article" jsonLd={propertyJsonLd} />
+      <SeoHead title={property.title} description={seoDescription} canonicalPath={`/imovel/${property.slug}`} image={mainImage?.publicUrl || agency?.logo_url || null} type="article" jsonLd={propertyJsonLd} siteName={agencyName} organizationSlug={organizationSlug} websiteUrl={agency?.website_url} faviconUrl={agency?.favicon_url} />
       <section className="property-top">
         <div>
           <Link className="back-link" to={publicTenantPath('/comprar')}>

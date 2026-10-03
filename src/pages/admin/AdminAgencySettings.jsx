@@ -11,6 +11,7 @@ const groups = [
     ['phone', 'Telefone', 'Telefone principal.'], ['whatsapp', 'WhatsApp', 'Número comercial do WhatsApp.'],
     ['public_email', 'E-mail da imobiliária', 'E-mail mostrado no site e usado como endereço de resposta nos convites da equipe.'], ['website_url', 'Site', 'Endereço do site público.'],
     ['public_address', 'Endereço', 'Endereço comercial mostrado no site.'],
+    ['service_area', 'Região de atendimento', 'Cidades, bairros ou regiões atendidas. Ex.: Barbacena, Ressaquinha, Carandaí e região.'],
   ]},
   { title: 'Redes sociais', fields: [
     ['instagram', 'Instagram', 'URL ou @ da conta profissional.'], ['facebook', 'Facebook', 'URL da página.'],
@@ -69,7 +70,7 @@ export default function AdminAgencySettings() {
         <div>
           <span className="eyebrow">Camada 2 · Identidade</span>
           <h1>Dados da imobiliária</h1>
-          <p>Os dados pertencem à empresa ativa. Cada cliente terá sua própria identidade sem alterar o código do CRM.</p>
+          <p>Os dados pertencem à empresa ativa. Nome, contato, endereço, região de atendimento e imóveis também alimentam automaticamente o SEO do site público.</p>
         </div>
       </div>
 
