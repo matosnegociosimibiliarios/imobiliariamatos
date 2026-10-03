@@ -1,0 +1,1 @@
+-- Production migration applied through Supabase on 2026-10-02.\n-- Tenant-scoped team/admin policies, anonymous lead insert removal, internal RPC execute revocation, and tenant-scoped property-video storage policies.\n
