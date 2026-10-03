@@ -196,6 +196,12 @@ export default function AdminLayout() {
             </NavLink>
           )}
 
+          {can(access, 'properties.view') && (
+            <NavLink to="/admin/avaliar-imovel" className="admin-quick-valuation-link">
+              <span>Avaliar imóvel</span>
+            </NavLink>
+          )}
+
           {platformAdmin && (
             <NavLink to="/admin/plataforma"><span>Administração do GOI</span></NavLink>
           )}
