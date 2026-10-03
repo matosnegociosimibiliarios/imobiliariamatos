@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getAccessContext, can } from '../services/team';
+import { getSaasEntitlement, hasSaasFeature } from '../services/saas';
 
 const accessCache = { value: null, at: 0 };
 
@@ -25,7 +26,13 @@ export default function PermissionRoute({ permission, children }) {
     (async () => {
       try {
         const access = await loadAccess();
-        if (active) setState({ loading: false, allowed: can(access, permission) });
+        const entitlementResult = await getSaasEntitlement();
+        const entitlement = entitlementResult?.data || null;
+        let planAllowed = true;
+        if (permission?.startsWith('rentals.')) planAllowed = hasSaasFeature(entitlement, 'rentals');
+        if (permission?.startsWith('financial.')) planAllowed = hasSaasFeature(entitlement, 'finance');
+        if (permission === 'integrations.manage') planAllowed = hasSaasFeature(entitlement, 'integrations');
+        if (active) setState({ loading: false, allowed: can(access, permission) && planAllowed });
       } catch {
         if (active) setState({ loading: false, allowed: false });
       }
