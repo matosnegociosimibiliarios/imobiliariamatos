@@ -117,7 +117,7 @@ export default function Home() {
         <div className="section-heading">
           <span className="eyebrow">{agencyName}</span>
           <h2>Seu imóvel tratado como uma decisão importante.</h2>
-          <p>Atendimento para quem quer comprar, alugar, anunciar ou avaliar um imóvel em ${serviceArea}.</p>
+          <p>Atendimento para quem quer comprar, alugar, anunciar ou avaliar um imóvel em {serviceArea}.</p>
         </div>
         <div className="premium-service-grid">
           <Link to={publicTenantPath('/comprar')}><strong>Comprar</strong><span>Encontre oportunidades para morar ou investir.</span></Link>
