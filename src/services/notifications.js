@@ -42,6 +42,23 @@ export async function saveNotificationPreferences(organizationId, preferences) {
     .single();
 }
 
+
+export async function getUnreadNotificationCounts(organizationId) {
+  if (!organizationId) return { data: { instagram: 0, whatsapp: 0, form: 0, total: 0 }, error: null };
+  const { data, error } = await supabase.rpc('admin_notification_unread_counts', {
+    p_organization_id: organizationId,
+  });
+  return {
+    data: {
+      instagram: Number(data?.instagram || 0),
+      whatsapp: Number(data?.whatsapp || 0),
+      form: Number(data?.form || 0),
+      total: Number(data?.total || 0),
+    },
+    error,
+  };
+}
+
 export async function getNotificationFeed(organizationId, limit = 60) {
   if (!organizationId) return { data: [], error: null };
 
