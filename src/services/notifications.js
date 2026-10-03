@@ -99,6 +99,14 @@ export async function markNotificationRead(notificationId) {
     .upsert({ notification_id: notificationId, user_id: user.id }, { onConflict: 'notification_id,user_id' });
 }
 
+
+export async function markAllNotificationsRead(organizationId) {
+  if (!organizationId) return { data: 0, error: null };
+  return supabase.rpc('mark_all_app_notifications_read', {
+    p_organization_id: organizationId,
+  });
+}
+
 export async function markNotificationsRead(notificationIds = []) {
   if (!notificationIds.length) return { error: null };
 
