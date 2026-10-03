@@ -101,7 +101,7 @@ export default function AdminDashboard() {
           <Link to="/admin/captacoes">Nova captação</Link>
           <div className="home-user-chip"><strong>{access?.full_name || access?.email || 'Usuário'}</strong><small>{access?.role === 'owner' ? 'Proprietário' : access?.role === 'admin' ? 'Administrador' : access?.role === 'broker' ? 'Corretor' : 'Assistente'}</small></div>
           <a href="/" target="_blank" rel="noreferrer">Ver Site Público</a>
-          <Link className="home-paid-version" to="/admin/plano">Comprar versão paga</Link>
+          <Link className="home-paid-version" to="/admin/plano">Planos e assinatura</Link>
         </div>
       </div>
 
@@ -142,7 +142,7 @@ export default function AdminDashboard() {
             <section className="admin-panel">
               <div className="panel-title-row"><h2>Acessos rápidos</h2></div>
               <div className="home-shortcuts">
-                <Link to="/admin/leads">Clientes e Leads</Link><Link to="/admin/funil">Funil Comercial</Link><Link to="/admin/mensagens">Instagram</Link><Link to="/admin/whatsapp">WhatsApp</Link><Link to="/admin/propostas">Propostas</Link><Link to="/admin/locacoes">Locação</Link><Link to="/admin/financeiro">Financeiro</Link><Link to="/admin/gestao">Painel Gerencial</Link>
+                <Link to="/admin/leads">Clientes e Leads</Link><Link to="/admin/funil">Funil Comercial</Link><Link to="/admin/mensagens">Instagram</Link><Link to="/admin/whatsapp">WhatsApp</Link><Link to="/admin/propostas">Propostas</Link>{access?.plan_code !== 'starter' && <Link to="/admin/locacoes">Locação</Link>}{access?.plan_code !== 'starter' && <Link to="/admin/financeiro">Financeiro</Link>}<Link to="/admin/gestao">Painel Gerencial</Link>
               </div>
             </section>
           </div>
