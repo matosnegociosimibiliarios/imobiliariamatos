@@ -21,8 +21,8 @@ const NAV_SECTIONS = [
   {
     title: 'Atendimento',
     items: [
-      { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', badge: 'instagram' },
-      { to: '/admin/whatsapp', label: 'WhatsApp', permission: 'messages.view', badge: 'whatsapp' },
+      { to: '/admin/mensagens', label: 'Mensagens Instagram', permission: 'messages.view', feature: 'integrations', badge: 'instagram' },
+      { to: '/admin/whatsapp', label: 'WhatsApp', permission: 'messages.view', feature: 'integrations', badge: 'whatsapp' },
       { to: '/admin/agenda', label: 'Agenda e Tarefas', permission: 'appointments.view' },
     ],
   },
@@ -152,7 +152,7 @@ export default function AdminLayout() {
         if (!can(access, item.permission)) return false;
         if (item.permission?.startsWith('rentals.')) return hasSaasFeature(entitlement, 'rentals');
         if (item.permission?.startsWith('financial.')) return hasSaasFeature(entitlement, 'finance');
-        if (item.permission === 'integrations.manage') return hasSaasFeature(entitlement, 'integrations');
+        if (item.permission === 'integrations.manage' || item.permission?.startsWith('messages.')) return hasSaasFeature(entitlement, 'integrations');
         return true;
       }),
     })).filter((section) => (section.items || []).length > 0);

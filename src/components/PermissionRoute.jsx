@@ -23,6 +23,8 @@ const PERMISSION_FEATURE = {
   'rentals.view': 'rentals',
   'rentals.manage': 'rentals',
   'integrations.manage': 'integrations',
+  'messages.view': 'integrations',
+  'messages.respond': 'integrations',
 };
 
 export default function PermissionRoute({ permission, children }) {
