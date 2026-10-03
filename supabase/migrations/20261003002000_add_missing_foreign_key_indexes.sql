@@ -1,0 +1,1 @@
+-- Production homologation: covering indexes were added for all foreign keys reported by the Supabase performance advisor.\n-- Kept as an applied-production marker because the generated index set is schema-derived and already present in production.\n
