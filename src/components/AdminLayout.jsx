@@ -172,10 +172,10 @@ export default function AdminLayout() {
     <div className="admin-shell" style={{'--agency-primary': access?.primary_color || '#A60311', '--agency-secondary': access?.secondary_color || '#590209', '--accent': access?.primary_color || '#A60311', '--accent-2': access?.secondary_color || '#590209', '--crm-red': access?.primary_color || '#A60311', '--crm-red-dark': access?.secondary_color || '#590209'}}>
       <aside className="admin-sidebar">
         <div className="admin-brand">
-          <img className="admin-brand-logo" src="/matos-crm-logo.svg" alt="Matos CRM" />
+          <img className="admin-brand-logo" src="/goi-logo.svg" alt="GOI" />
           <div>
-            <strong>Matos CRM</strong>
-            <small>Gestão completa para imobiliárias</small>
+            <strong>GOI</strong>
+            <small>Gerenciador de Operações Imobiliárias</small>
           </div>
         </div>
 
@@ -196,7 +196,7 @@ export default function AdminLayout() {
           )}
 
           {platformAdmin && (
-            <NavLink to="/admin/plataforma"><span>Administração do CRM</span></NavLink>
+            <NavLink to="/admin/plataforma"><span>Administração do GOI</span></NavLink>
           )}
 
           {can(access, 'financial.view') && hasSaasFeature(entitlement, 'finance') && (
