@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAccessContext, can } from '../services/team';
 import { getSaasEntitlement, hasSaasFeature } from '../services/saas';
+import { getSaasEntitlement, hasSaasFeature } from '../services/saas';
 
 const accessCache = { value: null, at: 0 };
 
@@ -18,8 +19,15 @@ export function clearPermissionCache() {
   accessCache.at = 0;
 }
 
+const PERMISSION_FEATURE = {
+  'financial.view': 'finance',
+  'rentals.view': 'rentals',
+  'rentals.manage': 'rentals',
+  'integrations.manage': 'integrations',
+};
+
 export default function PermissionRoute({ permission, children }) {
-  const [state, setState] = useState({ loading: true, allowed: false });
+  const [state, setState] = useState({ loading: true, allowed: false, planBlocked: false });
 
   useEffect(() => {
     let active = true;
@@ -34,7 +42,7 @@ export default function PermissionRoute({ permission, children }) {
         if (permission === 'integrations.manage') planAllowed = hasSaasFeature(entitlement, 'integrations');
         if (active) setState({ loading: false, allowed: can(access, permission) && planAllowed });
       } catch {
-        if (active) setState({ loading: false, allowed: false });
+        if (active) setState({ loading: false, allowed: false, planBlocked: false });
       }
     })();
     return () => { active = false; };
@@ -44,8 +52,8 @@ export default function PermissionRoute({ permission, children }) {
   if (!state.allowed) {
     return (
       <div className="admin-denied">
-        <h1>Acesso restrito</h1>
-        <p>Seu perfil não possui permissão para abrir esta área.</p>
+        <h1>{state.planBlocked ? 'Recurso não incluído no seu plano' : 'Acesso restrito'}</h1>
+        <p>{state.planBlocked ? 'Este módulo está disponível em um plano superior. Consulte os planos para liberar o recurso.' : 'Seu perfil não possui permissão para abrir esta área.'}</p>
       </div>
     );
   }
