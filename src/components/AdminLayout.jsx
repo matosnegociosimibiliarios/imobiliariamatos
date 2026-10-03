@@ -4,7 +4,7 @@ import { signOut } from '../services/auth';
 import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/admin';
 import { ROLE_LABELS, can, getAccessContext, getUserOrganizations, setActiveOrganization } from '../services/team';
 import { setPublicOrganizationSlug } from '../services/properties';
-import { isPlatformAdmin } from '../services/saas';
+import { getSaasEntitlement, hasSaasFeature, isPlatformAdmin } from '../services/saas';
 
 const NAV_SECTIONS = [
   {
@@ -65,6 +65,7 @@ export default function AdminLayout() {
   const [organizations, setOrganizations] = useState([]);
   const [switchingOrganization, setSwitchingOrganization] = useState(false);
   const [platformAdmin, setPlatformAdmin] = useState(false);
+  const [entitlement, setEntitlement] = useState(null);
 
   async function loadContext() {
     const [accessResult, organizationsResult] = await Promise.all([getAccessContext(), getUserOrganizations()]);
@@ -77,7 +78,7 @@ export default function AdminLayout() {
 
   useEffect(() => {
     let active = true;
-    Promise.all([getAccessContext(), getUserOrganizations(), isPlatformAdmin()]).then(([accessResult, organizationsResult, platformResult]) => {
+    Promise.all([getAccessContext(), getUserOrganizations(), isPlatformAdmin(), getSaasEntitlement()]).then(([accessResult, organizationsResult, platformResult, entitlementResult]) => {
       if (!active) return;
       if (!accessResult.error) {
         setAccess(accessResult.data || null);
@@ -85,6 +86,7 @@ export default function AdminLayout() {
       }
       if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
       if (!platformResult?.error) setPlatformAdmin(Boolean(platformResult?.data));
+      if (!entitlementResult?.error) setEntitlement(entitlementResult?.data || null);
     });
     return () => { active = false; };
   }, []);
@@ -131,7 +133,7 @@ export default function AdminLayout() {
       if (interval) window.clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [access]);
+  }, [access, entitlement]);
 
   async function handleLogout() {
     await signOut();
@@ -146,7 +148,13 @@ export default function AdminLayout() {
     if (!access) return [];
     return NAV_SECTIONS.map((section) => ({
       ...section,
-      items: (section.items || []).filter((item) => can(access, item.permission)),
+      items: (section.items || []).filter((item) => {
+        if (!can(access, item.permission)) return false;
+        if (item.permission?.startsWith('rentals.')) return hasSaasFeature(entitlement, 'rentals');
+        if (item.permission?.startsWith('financial.')) return hasSaasFeature(entitlement, 'finance');
+        if (item.permission === 'integrations.manage') return hasSaasFeature(entitlement, 'integrations');
+        return true;
+      }),
     })).filter((section) => (section.items || []).length > 0);
   }, [access]);
 
@@ -192,7 +200,7 @@ export default function AdminLayout() {
             <NavLink to="/admin/plataforma"><span>Administração do CRM</span></NavLink>
           )}
 
-          {can(access, 'financial.view') && (
+          {can(access, 'financial.view') && hasSaasFeature(entitlement, 'finance') && (
             <NavLink to="/admin/financeiro">
               <span>Financeiro</span>
             </NavLink>
