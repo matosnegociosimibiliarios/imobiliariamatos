@@ -140,10 +140,6 @@ export default function AdminLayout() {
     navigate('/login', { replace: true });
   }
 
-  function handleSubscription() {
-    window.alert('A assinatura da versão paga será habilitada na fase comercial do CRM. O botão já está reservado no menu para essa etapa.');
-  }
-
   const visibleSections = useMemo(() => {
     if (!access) return [];
     return NAV_SECTIONS.map((section) => ({
@@ -152,7 +148,7 @@ export default function AdminLayout() {
         if (!can(access, item.permission)) return false;
         if (item.permission?.startsWith('rentals.')) return hasSaasFeature(entitlement, 'rentals');
         if (item.permission?.startsWith('financial.')) return hasSaasFeature(entitlement, 'finance');
-        if (item.permission === 'integrations.manage') return hasSaasFeature(entitlement, 'integrations');
+        if (item.to === '/admin/integracoes') return hasSaasFeature(entitlement, 'integrations');
         return true;
       }),
     })).filter((section) => (section.items || []).length > 0);
@@ -176,7 +172,7 @@ export default function AdminLayout() {
     <div className="admin-shell" style={{'--agency-primary': access?.primary_color || '#A60311', '--agency-secondary': access?.secondary_color || '#590209', '--accent': access?.primary_color || '#A60311', '--accent-2': access?.secondary_color || '#590209', '--crm-red': access?.primary_color || '#A60311', '--crm-red-dark': access?.secondary_color || '#590209'}}>
       <aside className="admin-sidebar">
         <div className="admin-brand">
-          <img className="admin-brand-logo" src="/crm-beta-logo.webp" alt="CRM Beta" />
+          <img className="admin-brand-logo" src="/crm-beta-logo.webp" alt="CRM Imobiliário" />
           <div><strong>{access?.organization_name || 'CRM Imobiliário'}</strong><small>Painel administrativo</small></div>
         </div>
 
