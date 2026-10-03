@@ -3,396 +3,318 @@ import { getQuickValuationComparables } from '../../services/quickValuation';
 
 const PROPERTY_TYPES = ['Casa','Apartamento','Terreno','Sítio','Comercial'];
 
-const FINISH_ADJUSTMENT = {
-  economico: -0.06,
-  medio: 0,
-  alto: 0.07,
-  luxo: 0.14,
-};
-
-const CONDITION_ADJUSTMENT = {
-  precisa_reforma: -0.10,
-  regular: -0.04,
-  bom: 0,
-  novo: 0.05,
-};
-
 function num(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
 }
-
 function money(value) {
   if (!Number.isFinite(Number(value))) return '—';
-  return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+  return Number(value).toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
 }
-
-function decimal(value, digits = 0) {
+function decimal(value,digits=0) {
   if (!Number.isFinite(Number(value))) return '—';
-  return Number(value).toLocaleString('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  return Number(value).toLocaleString('pt-BR',{minimumFractionDigits:digits,maximumFractionDigits:digits});
+}
+function quantile(values,q) {
+  const sorted=values.filter((x)=>Number.isFinite(x)&&x>0).sort((a,b)=>a-b);
+  if(!sorted.length) return 0;
+  const pos=(sorted.length-1)*q;
+  const base=Math.floor(pos);
+  const rest=pos-base;
+  return sorted[base+1]!==undefined ? sorted[base]+rest*(sorted[base+1]-sorted[base]) : sorted[base];
+}
+function median(values){ return quantile(values,.5); }
+function coefficientVariation(values){
+  const list=values.filter((x)=>Number.isFinite(x)&&x>0);
+  if(list.length<2) return 0;
+  const mean=list.reduce((a,b)=>a+b,0)/list.length;
+  const variance=list.reduce((sum,x)=>sum+Math.pow(x-mean,2),0)/(list.length-1);
+  return mean ? Math.sqrt(variance)/mean*100 : 0;
+}
+function filterOutliers(items){
+  if(items.length<4) return {items,outliers:[]};
+  const vals=items.map((i)=>i.price_per_m2).filter(Boolean);
+  const q1=quantile(vals,.25), q3=quantile(vals,.75), iqr=q3-q1;
+  const low=q1-1.5*iqr, high=q3+1.5*iqr;
+  const kept=items.filter((i)=>i.price_per_m2>=low&&i.price_per_m2<=high);
+  return {items:kept.length>=3?kept:items,outliers:kept.length>=3?items.filter((i)=>!kept.includes(i)):[]};
 }
 
-function median(values) {
-  const sorted = values.filter((x) => Number.isFinite(x) && x > 0).sort((a,b) => a-b);
-  if (!sorted.length) return 0;
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
-export default function AdminQuickValuation() {
-  const [form, setForm] = useState({
-    city: '',
-    neighborhood: '',
-    property_type: 'Casa',
-    area: '',
-    land_area: '',
-    bedrooms: '',
-    bathrooms: '',
-    parking_spaces: '',
-    finish: 'medio',
-    condition: 'bom',
-    extra_adjustment: '0',
+export default function AdminQuickValuation(){
+  const [mode,setMode]=useState('quick');
+  const [form,setForm]=useState({
+    city:'',neighborhood:'',property_type:'Casa',area:'',land_area:'',bedrooms:'',bathrooms:'',parking_spaces:'',
+    finish:'medio',condition:'bom',
+    technical_location:'0',technical_finish:'0',technical_condition:'0',technical_garage:'0',technical_age:'0',technical_other:'0',
+    evaluator:'',purpose:'Venda',inspection_date:new Date().toISOString().slice(0,10),documents:'',market_notes:'',method_notes:''
   });
-  const [comparables, setComparables] = useState([]);
-  const [selectedIds, setSelectedIds] = useState([]);
-  const [manuals, setManuals] = useState([]);
-  const [manual, setManual] = useState({ label:'', value:'', area:'' });
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [searched, setSearched] = useState(false);
+  const [comparables,setComparables]=useState([]);
+  const [selectedIds,setSelectedIds]=useState([]);
+  const [manuals,setManuals]=useState([]);
+  const [manual,setManual]=useState({label:'',value:'',area:'',similarity:'70'});
+  const [loading,setLoading]=useState(false);
+  const [message,setMessage]=useState('');
+  const [searched,setSearched]=useState(false);
 
-  function update(event) {
-    const { name, value } = event.target;
-    setForm((current) => ({ ...current, [name]: value }));
-  }
+  function update(e){ const {name,value}=e.target; setForm((c)=>({...c,[name]:value})); }
 
-  async function searchComparables(event) {
-    event?.preventDefault();
-    if (!num(form.area)) {
-      setMessage('Informe a área usada na avaliação.');
-      return;
-    }
-    setLoading(true);
-    setMessage('');
-    setSearched(true);
-    const result = await getQuickValuationComparables(form);
+  async function searchComparables(e){
+    e?.preventDefault();
+    if(!num(form.area)){ setMessage('Informe a área usada na avaliação.'); return; }
+    setLoading(true); setMessage(''); setSearched(true);
+    const result=await getQuickValuationComparables(form);
     setLoading(false);
-    if (result.error) {
-      setMessage(result.error.message || 'Não foi possível buscar comparáveis.');
-      return;
-    }
-    const list = result.data || [];
+    if(result.error){ setMessage(result.error.message||'Não foi possível buscar comparáveis.'); return; }
+    const list=result.data||[];
     setComparables(list);
-    setSelectedIds(list.slice(0, 6).map((item) => item.id));
-    if (!list.length) setMessage('Nenhum comparável semelhante foi encontrado na base do GOI. Você ainda pode avaliar usando comparáveis externos.');
+    setSelectedIds(list.slice(0,6).map((i)=>i.id));
+    if(!list.length) setMessage('Nenhum comparável interno encontrado. Adicione referências externas para calcular.');
   }
 
-  function toggleComparable(id) {
-    setSelectedIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-  }
-
-  function addManual(event) {
-    event.preventDefault();
-    const value = num(manual.value);
-    const area = num(manual.area);
-    if (!value || !area) {
-      setMessage('No comparável externo, informe valor e área.');
-      return;
-    }
-    setManuals((current) => [...current, {
-      id: 'manual-' + Date.now(),
-      source: 'manual',
-      source_label: 'Comparável externo',
-      title: manual.label || 'Imóvel externo',
-      value,
-      area,
-      price_per_m2: value / area,
-      similarity: 70,
+  function addManual(e){
+    e.preventDefault();
+    const value=num(manual.value), area=num(manual.area);
+    if(!value||!area){ setMessage('Informe valor e área do comparável externo.'); return; }
+    setManuals((c)=>[...c,{
+      id:'manual-'+Date.now(),source:'manual',source_label:'Comparável externo',title:manual.label||'Imóvel externo',
+      value,area,price_per_m2:value/area,similarity:Math.max(30,Math.min(100,num(manual.similarity)||70)),
+      reference_date:new Date().toISOString()
     }]);
-    setManual({ label:'', value:'', area:'' });
-    setMessage('');
+    setManual({label:'',value:'',area:'',similarity:'70'});
   }
 
-  const chosen = useMemo(() => {
-    const auto = comparables.filter((item) => selectedIds.includes(item.id));
-    return [...auto, ...manuals];
-  }, [comparables, selectedIds, manuals]);
+  const chosen=useMemo(()=>[
+    ...comparables.filter((i)=>selectedIds.includes(i.id)),
+    ...manuals
+  ],[comparables,selectedIds,manuals]);
 
-  const calculation = useMemo(() => {
-    const subjectArea = num(form.area);
-    if (!subjectArea || !chosen.length) return null;
+  const calculation=useMemo(()=>{
+    const subjectArea=num(form.area);
+    if(!subjectArea||!chosen.length) return null;
 
-    let weightedSum = 0;
-    let weightTotal = 0;
-    const ppms = [];
-    let closedSales = 0;
-    let similaritySum = 0;
+    const normalized=chosen.map((item)=>({
+      ...item,
+      price_per_m2:num(item.price_per_m2)||(num(item.value)/Math.max(1,num(item.area)))
+    })).filter((i)=>i.price_per_m2>0);
 
-    chosen.forEach((item) => {
-      const ppm = num(item.price_per_m2) || (num(item.value) / num(item.area));
-      if (!ppm || !Number.isFinite(ppm)) return;
-      const similarity = num(item.similarity) || 70;
-      const sourceFactor = item.source === 'closed_sale' ? 1.25 : item.source === 'manual' ? 0.9 : 1;
-      const weight = Math.max(0.35, similarity / 100) * sourceFactor;
-      weightedSum += ppm * weight;
-      weightTotal += weight;
-      ppms.push(ppm);
-      similaritySum += similarity;
-      if (item.source === 'closed_sale') closedSales += 1;
+    const filtered=filterOutliers(normalized);
+    const sample=filtered.items;
+    if(!sample.length) return null;
+
+    let weightedSum=0, weightTotal=0, similaritySum=0, closedSales=0, sameNeighborhood=0;
+    const ppms=[], discounts=[];
+    sample.forEach((item)=>{
+      const similarity=num(item.similarity)||70;
+      const sourceFactor=item.source==='closed_sale'?1.35:item.source==='manual'?.9:.95;
+      const weight=Math.max(.35,similarity/100)*sourceFactor;
+      weightedSum+=item.price_per_m2*weight;
+      weightTotal+=weight;
+      ppms.push(item.price_per_m2);
+      similaritySum+=similarity;
+      if(item.source==='closed_sale') closedSales++;
+      if(item.same_neighborhood) sameNeighborhood++;
+      if(Number.isFinite(Number(item.discount_pct))) discounts.push(Number(item.discount_pct));
     });
 
-    if (!weightTotal) return null;
+    const weightedPpm=weightedSum/weightTotal;
+    const medianPpm=median(ppms);
+    const p25=quantile(ppms,.25), p75=quantile(ppms,.75);
+    const referencePpm=weightedPpm*.6+medianPpm*.4;
+    const baseValue=subjectArea*referencePpm;
 
-    const weightedPpm = weightedSum / weightTotal;
-    const medianPpm = median(ppms);
-    const referencePpm = weightedPpm * 0.65 + medianPpm * 0.35;
-    const baseValue = subjectArea * referencePpm;
+    const quickAdjustment = mode==='quick'
+      ? ({economico:-.03,medio:0,alto:.03,luxo:.06}[form.finish]||0)
+        + ({precisa_reforma:-.06,regular:-.025,bom:0,novo:.025}[form.condition]||0)
+      : 0;
 
-    const adjustment =
-      (FINISH_ADJUSTMENT[form.finish] || 0) +
-      (CONDITION_ADJUSTMENT[form.condition] || 0) +
-      (num(form.extra_adjustment) / 100);
+    const technicalAdjustment = mode==='complete'
+      ? ['technical_location','technical_finish','technical_condition','technical_garage','technical_age','technical_other']
+          .reduce((sum,key)=>sum+num(form[key])/100,0)
+      : 0;
 
-    const marketValue = baseValue * (1 + adjustment);
-    const minimumValue = marketValue * 0.95;
-    const maximumValue = marketValue * 1.05;
-    const quickSaleValue = marketValue * 0.90;
-    const suggestedAskingValue = marketValue * 1.06;
+    const adjustment=Math.max(-.25,Math.min(.25,quickAdjustment+technicalAdjustment));
+    const marketValue=baseValue*(1+adjustment);
+    const cv=coefficientVariation(ppms);
 
-    const avgSimilarity = similaritySum / chosen.length;
-    const closedShare = chosen.length ? closedSales / chosen.length : 0;
-    let confidenceScore = Math.min(55, chosen.length * 8) + Math.min(25, avgSimilarity * 0.25) + Math.min(20, closedShare * 20);
-    confidenceScore = Math.round(Math.min(100, confidenceScore));
-    const confidence = confidenceScore >= 75 ? 'Alta' : confidenceScore >= 50 ? 'Média' : 'Baixa';
+    const sampleRangePct = Math.max(.04,Math.min(.12,cv/100*.45 || .06));
+    const minimumValue=marketValue*(1-sampleRangePct);
+    const maximumValue=marketValue*(1+sampleRangePct);
+
+    const avgDiscount=discounts.length?discounts.reduce((a,b)=>a+b,0)/discounts.length:null;
+    const quickSaleFactor=Math.max(.86,Math.min(.95,p25&&referencePpm?p25/referencePpm:.92));
+    const quickSaleValue=marketValue*quickSaleFactor;
+    const askingFactor=avgDiscount!==null ? 1/Math.max(.82,1-avgDiscount/100) : 1.05;
+    const suggestedAskingValue=marketValue*Math.max(1.02,Math.min(1.12,askingFactor));
+
+    const avgSimilarity=similaritySum/sample.length;
+    const closedShare=closedSales/sample.length;
+    const neighborhoodShare=sameNeighborhood/sample.length;
+    const dispersionPenalty=Math.min(25,cv*.7);
+    let confidenceScore=Math.min(40,sample.length*7)+Math.min(22,avgSimilarity*.22)+Math.min(18,closedShare*18)+Math.min(12,neighborhoodShare*12)+8-dispersionPenalty;
+    confidenceScore=Math.round(Math.max(15,Math.min(100,confidenceScore)));
+    const confidence=confidenceScore>=75?'Alta':confidenceScore>=50?'Média':'Baixa';
 
     return {
-      referencePpm,
-      baseValue,
-      adjustment,
-      marketValue,
-      minimumValue,
-      maximumValue,
-      quickSaleValue,
-      suggestedAskingValue,
-      confidenceScore,
-      confidence,
-      avgSimilarity,
-      closedSales,
+      sample, outliers:filtered.outliers, referencePpm, medianPpm,p25,p75,cv,baseValue,adjustment,marketValue,minimumValue,maximumValue,
+      quickSaleValue,suggestedAskingValue,confidenceScore,confidence,avgSimilarity,closedSales,avgDiscount,sampleRangePct
     };
-  }, [chosen, form]);
+  },[chosen,form,mode]);
 
-  async function copyResult() {
-    if (!calculation) return;
-    const text = [
-      'Avaliação rápida GOI',
-      form.property_type + ' — ' + [form.neighborhood, form.city].filter(Boolean).join(', '),
-      'Área considerada: ' + decimal(num(form.area)) + ' m²',
-      'Comparáveis utilizados: ' + chosen.length,
-      'Valor de mercado: ' + money(calculation.marketValue),
-      'Faixa provável: ' + money(calculation.minimumValue) + ' a ' + money(calculation.maximumValue),
-      'Venda rápida: ' + money(calculation.quickSaleValue),
-      'Preço sugerido para anúncio: ' + money(calculation.suggestedAskingValue),
-      'Confiança da amostra: ' + calculation.confidence + ' (' + calculation.confidenceScore + '/100)',
-      'Referência: ' + money(calculation.referencePpm) + '/m²',
-    ].join('\n');
-    try {
-      await navigator.clipboard.writeText(text);
-      setMessage('Resumo da avaliação copiado.');
-    } catch {
-      setMessage('Não foi possível copiar automaticamente.');
+  async function copyResult(){
+    if(!calculation) return;
+    const lines=[
+      mode==='complete'?'Avaliação completa GOI — apoio técnico':'Avaliação rápida GOI',
+      form.property_type+' — '+[form.neighborhood,form.city].filter(Boolean).join(', '),
+      'Área considerada: '+decimal(num(form.area))+' m²',
+      'Comparáveis utilizados: '+calculation.sample.length,
+      'Valor de mercado: '+money(calculation.marketValue),
+      'Faixa provável: '+money(calculation.minimumValue)+' a '+money(calculation.maximumValue),
+      'Venda rápida: '+money(calculation.quickSaleValue),
+      'Preço sugerido para anúncio: '+money(calculation.suggestedAskingValue),
+      'Referência: '+money(calculation.referencePpm)+'/m²',
+      'Confiança da amostra: '+calculation.confidence+' ('+calculation.confidenceScore+'/100)'
+    ];
+    if(mode==='complete'){
+      lines.push('Mediana: '+money(calculation.medianPpm)+'/m²');
+      lines.push('P25/P75: '+money(calculation.p25)+' / '+money(calculation.p75)+'/m²');
+      lines.push('Dispersão (CV): '+decimal(calculation.cv,1)+'%');
+      lines.push('Outliers identificados: '+calculation.outliers.length);
+      lines.push('Ajuste técnico total: '+decimal(calculation.adjustment*100,1)+'%');
     }
+    try{ await navigator.clipboard.writeText(lines.join('\n')); setMessage('Resumo copiado.'); }
+    catch{ setMessage('Não foi possível copiar automaticamente.'); }
   }
 
-  return (
-    <div className="admin-page quick-valuation-page">
-      <div className="admin-page-header quick-valuation-header">
-        <div>
-          <span className="eyebrow">Ferramenta rápida</span>
-          <h1>Avaliar imóvel</h1>
-          <p>Faça uma estimativa de mercado em poucos minutos usando dados da própria imobiliária e comparáveis externos.</p>
-        </div>
+  return <div className="admin-page quick-valuation-page">
+    <div className="admin-page-header">
+      <div>
+        <span className="eyebrow">Avaliação de imóveis</span>
+        <h1>Calculadora de valor</h1>
+        <p>Use o modo rápido no atendimento ao proprietário ou o modo completo para uma análise técnica mais detalhada.</p>
+      </div>
+    </div>
+
+    <div className="valuation-mode-switch">
+      <button type="button" className={mode==='quick'?'active':''} onClick={()=>setMode('quick')}>
+        <strong>Avaliação rápida</strong><small>Para uso comercial no dia a dia</small>
+      </button>
+      <button type="button" className={mode==='complete'?'active':''} onClick={()=>setMode('complete')}>
+        <strong>Avaliação completa</strong><small>Mais dados, fatores e leitura técnica</small>
+      </button>
+    </div>
+
+    {message&&<div className="admin-message">{message}</div>}
+
+    <form className="admin-panel quick-valuation-form" onSubmit={searchComparables}>
+      <div className="property-section-heading">
+        <div><span className="eyebrow">1. Imóvel avaliando</span><h2>{mode==='quick'?'Dados essenciais':'Caracterização e finalidade'}</h2></div>
       </div>
 
-      {message && <div className="admin-message">{message}</div>}
+      {mode==='complete'&&<div className="valuation-technical-meta admin-form-grid three">
+        <label>Avaliador / responsável<input name="evaluator" value={form.evaluator} onChange={update} placeholder="Nome do profissional" /></label>
+        <label>Finalidade<input name="purpose" value={form.purpose} onChange={update} placeholder="Ex.: venda, garantia, processo judicial" /></label>
+        <label>Data da vistoria<input type="date" name="inspection_date" value={form.inspection_date} onChange={update} /></label>
+      </div>}
 
-      <form className="admin-panel quick-valuation-form" onSubmit={searchComparables}>
-        <div className="property-section-heading">
-          <div><span className="eyebrow">1. Dados do imóvel</span><h2>O que você está avaliando?</h2></div>
+      <div className="admin-form-grid three">
+        <label>Tipo<select name="property_type" value={form.property_type} onChange={update}>{PROPERTY_TYPES.map((x)=><option key={x}>{x}</option>)}</select></label>
+        <label>Cidade<input name="city" value={form.city} onChange={update} placeholder="Ex.: Ressaquinha" /></label>
+        <label>Bairro<input name="neighborhood" value={form.neighborhood} onChange={update} placeholder="Ex.: Centro" /></label>
+        <label>Área principal (m²)<input name="area" type="number" min="1" step=".01" value={form.area} onChange={update} required /></label>
+        <label>Área do terreno (m²)<input name="land_area" type="number" min="0" step=".01" value={form.land_area} onChange={update} /></label>
+        <label>Quartos<input name="bedrooms" type="number" min="0" value={form.bedrooms} onChange={update} /></label>
+        <label>Banheiros<input name="bathrooms" type="number" min="0" value={form.bathrooms} onChange={update} /></label>
+        <label>Vagas<input name="parking_spaces" type="number" min="0" value={form.parking_spaces} onChange={update} /></label>
+        {mode==='quick'&&<>
+          <label>Padrão<select name="finish" value={form.finish} onChange={update}><option value="economico">Econômico</option><option value="medio">Médio</option><option value="alto">Alto padrão</option><option value="luxo">Luxo</option></select></label>
+          <label>Conservação<select name="condition" value={form.condition} onChange={update}><option value="precisa_reforma">Precisa de reforma</option><option value="regular">Regular</option><option value="bom">Bom</option><option value="novo">Novo / excelente</option></select></label>
+        </>}
+      </div>
+
+      {mode==='complete'&&<>
+        <div className="valuation-technical-factors">
+          <div><span className="eyebrow">Fatores de homogeneização</span><h3>Ajustes técnicos (%)</h3><p>Informe apenas diferenças justificadas entre o imóvel avaliando e a amostra. Zero significa sem ajuste.</p></div>
+          <div className="admin-form-grid three">
+            <label>Localização<input type="number" step=".5" min="-20" max="20" name="technical_location" value={form.technical_location} onChange={update}/></label>
+            <label>Padrão construtivo<input type="number" step=".5" min="-20" max="20" name="technical_finish" value={form.technical_finish} onChange={update}/></label>
+            <label>Conservação<input type="number" step=".5" min="-20" max="20" name="technical_condition" value={form.technical_condition} onChange={update}/></label>
+            <label>Garagem<input type="number" step=".5" min="-15" max="15" name="technical_garage" value={form.technical_garage} onChange={update}/></label>
+            <label>Idade / depreciação<input type="number" step=".5" min="-20" max="20" name="technical_age" value={form.technical_age} onChange={update}/></label>
+            <label>Outros<input type="number" step=".5" min="-20" max="20" name="technical_other" value={form.technical_other} onChange={update}/></label>
+          </div>
         </div>
-
-        <div className="admin-form-grid three">
-          <label>Tipo de imóvel
-            <select name="property_type" value={form.property_type} onChange={update}>
-              {PROPERTY_TYPES.map((item) => <option key={item}>{item}</option>)}
-            </select>
-          </label>
-          <label>Cidade
-            <input name="city" value={form.city} onChange={update} placeholder="Ex.: Ressaquinha" />
-          </label>
-          <label>Bairro
-            <input name="neighborhood" value={form.neighborhood} onChange={update} placeholder="Ex.: Centro" />
-          </label>
-          <label>Área principal (m²)
-            <input name="area" type="number" min="1" step="0.01" value={form.area} onChange={update} required placeholder="Área construída ou útil" />
-          </label>
-          <label>Área do terreno (m²)
-            <input name="land_area" type="number" min="0" step="0.01" value={form.land_area} onChange={update} />
-          </label>
-          <label>Quartos
-            <input name="bedrooms" type="number" min="0" value={form.bedrooms} onChange={update} />
-          </label>
-          <label>Banheiros
-            <input name="bathrooms" type="number" min="0" value={form.bathrooms} onChange={update} />
-          </label>
-          <label>Vagas
-            <input name="parking_spaces" type="number" min="0" value={form.parking_spaces} onChange={update} />
-          </label>
-          <label>Padrão de acabamento
-            <select name="finish" value={form.finish} onChange={update}>
-              <option value="economico">Econômico</option>
-              <option value="medio">Médio</option>
-              <option value="alto">Alto padrão</option>
-              <option value="luxo">Luxo</option>
-            </select>
-          </label>
-          <label>Estado de conservação
-            <select name="condition" value={form.condition} onChange={update}>
-              <option value="precisa_reforma">Precisa de reforma</option>
-              <option value="regular">Regular</option>
-              <option value="bom">Bom</option>
-              <option value="novo">Novo / excelente</option>
-            </select>
-          </label>
-          <label>Ajuste adicional (%)
-            <input name="extra_adjustment" type="number" step="0.5" min="-30" max="30" value={form.extra_adjustment} onChange={update} />
-            <small>Use somente para característica relevante não contemplada acima.</small>
-          </label>
+        <div className="admin-form-grid two valuation-technical-notes">
+          <label>Documentação analisada<textarea name="documents" rows="3" value={form.documents} onChange={update} placeholder="Matrícula, IPTU, planta, contrato..." /></label>
+          <label>Diagnóstico de mercado<textarea name="market_notes" rows="3" value={form.market_notes} onChange={update} placeholder="Liquidez, oferta, demanda, comportamento local..." /></label>
+          <label className="full">Notas de metodologia<textarea name="method_notes" rows="3" value={form.method_notes} onChange={update} placeholder="Critérios de seleção, limitações, premissas..." /></label>
         </div>
+      </>}
 
-        <button className="button quick-valuation-search" disabled={loading}>
-          {loading ? 'Buscando imóveis semelhantes...' : 'Buscar semelhantes e calcular'}
-        </button>
+      <button className="button quick-valuation-search" disabled={loading}>{loading?'Buscando comparáveis...':'Buscar semelhantes e calcular'}</button>
+    </form>
+
+    {searched&&<section className="admin-panel">
+      <div className="property-section-heading"><div><span className="eyebrow">2. Amostra</span><h2>Imóveis semelhantes</h2><p className="valuation-help">Vendas concluídas recebem maior peso. Itens muito fora do padrão são identificados estatisticamente.</p></div><strong>{selectedIds.length} selecionado(s)</strong></div>
+      <div className="quick-comparable-list">
+        {comparables.map((item)=><label className={"quick-comparable-card "+(selectedIds.includes(item.id)?'selected':'')} key={item.id}>
+          <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={()=>setSelectedIds((c)=>c.includes(item.id)?c.filter((x)=>x!==item.id):[...c,item.id])}/>
+          <div><strong>{item.code} — {item.title}</strong><span>{item.neighborhood||'Bairro não informado'} · {item.city||'Cidade não informada'}</span><small>{item.source==='closed_sale'?'VENDA CONCLUÍDA':'ANÚNCIO'} · Similaridade {decimal(item.similarity)}%</small></div>
+          <div className="quick-comparable-values"><b>{money(item.value)}</b><span>{decimal(item.area)} m²</span><strong>{money(item.price_per_m2)}/m²</strong></div>
+        </label>)}
+        {!comparables.length&&<div className="admin-empty">Nenhum comparável interno encontrado.</div>}
+      </div>
+    </section>}
+
+    <section className="admin-panel">
+      <div className="property-section-heading"><div><span className="eyebrow">3. Comparáveis externos</span><h2>Adicionar referência manual</h2><p className="valuation-help">Opcional. Use portais, negócios locais, placas ou referências de outros profissionais.</p></div></div>
+      <form onSubmit={addManual} className="quick-manual-form">
+        <label>Identificação<input value={manual.label} onChange={(e)=>setManual({...manual,label:e.target.value})}/></label>
+        <label>Valor<input type="number" min="1" value={manual.value} onChange={(e)=>setManual({...manual,value:e.target.value})}/></label>
+        <label>Área (m²)<input type="number" min="1" value={manual.area} onChange={(e)=>setManual({...manual,area:e.target.value})}/></label>
+        {mode==='complete'&&<label>Similaridade (%)<input type="number" min="30" max="100" value={manual.similarity} onChange={(e)=>setManual({...manual,similarity:e.target.value})}/></label>}
+        <button className="admin-link-button">+ Adicionar</button>
       </form>
+      {manuals.map((i)=><div className="quick-manual-list" key={i.id}><div><span><strong>{i.title}</strong><small>{money(i.value)} · {decimal(i.area)} m² · {money(i.price_per_m2)}/m²</small></span><button type="button" onClick={()=>setManuals((c)=>c.filter((x)=>x.id!==i.id))}>Remover</button></div></div>)}
+    </section>
 
-      {searched && (
-        <section className="admin-panel quick-valuation-comparables">
-          <div className="property-section-heading">
-            <div>
-              <span className="eyebrow">2. Comparáveis do GOI</span>
-              <h2>Imóveis semelhantes encontrados</h2>
-              <p className="valuation-help">Vendas concluídas recebem mais peso que anúncios. Desmarque qualquer imóvel que não seja realmente comparável.</p>
-            </div>
-            <strong>{selectedIds.length} selecionado(s)</strong>
-          </div>
+    {calculation&&<section className="admin-panel quick-valuation-result">
+      <div className="property-section-heading"><div><span className="eyebrow">4. Resultado</span><h2>{mode==='quick'?'Estimativa comercial':'Análise técnica da amostra'}</h2></div><button type="button" className="admin-link-button" onClick={copyResult}>Copiar resumo</button></div>
 
-          {comparables.length === 0 ? (
-            <div className="admin-empty"><p>Nenhum comparável interno encontrado.</p></div>
-          ) : (
-            <div className="quick-comparable-list">
-              {comparables.map((item) => (
-                <label className={"quick-comparable-card " + (selectedIds.includes(item.id) ? 'selected' : '')} key={item.id}>
-                  <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => toggleComparable(item.id)} />
-                  <div>
-                    <strong>{item.code} — {item.title}</strong>
-                    <span>{item.neighborhood || 'Bairro não informado'} · {item.city || 'Cidade não informada'}</span>
-                    <small>{item.source === 'closed_sale' ? 'VENDA CONCLUÍDA' : 'ANÚNCIO'} · Similaridade {decimal(item.similarity)}%</small>
-                  </div>
-                  <div className="quick-comparable-values">
-                    <b>{money(item.value)}</b>
-                    <span>{decimal(item.area)} m²</span>
-                    <strong>{money(item.price_per_m2)}/m²</strong>
-                  </div>
-                </label>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+      <div className="quick-valuation-main-result"><small>VALOR DE MERCADO ESTIMADO</small><strong>{money(calculation.marketValue)}</strong><span>{money(calculation.referencePpm)}/m² de referência</span></div>
 
-      <section className="admin-panel quick-valuation-external">
-        <div className="property-section-heading">
-          <div>
-            <span className="eyebrow">3. Comparáveis externos — opcional</span>
-            <h2>Adicione anúncios ou negócios que você encontrou fora do GOI</h2>
-            <p className="valuation-help">A calculadora funciona sem esta etapa. Use quando tiver referências de portais, placas, outros corretores ou negócios locais.</p>
-          </div>
-        </div>
+      <div className="valuation-result-grid quick-valuation-values">
+        <article><span>Venda rápida</span><strong>{money(calculation.quickSaleValue)}</strong><small>Faixa inferior observada na amostra</small></article>
+        <article><span>Faixa mínima</span><strong>{money(calculation.minimumValue)}</strong><small>Margem calculada pela dispersão</small></article>
+        <article className="featured"><span>Valor de mercado</span><strong>{money(calculation.marketValue)}</strong><small>Estimativa central</small></article>
+        <article><span>Faixa máxima</span><strong>{money(calculation.maximumValue)}</strong><small>Margem calculada pela dispersão</small></article>
+        <article><span>Preço de anúncio</span><strong>{money(calculation.suggestedAskingValue)}</strong><small>{calculation.avgDiscount!==null?'Considera desconto médio observado':'Margem comercial moderada'}</small></article>
+      </div>
 
-        <form onSubmit={addManual} className="quick-manual-form">
-          <label>Identificação
-            <input value={manual.label} onChange={(e) => setManual({...manual,label:e.target.value})} placeholder="Ex.: Casa na Rua A" />
-          </label>
-          <label>Valor
-            <input type="number" min="1" step="0.01" value={manual.value} onChange={(e) => setManual({...manual,value:e.target.value})} placeholder="350000" />
-          </label>
-          <label>Área (m²)
-            <input type="number" min="1" step="0.01" value={manual.area} onChange={(e) => setManual({...manual,area:e.target.value})} placeholder="140" />
-          </label>
-          <button className="admin-link-button" type="submit">+ Adicionar</button>
-        </form>
+      {mode==='complete'&&<div className="valuation-complete-stats">
+        <article><span>Mediana</span><strong>{money(calculation.medianPpm)}/m²</strong></article>
+        <article><span>P25</span><strong>{money(calculation.p25)}/m²</strong></article>
+        <article><span>P75</span><strong>{money(calculation.p75)}/m²</strong></article>
+        <article><span>Dispersão</span><strong>{decimal(calculation.cv,1)}%</strong></article>
+        <article><span>Outliers</span><strong>{calculation.outliers.length}</strong></article>
+        <article><span>Ajuste técnico</span><strong>{calculation.adjustment>0?'+':''}{decimal(calculation.adjustment*100,1)}%</strong></article>
+      </div>}
 
-        {manuals.length > 0 && (
-          <div className="quick-manual-list">
-            {manuals.map((item) => (
-              <div key={item.id}>
-                <span><strong>{item.title}</strong><small>{money(item.value)} · {decimal(item.area)} m² · {money(item.price_per_m2)}/m²</small></span>
-                <button type="button" onClick={() => setManuals((current) => current.filter((x) => x.id !== item.id))}>Remover</button>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      <div className="quick-valuation-confidence"><div><span>Confiança da amostra</span><strong>{calculation.confidence}</strong><small>{calculation.confidenceScore}/100</small></div><div className="valuation-progress"><span style={{width:calculation.confidenceScore+'%'}}/></div><p>{calculation.sample.length} comparável(is) válidos · {calculation.closedSales} venda(s) concluída(s) · similaridade média {decimal(calculation.avgSimilarity)}%.</p></div>
 
-      {calculation && (
-        <section className="admin-panel quick-valuation-result">
-          <div className="property-section-heading">
-            <div>
-              <span className="eyebrow">4. Resultado</span>
-              <h2>Estimativa de valor para venda</h2>
-              <p className="valuation-help">Resultado baseado em {chosen.length} comparável(is), ponderados por similaridade e qualidade da fonte.</p>
-            </div>
-            <button type="button" className="admin-link-button" onClick={copyResult}>Copiar resumo</button>
-          </div>
+      <details className="quick-valuation-method"><summary>Como o GOI chegou ao valor?</summary>
+        <p>Seleciona comparáveis por tipo, localização, área e características.</p>
+        <p>Dá maior peso a vendas concluídas e imóveis mais semelhantes.</p>
+        <p>Combina média ponderada e mediana e identifica possíveis outliers pelo intervalo interquartil.</p>
+        <p>A faixa mínima e máxima acompanha a dispersão real da amostra, em vez de usar uma margem fixa.</p>
+        {mode==='complete'&&<p>Os fatores técnicos são informados pelo profissional e ficam limitados para evitar ajustes excessivos.</p>}
+      </details>
 
-          <div className="quick-valuation-main-result">
-            <small>VALOR DE MERCADO ESTIMADO</small>
-            <strong>{money(calculation.marketValue)}</strong>
-            <span>{money(calculation.referencePpm)}/m² de referência</span>
-          </div>
-
-          <div className="valuation-result-grid quick-valuation-values">
-            <article><span>Venda rápida</span><strong>{money(calculation.quickSaleValue)}</strong><small>Aprox. 10% abaixo do valor central</small></article>
-            <article><span>Faixa mínima</span><strong>{money(calculation.minimumValue)}</strong><small>Margem inferior da estimativa</small></article>
-            <article className="featured"><span>Valor de mercado</span><strong>{money(calculation.marketValue)}</strong><small>Estimativa central</small></article>
-            <article><span>Faixa máxima</span><strong>{money(calculation.maximumValue)}</strong><small>Margem superior da estimativa</small></article>
-            <article><span>Preço de anúncio</span><strong>{money(calculation.suggestedAskingValue)}</strong><small>Margem para negociação</small></article>
-          </div>
-
-          <div className="quick-valuation-confidence">
-            <div>
-              <span>Confiança da avaliação</span>
-              <strong>{calculation.confidence}</strong>
-              <small>{calculation.confidenceScore}/100</small>
-            </div>
-            <div className="valuation-progress"><span style={{ width: calculation.confidenceScore + '%' }} /></div>
-            <p>{calculation.closedSales} venda(s) concluída(s) na amostra · similaridade média {decimal(calculation.avgSimilarity)}%.</p>
-          </div>
-
-          <details className="quick-valuation-method">
-            <summary>Como o GOI chegou a esse valor?</summary>
-            <p>1. Calcula o valor por m² de cada comparável selecionado.</p>
-            <p>2. Dá mais peso aos imóveis mais semelhantes e às vendas efetivamente concluídas.</p>
-            <p>3. Combina média ponderada e mediana para reduzir a influência de valores fora do padrão.</p>
-            <p>4. Multiplica o valor de referência por m² pela área informada.</p>
-            <p>5. Aplica ajustes de acabamento, conservação e o ajuste adicional informado pelo corretor.</p>
-          </details>
-
-          <div className="valuation-disclaimer">
-            <strong>Uso comercial</strong>
-            <p>Esta é uma estimativa para apoio à precificação e captação. Não substitui laudo técnico ou avaliação formal quando exigidos.</p>
-          </div>
-        </section>
-      )}
-    </div>
-  );
+      <div className="valuation-disclaimer">
+        <strong>{mode==='complete'?'Apoio técnico — não é laudo automático':'Uso comercial'}</strong>
+        <p>{mode==='complete'
+          ? 'O modo completo organiza dados, amostra, fatores e estatísticas para auxiliar o profissional. Um laudo pericial ou avaliação formal exige vistoria, documentação, justificativa metodológica, responsabilidade técnica e enquadramento conforme a finalidade e as normas aplicáveis.'
+          : 'Esta estimativa apoia precificação e captação e não substitui avaliação formal quando exigida.'}</p>
+      </div>
+    </section>}
+  </div>;
 }
