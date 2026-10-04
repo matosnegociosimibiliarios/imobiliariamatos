@@ -23,7 +23,7 @@ const initialForm = {
   condominium_fee: '',
   iptu_value: '',
   discount_percent: '',
-  visit_schedule_text: '',
+  visit_schedule: [],
   city_name: '',
   region_name: '',
   subregion_name: '',
@@ -88,9 +88,7 @@ export default function AdminPropertyForm() {
         condominium_fee: data.condominium_fee ?? '',
         iptu_value: data.iptu_value ?? '',
         discount_percent: data.discount_percent ?? '',
-        visit_schedule_text: Array.isArray(data.visit_schedule)
-          ? data.visit_schedule.map((slot) => [slot.day, slot.start && slot.end ? slot.start + '-' + slot.end : ''].filter(Boolean).join(' ')).join('\n')
-          : '',
+        visit_schedule: Array.isArray(data.visit_schedule) ? data.visit_schedule : [],
         city_name: data.public_location_text?.split(' - ')[1]?.split('/')[0] || '',
         region_name: data.region_name || '',
         subregion_name: data.subregion_name || '',
@@ -120,6 +118,29 @@ export default function AdminPropertyForm() {
     setForm((current) => ({
       ...current,
       [name]: type === 'checkbox' ? checked : value,
+    }));
+  }
+
+  function addVisitSlot() {
+    setForm((current) => ({
+      ...current,
+      visit_schedule: [...(current.visit_schedule || []), { day: 'Segunda', start: '09:00', end: '12:00' }],
+    }));
+  }
+
+  function updateVisitSlot(index, field, value) {
+    setForm((current) => ({
+      ...current,
+      visit_schedule: (current.visit_schedule || []).map((slot, slotIndex) => (
+        slotIndex === index ? { ...slot, [field]: value } : slot
+      )),
+    }));
+  }
+
+  function removeVisitSlot(index) {
+    setForm((current) => ({
+      ...current,
+      visit_schedule: (current.visit_schedule || []).filter((_, slotIndex) => slotIndex !== index),
     }));
   }
 
@@ -157,15 +178,7 @@ export default function AdminPropertyForm() {
         condominium_fee: numberOrNull(form.condominium_fee),
         iptu_value: numberOrNull(form.iptu_value),
         discount_percent: numberOrNull(form.discount_percent),
-        visit_schedule: form.visit_schedule_text
-          .split('\n')
-          .map((line) => line.trim())
-          .filter(Boolean)
-          .map((line) => {
-            const [day, range = ''] = line.split(/\s+/, 2);
-            const [start = '', end = ''] = range.split('-');
-            return { day, start, end };
-          }),
+        visit_schedule: (form.visit_schedule || []).filter((slot) => slot.day && slot.start && slot.end),
         city_id: city.id,
         neighborhood_id: neighborhood.id,
         region_name: form.region_name.trim() || null,
@@ -568,18 +581,45 @@ export default function AdminPropertyForm() {
         </section>
 
         <section className="admin-panel">
-          <h2>Horários para visita</h2>
-          <p className="admin-help-text">Informe uma janela por linha. Ex.: Segunda 09:00-12:00</p>
-          <label>
-            Dias e horários disponíveis
-            <textarea
-              name="visit_schedule_text"
-              rows="5"
-              value={form.visit_schedule_text}
-              onChange={updateField}
-              placeholder={"Segunda 09:00-12:00\nQuarta 14:00-18:00\nSábado 09:00-11:00"}
-            />
-          </label>
+          <div className="property-section-heading">
+            <div>
+              <h2>Horários para visita</h2>
+              <p className="admin-help-text">Cadastre os dias e horários em que o imóvel pode receber visitas.</p>
+            </div>
+            <button type="button" className="admin-link-button" onClick={addVisitSlot}>+ Adicionar horário</button>
+          </div>
+
+          {(form.visit_schedule || []).length === 0 ? (
+            <div className="admin-empty"><p>Nenhum horário de visita cadastrado.</p></div>
+          ) : (
+            <div className="property-visit-slots">
+              {(form.visit_schedule || []).map((slot, index) => (
+                <div className="property-visit-slot" key={`${slot.day}-${index}`}>
+                  <label>
+                    Dia
+                    <select value={slot.day || ''} onChange={(event) => updateVisitSlot(index, 'day', event.target.value)}>
+                      <option>Segunda</option>
+                      <option>Terça</option>
+                      <option>Quarta</option>
+                      <option>Quinta</option>
+                      <option>Sexta</option>
+                      <option>Sábado</option>
+                      <option>Domingo</option>
+                    </select>
+                  </label>
+                  <label>
+                    Início
+                    <input type="time" value={slot.start || ''} onChange={(event) => updateVisitSlot(index, 'start', event.target.value)} />
+                  </label>
+                  <label>
+                    Fim
+                    <input type="time" value={slot.end || ''} onChange={(event) => updateVisitSlot(index, 'end', event.target.value)} />
+                  </label>
+                  <button type="button" className="danger" onClick={() => removeVisitSlot(index)}>Remover</button>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="admin-panel">
