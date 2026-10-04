@@ -21,6 +21,8 @@ const initialForm = {
   sale_price: '',
   rent_price: '',
   city_name: '',
+  region_name: '',
+  subregion_name: '',
   neighborhood_name: '',
   public_location_text: '',
   total_area: '',
@@ -80,6 +82,8 @@ export default function AdminPropertyForm() {
         sale_price: data.sale_price ?? '',
         rent_price: data.rent_price ?? '',
         city_name: data.public_location_text?.split(' - ')[1]?.split('/')[0] || '',
+        region_name: data.region_name || '',
+        subregion_name: data.subregion_name || '',
         neighborhood_name: data.public_location_text?.split(' - ')[0] || '',
         public_location_text: data.public_location_text || '',
         total_area: data.total_area ?? '',
@@ -142,6 +146,8 @@ export default function AdminPropertyForm() {
             : numberOrNull(form.rent_price),
         city_id: city.id,
         neighborhood_id: neighborhood.id,
+        region_name: form.region_name.trim() || null,
+        subregion_name: form.subregion_name.trim() || null,
         public_location_text: locationText,
         total_area: numberOrNull(form.total_area),
         built_area: numberOrNull(form.built_area),
@@ -346,6 +352,26 @@ export default function AdminPropertyForm() {
           <h2>Localização</h2>
 
           <div className="admin-form-grid two">
+            <label>
+              Região
+              <input
+                name="region_name"
+                value={form.region_name}
+                onChange={updateField}
+                placeholder="Ex.: Campo das Vertentes"
+              />
+            </label>
+
+            <label>
+              Sub-região
+              <input
+                name="subregion_name"
+                value={form.subregion_name}
+                onChange={updateField}
+                placeholder="Ex.: Barbacena e entorno"
+              />
+            </label>
+
             <label>
               Cidade
               <input
