@@ -3661,7 +3661,7 @@ button, input, select { font: inherit; }
 
 .property-portfolio-filters {
   display: grid;
-  grid-template-columns: minmax(280px, 1.5fr) repeat(4, minmax(150px, 1fr)) auto;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
   gap: 12px;
   align-items: center;
   margin-bottom: 18px;
@@ -3669,6 +3669,7 @@ button, input, select { font: inherit; }
 
 .property-filter-search {
   min-width: 0;
+  grid-column: span 2;
 }
 
 .property-filter-clear {
