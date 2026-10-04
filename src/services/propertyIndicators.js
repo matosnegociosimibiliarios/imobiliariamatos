@@ -14,7 +14,10 @@ export const PROPERTY_FEEDBACK_OPTIONS = [
   ['other', 'Outro'],
 ];
 
-export const PROPERTY_FEEDBACK_LABELS = Object.fromEntries(PROPERTY_FEEDBACK_OPTIONS);
+export const PROPERTY_FEEDBACK_LABELS = {
+  ...Object.fromEntries(PROPERTY_FEEDBACK_OPTIONS),
+  capture_note: 'Observação da captação',
+};
 
 function daysSince(value) {
   if (!value) return 0;
