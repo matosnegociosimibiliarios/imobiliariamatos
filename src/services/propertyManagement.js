@@ -79,7 +79,7 @@ function buildAlerts(property, management, metrics, now = new Date()) {
 }
 
 export async function getPropertyPortfolio() {
-  const [propertiesResult, leadsResult, appointmentsResult, proposalsResult, dealsResult] = await Promise.all([
+  const [propertiesResult, leadsResult, appointmentsResult, proposalsResult, dealsResult, valuationsResult] = await Promise.all([
     supabase
       .from('properties')
       .select(`
@@ -92,14 +92,26 @@ export async function getPropertyPortfolio() {
         status,
         sale_price,
         rent_price,
+        condominium_fee,
+        iptu_value,
+        discount_percent,
+        exchange_allowed,
+        financing_allowed,
+        bedrooms,
+        bathrooms,
+        parking_spaces,
+        built_area,
+        total_area,
         featured,
         created_at,
         published_at,
         public_location_text,
         region_name,
         subregion_name,
+        visit_schedule,
         city:cities(id,name,state_code),
         neighborhood:neighborhoods(id,name),
+        property_images(id,storage_path,alt_text,display_order,is_cover),
         management:property_management(
           property_id,
           source_capture_id,
@@ -125,12 +137,27 @@ export async function getPropertyPortfolio() {
     supabase.from('appointments').select('id,property_id,created_at,status').not('property_id', 'is', null),
     supabase.from('proposals').select('id,property_id,created_at,status').not('property_id', 'is', null),
     supabase.from('deals').select('id,property_id,created_at,status').not('property_id', 'is', null),
+    supabase
+      .from('property_valuations')
+      .select('id,property_id,valuation_date,status,estimated_value,confidence_level,created_at')
+      .not('estimated_value', 'is', null)
+      .order('valuation_date', { ascending: false })
+      .order('created_at', { ascending: false }),
   ]);
 
-  const error = propertiesResult.error || leadsResult.error || appointmentsResult.error || proposalsResult.error || dealsResult.error;
+  const error = propertiesResult.error || leadsResult.error || appointmentsResult.error || proposalsResult.error || dealsResult.error || valuationsResult.error;
   if (error) return { data: [], error };
 
   const metricsMap = new Map();
+  const latestValuationByProperty = new Map();
+  (valuationsResult.data || []).forEach((row) => {
+    if (!row.property_id) return;
+    const current = latestValuationByProperty.get(row.property_id);
+    if (!current || (current.status !== 'final' && row.status === 'final')) {
+      latestValuationByProperty.set(row.property_id, row);
+    }
+  });
+
   (leadsResult.data || []).forEach((row) => incrementMetric(metricsMap, row.property_id, row.created_at, 'leads_count'));
   (appointmentsResult.data || []).forEach((row) => incrementMetric(metricsMap, row.property_id, row.created_at, 'visits_count'));
   (proposalsResult.data || []).forEach((row) => incrementMetric(metricsMap, row.property_id, row.created_at, 'proposals_count'));
@@ -158,12 +185,34 @@ export async function getPropertyPortfolio() {
     };
     const alerts = buildAlerts(property, management, metrics, now);
 
+    const latestValuation = latestValuationByProperty.get(property.id) || null;
+    const marketValue = Number(latestValuation?.estimated_value || 0);
+    const salePrice = Number(property.sale_price || 0);
+    const rentPrice = Number(property.rent_price || 0);
+    const marketGapPercent = marketValue > 0 && salePrice > 0
+      ? ((salePrice - marketValue) / marketValue) * 100
+      : null;
+    const liquidity = marketGapPercent === null
+      ? null
+      : marketGapPercent <= 10
+        ? 'high'
+        : marketGapPercent <= 20
+          ? 'medium'
+          : 'low';
+    const annualGrossYield = salePrice > 0 && rentPrice > 0
+      ? (rentPrice * 12 / salePrice) * 100
+      : null;
+
     return {
       ...property,
       management,
       metrics,
       alerts,
       alert_count: alerts.length,
+      latest_valuation: latestValuation,
+      market_gap_percent: marketGapPercent,
+      liquidity,
+      annual_gross_yield: annualGrossYield,
     };
   });
 
