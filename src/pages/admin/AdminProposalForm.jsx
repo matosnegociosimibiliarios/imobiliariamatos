@@ -11,6 +11,7 @@ import {
 } from '../../services/admin';
 import DocumentManager from '../../components/DocumentManager';
 import ResponsibleSelect from '../../components/ResponsibleSelect';
+import { PROPERTY_FEEDBACK_OPTIONS } from '../../services/propertyIndicators';
 import {
   PROPOSAL_STATUSES,
   PROPOSAL_STATUS_LABELS,
@@ -57,6 +58,8 @@ export default function AdminProposalForm() {
     next_follow_up_text: 'Retornar sobre a proposta',
     next_follow_up_at: '',
     rejection_reason: '',
+    feedback_code: '',
+    feedback_notes: '',
   });
 
   async function load() {
@@ -103,6 +106,8 @@ export default function AdminProposalForm() {
       next_follow_up_text: data.next_follow_up_text || '',
       next_follow_up_at: toDateTimeLocal(data.next_follow_up_at),
       rejection_reason: data.rejection_reason || '',
+      feedback_code: data.feedback_code || '',
+      feedback_notes: data.feedback_notes || '',
     });
     setLoading(false);
   }
@@ -169,6 +174,8 @@ export default function AdminProposalForm() {
           ? new Date(form.next_follow_up_at).toISOString()
           : null,
       rejection_reason: form.status === 'rejected' ? form.rejection_reason || null : null,
+      feedback_code: form.feedback_code || null,
+      feedback_notes: form.feedback_notes.trim() || null,
     };
 
     const result = isNew
@@ -284,6 +291,19 @@ export default function AdminProposalForm() {
               </select>
             </label>
           )}
+
+          <label>
+            Parecer do cliente sobre o imóvel
+            <select name="feedback_code" value={form.feedback_code} onChange={field}>
+              <option value="">Sem parecer</option>
+              {PROPERTY_FEEDBACK_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </label>
+
+          <label>
+            Observação do parecer
+            <textarea rows="3" name="feedback_notes" value={form.feedback_notes} onChange={field} placeholder="Ex.: Gostou, mas pediu redução no valor." />
+          </label>
 
           {!['accepted', 'rejected', 'expired'].includes(form.status) && (
             <div className="proposal-form-grid">

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAppointments, updateAppointment } from '../../services/admin';
+import ResponsibleSelect from '../../components/ResponsibleSelect';
+import { PROPERTY_FEEDBACK_OPTIONS } from '../../services/propertyIndicators';
 
 const statuses = [
   ['requested', 'Solicitado'],
@@ -24,8 +26,21 @@ export default function AdminAppointments() {
     load();
   }, []);
 
+  function updateLocal(id, field, value) {
+    setAppointments((current) => current.map((item) => item.id === id ? { ...item, [field]: value } : item));
+  }
+
   async function changeStatus(id, status) {
+    updateLocal(id, 'status', status);
     await updateAppointment(id, { status });
+    await load();
+  }
+
+  async function saveFeedback(item) {
+    await updateAppointment(item.id, {
+      feedback_code: item.feedback_code || null,
+      feedback_notes: item.feedback_notes?.trim() || null,
+    });
     await load();
   }
 
@@ -54,7 +69,11 @@ export default function AdminAppointments() {
                   <th>Imóvel</th>
                   <th>Data desejada</th>
                   <th>Horário</th>
+                  <th>Corretor</th>
                   <th>Status</th>
+                  <th>Parecer</th>
+                  <th>Observação</th>
+                  <th></th>
                 </tr>
               </thead>
 
@@ -81,6 +100,16 @@ export default function AdminAppointments() {
                     <td>{item.requested_time || 'A combinar'}</td>
 
                     <td>
+                      <ResponsibleSelect
+                        table="appointments"
+                        recordId={item.id}
+                        value={item.assigned_to}
+                        compact
+                        onChange={(next) => updateLocal(item.id, 'assigned_to', next)}
+                      />
+                    </td>
+
+                    <td>
                       <select
                         value={item.status}
                         onChange={(event) =>
@@ -93,6 +122,25 @@ export default function AdminAppointments() {
                           </option>
                         ))}
                       </select>
+                    </td>
+
+                    <td>
+                      <select value={item.feedback_code || ''} onChange={(event) => updateLocal(item.id, 'feedback_code', event.target.value)}>
+                        <option value="">Sem parecer</option>
+                        {PROPERTY_FEEDBACK_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                      </select>
+                    </td>
+
+                    <td>
+                      <input
+                        value={item.feedback_notes || ''}
+                        onChange={(event) => updateLocal(item.id, 'feedback_notes', event.target.value)}
+                        placeholder="Observação do cliente"
+                      />
+                    </td>
+
+                    <td>
+                      <button type="button" className="admin-link-button" onClick={() => saveFeedback(item)}>Salvar</button>
                     </td>
                   </tr>
                 ))}

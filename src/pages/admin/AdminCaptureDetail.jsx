@@ -17,6 +17,7 @@ import {
   CAPTURE_STATUS_LABELS,
 } from '../../services/captures';
 import DocumentManager from '../../components/DocumentManager';
+import ResponsibleSelect from '../../components/ResponsibleSelect';
 import {
   formatCurrency,
   formatDateTime,
@@ -53,6 +54,7 @@ export default function AdminCaptureDetail() {
     next_action_text: '',
     next_action_at: '',
     lost_reason: '',
+    commercial_notes: '',
   });
 
   async function load() {
@@ -87,6 +89,7 @@ export default function AdminCaptureDetail() {
       next_action_text: data.next_action_text || '',
       next_action_at: toDateTimeLocal(data.next_action_at),
       lost_reason: data.lost_reason || '',
+      commercial_notes: data.commercial_notes || '',
     });
 
     setLoading(false);
@@ -132,6 +135,7 @@ export default function AdminCaptureDetail() {
         form.status === 'lost'
           ? form.lost_reason.trim() || null
           : null,
+      commercial_notes: form.commercial_notes.trim() || null,
     });
 
     if (error) {
@@ -490,6 +494,13 @@ export default function AdminCaptureDetail() {
           <section className="admin-panel lead-crm-panel">
             <h2>Controle da captação</h2>
 
+            <ResponsibleSelect
+              table="owner_captures"
+              recordId={capture.id}
+              value={capture.assigned_to}
+              onChange={(next) => setCapture((current) => ({ ...current, assigned_to: next }))}
+            />
+
             <label>
               Etapa
               <select
@@ -565,6 +576,17 @@ export default function AdminCaptureDetail() {
                 disabled={
                   form.status === 'published' || form.status === 'lost'
                 }
+              />
+            </label>
+
+            <label>
+              Observações comerciais
+              <textarea
+                name="commercial_notes"
+                rows="3"
+                value={form.commercial_notes}
+                onChange={updateField}
+                placeholder="Ex.: Proprietário aceita negociar até determinado valor; documentação pendente."
               />
             </label>
 

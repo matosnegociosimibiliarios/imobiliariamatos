@@ -14,6 +14,7 @@ import {
 } from '../../services/admin';
 import DocumentManager from '../../components/DocumentManager';
 import LeadPropertyMatch from '../../components/LeadPropertyMatch';
+import { PROPERTY_FEEDBACK_OPTIONS } from '../../services/propertyIndicators';
 import ResponsibleSelect from '../../components/ResponsibleSelect';
 import {
   LEAD_STATUSES,
@@ -48,6 +49,8 @@ export default function AdminLeadDetail() {
     lost_reason: '',
     deal_value: '',
     commission_value: '',
+    property_feedback_code: '',
+    property_feedback_notes: '',
   });
 
   async function load() {
@@ -84,6 +87,8 @@ export default function AdminLeadDetail() {
       lost_reason: data.lost_reason || '',
       deal_value: data.deal_value ?? '',
       commission_value: data.commission_value ?? '',
+      property_feedback_code: data.property_feedback_code || '',
+      property_feedback_notes: data.property_feedback_notes || '',
     });
 
     setLoading(false);
@@ -122,6 +127,8 @@ export default function AdminLeadDetail() {
           : null,
       deal_value: numberOrNull(form.deal_value),
       commission_value: numberOrNull(form.commission_value),
+      property_feedback_code: form.property_feedback_code || null,
+      property_feedback_notes: form.property_feedback_notes.trim() || null,
     };
 
     const { error } = await updateLead(id, payload);
@@ -515,6 +522,28 @@ export default function AdminLeadDetail() {
                   <option value="Outro">Outro</option>
                 </select>
               </label>
+            )}
+
+            {lead.property && (
+              <>
+                <label>
+                  Parecer sobre o imóvel
+                  <select name="property_feedback_code" value={form.property_feedback_code} onChange={updateField}>
+                    <option value="">Sem parecer</option>
+                    {PROPERTY_FEEDBACK_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                  </select>
+                </label>
+                <label>
+                  Observação do cliente
+                  <textarea
+                    name="property_feedback_notes"
+                    rows="3"
+                    value={form.property_feedback_notes}
+                    onChange={updateField}
+                    placeholder="Ex.: Gostou da localização, mas considerou o valor alto."
+                  />
+                </label>
+              </>
             )}
 
             <div className="crm-money-grid">
