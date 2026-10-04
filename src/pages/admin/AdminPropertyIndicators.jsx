@@ -81,8 +81,26 @@ export default function AdminPropertyIndicators() {
 
   async function saveSettings() {
     if (!selected) return;
-    setSaving(true);
     setMessage('');
+
+    if (settings.enabled && !settings.next_send_at) {
+      setMessage('Defina a data e hora do próximo envio.');
+      return;
+    }
+    if (['email', 'both'].includes(settings.channel) && !settings.recipient_email.trim()) {
+      setMessage('Informe o e-mail do proprietário para usar o envio por e-mail.');
+      return;
+    }
+    if (['whatsapp', 'both'].includes(settings.channel) && !settings.recipient_whatsapp.trim()) {
+      setMessage('Informe o WhatsApp do proprietário para usar esse canal.');
+      return;
+    }
+    if (['whatsapp', 'both'].includes(settings.channel) && !settings.whatsapp_template_name.trim()) {
+      setMessage('Informe o nome do modelo aprovado pela Meta para o relatório via WhatsApp.');
+      return;
+    }
+
+    setSaving(true);
 
     const nextSendAt = settings.next_send_at
       ? new Date(settings.next_send_at).toISOString()
