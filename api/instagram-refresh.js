@@ -78,5 +78,32 @@ export default async function handler(req, res) {
     }
   }
 
-  res.status(200).json({ ok: true, refreshed, failed });
+  let ownerReports = null;
+
+  try {
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    if (host) {
+      const protocol = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim() || 'https';
+      const reportResponse = await fetch(`${protocol}://${host}/api/property-owner-reports`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${process.env.CRON_SECRET}`,
+        },
+      });
+
+      ownerReports = await reportResponse.json().catch(() => ({
+        ok: false,
+        error: `HTTP ${reportResponse.status}`,
+      }));
+
+      if (!reportResponse.ok) {
+        console.error('Falha ao processar relatórios automáticos de imóveis', ownerReports);
+      }
+    }
+  } catch (error) {
+    ownerReports = { ok: false, error: error.message };
+    console.error('Falha ao acionar relatórios automáticos de imóveis', error);
+  }
+
+  res.status(200).json({ ok: true, refreshed, failed, owner_reports: ownerReports });
 }

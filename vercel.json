@@ -93,10 +93,6 @@
     {
       "path": "/api/instagram-refresh",
       "schedule": "0 5 * * *"
-    },
-    {
-      "path": "/api/property-owner-reports",
-      "schedule": "0 12 * * *"
     }
   ],
   "redirects": [
