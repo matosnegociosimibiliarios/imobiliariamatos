@@ -29,6 +29,12 @@ const initialForm = {
   subregion_name: '',
   neighborhood_name: '',
   public_location_text: '',
+  street_name: '',
+  address_number: '',
+  address_complement: '',
+  postal_code: '',
+  latitude: '',
+  longitude: '',
   total_area: '',
   built_area: '',
   bedrooms: '',
@@ -94,6 +100,12 @@ export default function AdminPropertyForm() {
         subregion_name: data.subregion_name || '',
         neighborhood_name: data.public_location_text?.split(' - ')[0] || '',
         public_location_text: data.public_location_text || '',
+        street_name: data.street_name || '',
+        address_number: data.address_number || '',
+        address_complement: data.address_complement || '',
+        postal_code: data.postal_code || '',
+        latitude: data.latitude ?? '',
+        longitude: data.longitude ?? '',
         total_area: data.total_area ?? '',
         built_area: data.built_area ?? '',
         bedrooms: data.bedrooms ?? '',
@@ -184,6 +196,12 @@ export default function AdminPropertyForm() {
         region_name: form.region_name.trim() || null,
         subregion_name: form.subregion_name.trim() || null,
         public_location_text: locationText,
+        street_name: form.street_name.trim() || null,
+        address_number: form.address_number.trim() || null,
+        address_complement: form.address_complement.trim() || null,
+        postal_code: form.postal_code.trim() || null,
+        latitude: numberOrNull(form.latitude),
+        longitude: numberOrNull(form.longitude),
         total_area: numberOrNull(form.total_area),
         built_area: numberOrNull(form.built_area),
         bedrooms: numberOrNull(form.bedrooms),
@@ -453,6 +471,86 @@ export default function AdminPropertyForm() {
                 placeholder="Ex.: Volta Grande - Ressaquinha/MG"
               />
             </label>
+          </div>
+
+          <div className="property-precise-location">
+            <div className="property-section-heading">
+              <div>
+                <span className="eyebrow">Uso interno / mapa</span>
+                <h3>Localização precisa</h3>
+                <p className="admin-help-text">Esses dados são usados para posicionar o imóvel no mapa do CRM. Não alteram automaticamente a localização pública do anúncio.</p>
+              </div>
+            </div>
+
+            <div className="admin-form-grid three">
+              <label className="full">
+                Rua / logradouro
+                <input
+                  name="street_name"
+                  value={form.street_name}
+                  onChange={updateField}
+                  placeholder="Ex.: Rua José Bonifácio"
+                />
+              </label>
+
+              <label>
+                Número
+                <input
+                  name="address_number"
+                  value={form.address_number}
+                  onChange={updateField}
+                  placeholder="Ex.: 125"
+                />
+              </label>
+
+              <label>
+                Complemento
+                <input
+                  name="address_complement"
+                  value={form.address_complement}
+                  onChange={updateField}
+                  placeholder="Ex.: Apto 202"
+                />
+              </label>
+
+              <label>
+                CEP
+                <input
+                  name="postal_code"
+                  value={form.postal_code}
+                  onChange={updateField}
+                  placeholder="Ex.: 36200-000"
+                />
+              </label>
+
+              <label>
+                Latitude
+                <input
+                  type="number"
+                  step="0.000001"
+                  min="-90"
+                  max="90"
+                  name="latitude"
+                  value={form.latitude}
+                  onChange={updateField}
+                  placeholder="-21.225000"
+                />
+              </label>
+
+              <label>
+                Longitude
+                <input
+                  type="number"
+                  step="0.000001"
+                  min="-180"
+                  max="180"
+                  name="longitude"
+                  value={form.longitude}
+                  onChange={updateField}
+                  placeholder="-43.770000"
+                />
+              </label>
+            </div>
           </div>
         </section>
 
