@@ -96,6 +96,10 @@ export async function getPropertyPortfolio() {
         created_at,
         published_at,
         public_location_text,
+        region_name,
+        subregion_name,
+        city:cities(id,name,state_code),
+        neighborhood:neighborhoods(id,name),
         management:property_management(
           property_id,
           source_capture_id,
