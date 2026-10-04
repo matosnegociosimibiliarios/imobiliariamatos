@@ -2,9 +2,17 @@ import { db, getWhatsAppConnection, GRAPH_VERSION, normalizePhoneDigits, require
 
 function addFrequency(value, frequency) {
   const date = new Date(value || Date.now());
-  if (frequency === 'weekly') date.setUTCDate(date.getUTCDate() + 7);
-  else if (frequency === 'biweekly') date.setUTCDate(date.getUTCDate() + 14);
-  else date.setUTCMonth(date.getUTCMonth() + 1);
+  if (frequency === 'weekly') {
+    date.setUTCDate(date.getUTCDate() + 7);
+  } else if (frequency === 'biweekly') {
+    date.setUTCDate(date.getUTCDate() + 14);
+  } else {
+    const originalDay = date.getUTCDate();
+    date.setUTCDate(1);
+    date.setUTCMonth(date.getUTCMonth() + 1);
+    const lastDay = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
+    date.setUTCDate(Math.min(originalDay, lastDay));
+  }
   return date.toISOString();
 }
 
