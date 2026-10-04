@@ -20,6 +20,10 @@ const initialForm = {
   description: '',
   sale_price: '',
   rent_price: '',
+  condominium_fee: '',
+  iptu_value: '',
+  discount_percent: '',
+  visit_schedule_text: '',
   city_name: '',
   region_name: '',
   subregion_name: '',
@@ -81,6 +85,12 @@ export default function AdminPropertyForm() {
         description: data.description || '',
         sale_price: data.sale_price ?? '',
         rent_price: data.rent_price ?? '',
+        condominium_fee: data.condominium_fee ?? '',
+        iptu_value: data.iptu_value ?? '',
+        discount_percent: data.discount_percent ?? '',
+        visit_schedule_text: Array.isArray(data.visit_schedule)
+          ? data.visit_schedule.map((slot) => [slot.day, slot.start && slot.end ? slot.start + '-' + slot.end : ''].filter(Boolean).join(' ')).join('\n')
+          : '',
         city_name: data.public_location_text?.split(' - ')[1]?.split('/')[0] || '',
         region_name: data.region_name || '',
         subregion_name: data.subregion_name || '',
@@ -144,6 +154,18 @@ export default function AdminPropertyForm() {
           form.purpose === 'sale'
             ? null
             : numberOrNull(form.rent_price),
+        condominium_fee: numberOrNull(form.condominium_fee),
+        iptu_value: numberOrNull(form.iptu_value),
+        discount_percent: numberOrNull(form.discount_percent),
+        visit_schedule: form.visit_schedule_text
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((line) => {
+            const [day, range = ''] = line.split(/\s+/, 2);
+            const [start = '', end = ''] = range.split('-');
+            return { day, start, end };
+          }),
         city_id: city.id,
         neighborhood_id: neighborhood.id,
         region_name: form.region_name.trim() || null,
@@ -345,6 +367,21 @@ export default function AdminPropertyForm() {
                 disabled={form.purpose === 'sale'}
               />
             </label>
+
+            <label>
+              Condomínio
+              <input type="number" min="0" step="0.01" name="condominium_fee" value={form.condominium_fee} onChange={updateField} />
+            </label>
+
+            <label>
+              IPTU
+              <input type="number" min="0" step="0.01" name="iptu_value" value={form.iptu_value} onChange={updateField} />
+            </label>
+
+            <label>
+              Desconto máximo (%)
+              <input type="number" min="0" max="100" step="0.1" name="discount_percent" value={form.discount_percent} onChange={updateField} />
+            </label>
           </div>
         </section>
 
@@ -528,6 +565,21 @@ export default function AdminPropertyForm() {
               </select>
             </label>
           </div>
+        </section>
+
+        <section className="admin-panel">
+          <h2>Horários para visita</h2>
+          <p className="admin-help-text">Informe uma janela por linha. Ex.: Segunda 09:00-12:00</p>
+          <label>
+            Dias e horários disponíveis
+            <textarea
+              name="visit_schedule_text"
+              rows="5"
+              value={form.visit_schedule_text}
+              onChange={updateField}
+              placeholder={"Segunda 09:00-12:00\nQuarta 14:00-18:00\nSábado 09:00-11:00"}
+            />
+          </label>
         </section>
 
         <section className="admin-panel">
