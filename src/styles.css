@@ -6835,3 +6835,15 @@ h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
     grid-template-columns: 1fr;
   }
 }
+
+
+.property-precise-location {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #edf0f4;
+}
+
+.property-map-caption small {
+  color: #667085;
+  font-size: .76rem;
+}
