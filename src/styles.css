@@ -3661,10 +3661,19 @@ button, input, select { font: inherit; }
 
 .property-portfolio-filters {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) 220px auto;
+  grid-template-columns: minmax(280px, 1.5fr) repeat(4, minmax(150px, 1fr)) auto;
   gap: 12px;
   align-items: center;
   margin-bottom: 18px;
+}
+
+.property-filter-search {
+  min-width: 0;
+}
+
+.property-filter-clear {
+  justify-self: start;
+  white-space: nowrap;
 }
 
 .property-portfolio-filters input,
@@ -3993,6 +4002,14 @@ button, input, select { font: inherit; }
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .property-portfolio-filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .property-filter-search {
+    grid-column: span 2;
+  }
+
   .property-activity-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -4012,6 +4029,10 @@ button, input, select { font: inherit; }
 
   .property-portfolio-filters {
     grid-template-columns: 1fr;
+  }
+
+  .property-filter-search {
+    grid-column: auto;
   }
 
   .property-alert-panel,
