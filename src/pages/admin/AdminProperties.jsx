@@ -27,7 +27,9 @@ export default function AdminProperties() {
   const [statusFilter, setStatusFilter] = useState('active');
   const [typeFilter, setTypeFilter] = useState('all');
   const [purposeFilter, setPurposeFilter] = useState('all');
-  const [locationFilter, setLocationFilter] = useState('all');
+  const [regionFilter, setRegionFilter] = useState('all');
+  const [subregionFilter, setSubregionFilter] = useState('all');
+  const [neighborhoodFilter, setNeighborhoodFilter] = useState('all');
   const [attentionOnly, setAttentionOnly] = useState(false);
 
   async function load() {
@@ -46,10 +48,22 @@ export default function AdminProperties() {
 
   const summary = useMemo(() => propertyPortfolioSummary(properties), [properties]);
 
-  const filterOptions = useMemo(() => ({
-    types: [...new Set(properties.map((property) => property.property_type).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')),
-    locations: [...new Set(properties.map((property) => property.public_location_text).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')),
-  }), [properties]);
+  const filterOptions = useMemo(() => {
+    const byRegion = regionFilter === 'all'
+      ? properties
+      : properties.filter((property) => property.region_name === regionFilter);
+
+    const bySubregion = subregionFilter === 'all'
+      ? byRegion
+      : byRegion.filter((property) => property.subregion_name === subregionFilter);
+
+    return {
+      types: [...new Set(properties.map((property) => property.property_type).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')),
+      regions: [...new Set(properties.map((property) => property.region_name).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')),
+      subregions: [...new Set(byRegion.map((property) => property.subregion_name).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')),
+      neighborhoods: [...new Set(bySubregion.map((property) => property.neighborhood?.name).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    };
+  }, [properties, regionFilter, subregionFilter]);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -58,6 +72,9 @@ export default function AdminProperties() {
         property.code,
         property.title,
         property.public_location_text,
+        property.region_name,
+        property.subregion_name,
+        property.neighborhood?.name,
         property.management?.owner_name,
         property.management?.owner_whatsapp,
       ].filter(Boolean).join(' ').toLowerCase().includes(term);
@@ -68,24 +85,30 @@ export default function AdminProperties() {
 
       const matchesType = typeFilter === 'all' || property.property_type === typeFilter;
       const matchesPurpose = purposeFilter === 'all' || property.purpose === purposeFilter;
-      const matchesLocation = locationFilter === 'all' || property.public_location_text === locationFilter;
+      const matchesRegion = regionFilter === 'all' || property.region_name === regionFilter;
+      const matchesSubregion = subregionFilter === 'all' || property.subregion_name === subregionFilter;
+      const matchesNeighborhood = neighborhoodFilter === 'all' || property.neighborhood?.name === neighborhoodFilter;
       const matchesAttention = !attentionOnly || property.alert_count > 0;
 
       return matchesTerm
         && matchesStatus
         && matchesType
         && matchesPurpose
-        && matchesLocation
+        && matchesRegion
+        && matchesSubregion
+        && matchesNeighborhood
         && matchesAttention;
     });
-  }, [properties, search, statusFilter, typeFilter, purposeFilter, locationFilter, attentionOnly]);
+  }, [properties, search, statusFilter, typeFilter, purposeFilter, regionFilter, subregionFilter, neighborhoodFilter, attentionOnly]);
 
   function clearFilters() {
     setSearch('');
     setStatusFilter('active');
     setTypeFilter('all');
     setPurposeFilter('all');
-    setLocationFilter('all');
+    setRegionFilter('all');
+    setSubregionFilter('all');
+    setNeighborhoodFilter('all');
     setAttentionOnly(false);
   }
 
@@ -152,9 +175,38 @@ export default function AdminProperties() {
           <option value="sale_and_rent">Venda e aluguel</option>
         </select>
 
-        <select value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)} aria-label="Filtrar por localidade">
-          <option value="all">Todas as localidades</option>
-          {filterOptions.locations.map((location) => <option key={location} value={location}>{location}</option>)}
+        <select
+          value={regionFilter}
+          onChange={(event) => {
+            setRegionFilter(event.target.value);
+            setSubregionFilter('all');
+            setNeighborhoodFilter('all');
+          }}
+          aria-label="Filtrar por região"
+        >
+          <option value="all">Todas as regiões</option>
+          {filterOptions.regions.map((region) => <option key={region} value={region}>{region}</option>)}
+        </select>
+
+        <select
+          value={subregionFilter}
+          onChange={(event) => {
+            setSubregionFilter(event.target.value);
+            setNeighborhoodFilter('all');
+          }}
+          aria-label="Filtrar por sub-região"
+        >
+          <option value="all">Todas as sub-regiões</option>
+          {filterOptions.subregions.map((subregion) => <option key={subregion} value={subregion}>{subregion}</option>)}
+        </select>
+
+        <select
+          value={neighborhoodFilter}
+          onChange={(event) => setNeighborhoodFilter(event.target.value)}
+          aria-label="Filtrar por bairro"
+        >
+          <option value="all">Todos os bairros</option>
+          {filterOptions.neighborhoods.map((neighborhood) => <option key={neighborhood} value={neighborhood}>{neighborhood}</option>)}
         </select>
 
         <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filtrar por status">
@@ -197,6 +249,9 @@ export default function AdminProperties() {
                     <td>
                       <strong>{property.code} — {property.title}</strong>
                       <small>{property.public_location_text || ''}</small>
+                      {(property.region_name || property.subregion_name) && (
+                        <small>{[property.region_name, property.subregion_name].filter(Boolean).join(' • ')}</small>
+                      )}
                       <small>{propertyValue(property)}</small>
                     </td>
                     <td>
