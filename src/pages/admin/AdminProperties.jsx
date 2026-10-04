@@ -133,7 +133,10 @@ export default function AdminProperties() {
         || property.status === statusFilter;
 
       const matchesType = typeFilter === 'all' || property.property_type === typeFilter;
-      const matchesPurpose = purposeFilter === 'all' || property.purpose === purposeFilter;
+      const matchesPurpose = purposeFilter === 'all'
+        || property.purpose === purposeFilter
+        || (purposeFilter === 'sale' && property.purpose === 'sale_and_rent')
+        || (purposeFilter === 'rent' && property.purpose === 'sale_and_rent');
       const matchesRegion = regionFilter === 'all' || property.region_name === regionFilter;
       const matchesSubregion = subregionFilter === 'all' || property.subregion_name === subregionFilter;
       const matchesNeighborhood = neighborhoodFilter === 'all' || property.neighborhood?.name === neighborhoodFilter;
