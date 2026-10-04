@@ -1,4 +1,4 @@
-import { db, getWhatsAppConnection, GRAPH_VERSION, normalizePhoneDigits } from './_meta.js';
+import { db, getWhatsAppConnection, GRAPH_VERSION, normalizePhoneDigits, requireAdmin } from './_meta.js';
 
 function addFrequency(value, frequency) {
   const date = new Date(value || Date.now());
@@ -182,12 +182,6 @@ async function buildReport(setting) {
 }
 
 export default async function handler(req, res) {
-  const secret = process.env.CRON_SECRET;
-  if (secret && req.headers.authorization !== `Bearer ${secret}`) {
-    res.status(401).json({ error: 'Não autorizado.' });
-    return;
-  }
-
   if (!['GET', 'POST'].includes(req.method)) {
     res.status(405).json({ error: 'Método não permitido.' });
     return;
@@ -195,9 +189,37 @@ export default async function handler(req, res) {
 
   try {
     const now = new Date().toISOString();
-    const settings = await db(
-      `property_owner_report_settings?select=*&enabled=eq.true&next_send_at=not.is.null&next_send_at=lte.${encodeURIComponent(now)}&order=next_send_at.asc&limit=50`
-    );
+    let settings = [];
+
+    if (req.method === 'GET') {
+      const secret = process.env.CRON_SECRET;
+      if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
+        res.status(401).json({ error: 'Cron não autorizado.' });
+        return;
+      }
+
+      settings = await db(
+        `property_owner_report_settings?select=*&enabled=eq.true&next_send_at=not.is.null&next_send_at=lte.${encodeURIComponent(now)}&order=next_send_at.asc&limit=50`
+      );
+    } else {
+      const admin = await requireAdmin(req, 'properties.manage');
+      const organizationId = admin.membership?.organization_id;
+      const propertyId = String(req.body?.property_id || '').trim();
+
+      if (!organizationId || !propertyId) {
+        res.status(400).json({ error: 'Imóvel não informado.' });
+        return;
+      }
+
+      settings = await db(
+        `property_owner_report_settings?select=*&property_id=eq.${encodeURIComponent(propertyId)}&organization_id=eq.${encodeURIComponent(organizationId)}&limit=1`
+      );
+
+      if (!settings?.length) {
+        res.status(400).json({ error: 'Configure o relatório automático deste imóvel antes do envio.' });
+        return;
+      }
+    }
 
     const results = [];
 
@@ -279,7 +301,9 @@ export default async function handler(req, res) {
           method: 'PATCH',
           body: {
             last_sent_at: sentAt || setting.last_sent_at,
-            next_send_at: addFrequency(setting.next_send_at || now, setting.frequency),
+            next_send_at: req.method === 'GET'
+              ? addFrequency(setting.next_send_at || now, setting.frequency)
+              : (setting.next_send_at || addFrequency(now, setting.frequency)),
             updated_at: new Date().toISOString(),
           },
           prefer: 'return=minimal',
