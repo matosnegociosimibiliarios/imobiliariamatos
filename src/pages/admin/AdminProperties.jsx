@@ -25,6 +25,9 @@ export default function AdminProperties() {
   const [message, setMessage] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('active');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [purposeFilter, setPurposeFilter] = useState('all');
+  const [locationFilter, setLocationFilter] = useState('all');
   const [attentionOnly, setAttentionOnly] = useState(false);
 
   async function load() {
@@ -43,6 +46,11 @@ export default function AdminProperties() {
 
   const summary = useMemo(() => propertyPortfolioSummary(properties), [properties]);
 
+  const filterOptions = useMemo(() => ({
+    types: [...new Set(properties.map((property) => property.property_type).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    locations: [...new Set(properties.map((property) => property.public_location_text).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')),
+  }), [properties]);
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return properties.filter((property) => {
@@ -58,10 +66,28 @@ export default function AdminProperties() {
         || (statusFilter === 'active' && ['draft', 'published', 'reserved'].includes(property.status))
         || property.status === statusFilter;
 
+      const matchesType = typeFilter === 'all' || property.property_type === typeFilter;
+      const matchesPurpose = purposeFilter === 'all' || property.purpose === purposeFilter;
+      const matchesLocation = locationFilter === 'all' || property.public_location_text === locationFilter;
       const matchesAttention = !attentionOnly || property.alert_count > 0;
-      return matchesTerm && matchesStatus && matchesAttention;
+
+      return matchesTerm
+        && matchesStatus
+        && matchesType
+        && matchesPurpose
+        && matchesLocation
+        && matchesAttention;
     });
-  }, [properties, search, statusFilter, attentionOnly]);
+  }, [properties, search, statusFilter, typeFilter, purposeFilter, locationFilter, attentionOnly]);
+
+  function clearFilters() {
+    setSearch('');
+    setStatusFilter('active');
+    setTypeFilter('all');
+    setPurposeFilter('all');
+    setLocationFilter('all');
+    setAttentionOnly(false);
+  }
 
   async function togglePublish(property) {
     const next = property.status === 'published' ? 'draft' : 'published';
@@ -107,10 +133,33 @@ export default function AdminProperties() {
       </div>
 
       <section className="admin-panel property-portfolio-filters">
-        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por código, imóvel, local ou proprietário" />
-        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+        <input
+          className="property-filter-search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Buscar por código, imóvel, local ou proprietário"
+        />
+
+        <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} aria-label="Filtrar por tipo de imóvel">
+          <option value="all">Todos os tipos</option>
+          {filterOptions.types.map((type) => <option key={type} value={type}>{type}</option>)}
+        </select>
+
+        <select value={purposeFilter} onChange={(event) => setPurposeFilter(event.target.value)} aria-label="Filtrar por finalidade">
+          <option value="all">Todas as finalidades</option>
+          <option value="sale">Venda</option>
+          <option value="rent">Aluguel</option>
+          <option value="sale_and_rent">Venda e aluguel</option>
+        </select>
+
+        <select value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)} aria-label="Filtrar por localidade">
+          <option value="all">Todas as localidades</option>
+          {filterOptions.locations.map((location) => <option key={location} value={location}>{location}</option>)}
+        </select>
+
+        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filtrar por status">
           <option value="active">Ativos</option>
-          <option value="all">Todos</option>
+          <option value="all">Todos os status</option>
           <option value="published">Publicados</option>
           <option value="draft">Rascunhos</option>
           <option value="reserved">Reservados</option>
@@ -118,7 +167,9 @@ export default function AdminProperties() {
           <option value="rented">Alugados</option>
           <option value="inactive">Inativos</option>
         </select>
+
         <label className="property-attention-toggle"><input type="checkbox" checked={attentionOnly} onChange={(event) => setAttentionOnly(event.target.checked)} /> Somente com atenção</label>
+        <button type="button" className="admin-link-button property-filter-clear" onClick={clearFilters}>Limpar filtros</button>
       </section>
 
       <section className="admin-panel">
