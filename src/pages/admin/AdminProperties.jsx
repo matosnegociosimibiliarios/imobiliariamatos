@@ -39,6 +39,35 @@ function pct(value, digits = 1) {
   return `${Number(value).toFixed(digits).replace('.', ',')}%`;
 }
 
+function mapQuery(property) {
+  const lat = Number(property.latitude);
+  const lng = Number(property.longitude);
+  if (Number.isFinite(lat) && Number.isFinite(lng)) return `${lat},${lng}`;
+
+  const address = [
+    property.street_name,
+    property.address_number,
+    property.neighborhood?.name,
+    property.city?.name,
+    property.city?.state_code,
+    property.postal_code,
+  ].filter(Boolean).join(', ');
+
+  return address || property.public_location_text || '';
+}
+
+function preciseAddress(property) {
+  return [
+    property.street_name,
+    property.address_number,
+    property.address_complement,
+    property.neighborhood?.name,
+    property.city?.name,
+    property.city?.state_code,
+    property.postal_code,
+  ].filter(Boolean).join(', ');
+}
+
 function visitSummary(property) {
   const slots = Array.isArray(property.visit_schedule) ? property.visit_schedule : [];
   if (!slots.length) return 'Sem horário informado';
@@ -406,22 +435,23 @@ export default function AdminProperties() {
             ))}
           </div>
           <div className="property-map-frame">
-            {mapProperty?.public_location_text ? (
+            {mapQuery(mapProperty) ? (
               <>
                 <iframe
                   title={`Mapa de ${mapProperty.title}`}
-                  src={`https://www.google.com/maps?q=${encodeURIComponent(mapProperty.public_location_text)}&output=embed`}
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery(mapProperty))}&output=embed`}
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />
                 <div className="property-map-caption">
                   <strong>{mapProperty.code} — {mapProperty.title}</strong>
-                  <span>{mapProperty.public_location_text}</span>
+                  <span>{preciseAddress(mapProperty) || mapProperty.public_location_text}</span>
+                  <small>{Number.isFinite(Number(mapProperty.latitude)) && Number.isFinite(Number(mapProperty.longitude)) ? 'Localização por coordenadas' : 'Localização por endereço'}</small>
                   {liquidityBadge(mapProperty)}
                 </div>
               </>
             ) : (
-              <div className="admin-empty"><h2>Localização não informada</h2><p>Edite o imóvel e informe a localização para visualizá-lo no mapa.</p></div>
+              <div className="admin-empty"><h2>Localização não informada</h2><p>Edite o imóvel e informe endereço ou latitude/longitude para visualizá-lo no mapa.</p></div>
             )}
           </div>
         </section>
