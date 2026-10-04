@@ -151,7 +151,9 @@ export async function getPropertyPortfolio() {
   const metricsMap = new Map();
   const latestValuationByProperty = new Map();
   (valuationsResult.data || []).forEach((row) => {
-    if (row.property_id && !latestValuationByProperty.has(row.property_id)) {
+    if (!row.property_id) return;
+    const current = latestValuationByProperty.get(row.property_id);
+    if (!current || (current.status !== 'final' && row.status === 'final')) {
       latestValuationByProperty.set(row.property_id, row);
     }
   });
