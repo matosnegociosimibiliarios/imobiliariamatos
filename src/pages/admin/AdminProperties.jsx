@@ -146,7 +146,7 @@ export default function AdminProperties() {
         </select>
 
         <select value={purposeFilter} onChange={(event) => setPurposeFilter(event.target.value)} aria-label="Filtrar por finalidade">
-          <option value="all">Venda e aluguel</option>
+          <option value="all">Todas as finalidades</option>
           <option value="sale">Venda</option>
           <option value="rent">Aluguel</option>
           <option value="sale_and_rent">Venda e aluguel</option>
