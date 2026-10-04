@@ -4,6 +4,7 @@ import {
   getPropertyIndicatorsDataset,
   PROPERTY_FEEDBACK_LABELS,
   savePropertyOwnerReportSettings,
+  sendPropertyOwnerReportNow,
 } from '../../services/propertyIndicators';
 import { formatMoney } from '../../services/properties';
 
@@ -40,6 +41,7 @@ export default function AdminPropertyIndicators() {
     next_send_at: '',
     recipient_email: '',
     recipient_whatsapp: '',
+    whatsapp_template_name: '',
   });
 
   async function load() {
@@ -73,6 +75,7 @@ export default function AdminPropertyIndicators() {
       next_send_at: toLocalInput(current.next_send_at),
       recipient_email: current.recipient_email || selected.management?.owner_email || '',
       recipient_whatsapp: current.recipient_whatsapp || selected.management?.owner_whatsapp || '',
+      whatsapp_template_name: current.whatsapp_template_name || '',
     });
   }, [selectedId, selected]);
 
@@ -92,6 +95,7 @@ export default function AdminPropertyIndicators() {
       next_send_at: nextSendAt,
       recipient_email: settings.recipient_email.trim() || null,
       recipient_whatsapp: settings.recipient_whatsapp.trim() || null,
+      whatsapp_template_name: settings.whatsapp_template_name.trim() || null,
       send_day: nextSendAt ? new Date(nextSendAt).getDate() : 1,
       send_hour: nextSendAt ? new Date(nextSendAt).getHours() : 9,
     });
@@ -100,6 +104,24 @@ export default function AdminPropertyIndicators() {
       setMessage('Não foi possível salvar a automação do relatório.');
     } else {
       setMessage('Automação do relatório salva.');
+      await load();
+    }
+    setSaving(false);
+  }
+
+  async function sendNow() {
+    if (!selected) return;
+    setSaving(true);
+    setMessage('');
+    const result = await sendPropertyOwnerReportNow(selected.id);
+    if (result.error) setMessage(result.error.message || 'Não foi possível enviar o relatório.');
+    else {
+      const first = result.data?.results?.[0];
+      setMessage(first?.status === 'sent'
+        ? 'Relatório enviado com sucesso.'
+        : first?.status === 'partial'
+          ? 'Relatório enviado parcialmente. Verifique o histórico.'
+          : 'O envio não foi concluído. Verifique o histórico e a configuração dos canais.');
       await load();
     }
     setSaving(false);
@@ -258,11 +280,28 @@ export default function AdminPropertyIndicators() {
                 WhatsApp do proprietário
                 <input value={settings.recipient_whatsapp} onChange={(event) => setSettings((current) => ({ ...current, recipient_whatsapp: event.target.value }))} placeholder="+55..." />
               </label>
+
+              {(settings.channel === 'whatsapp' || settings.channel === 'both') && (
+                <label className="full">
+                  Modelo aprovado do WhatsApp
+                  <input
+                    value={settings.whatsapp_template_name}
+                    onChange={(event) => setSettings((current) => ({ ...current, whatsapp_template_name: event.target.value }))}
+                    placeholder="Ex.: relatorio_imovel"
+                  />
+                  <small>O modelo da Meta deve aceitar 6 campos: imóvel, período, atendimentos, visitas, propostas e resumo dos pareceres.</small>
+                </label>
+              )}
             </div>
 
-            <button type="button" className="button" onClick={saveSettings} disabled={saving}>
-              {saving ? 'Salvando...' : 'Salvar automação'}
-            </button>
+            <div className="owner-report-actions">
+              <button type="button" className="button" onClick={saveSettings} disabled={saving}>
+                {saving ? 'Salvando...' : 'Salvar automação'}
+              </button>
+              <button type="button" className="admin-link-button" onClick={sendNow} disabled={saving}>
+                Enviar relatório agora
+              </button>
+            </div>
 
             <div className="owner-report-history">
               <h3>Últimos envios</h3>
