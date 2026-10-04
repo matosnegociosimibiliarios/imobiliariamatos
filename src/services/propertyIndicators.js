@@ -30,6 +30,7 @@ export async function getPropertyIndicatorsDataset() {
     leadsResult,
     appointmentsResult,
     proposalsResult,
+    capturesResult,
     profilesResult,
     settingsResult,
     historyResult,
@@ -39,13 +40,14 @@ export async function getPropertyIndicatorsDataset() {
     supabase.from('leads').select('id,property_id,name,whatsapp,email,status,assigned_to,property_feedback_code,property_feedback_notes,created_at').not('property_id', 'is', null),
     supabase.from('appointments').select('id,lead_id,property_id,status,scheduled_at,requested_date,assigned_to,feedback_code,feedback_notes,notes,created_at').not('property_id', 'is', null),
     supabase.from('proposals').select('id,code,lead_id,property_id,status,proposal_value,assigned_to,feedback_code,feedback_notes,created_at').not('property_id', 'is', null),
+    supabase.from('owner_captures').select('id,converted_property_id,owner_name,assigned_to,commercial_notes,created_at').not('converted_property_id', 'is', null),
     supabase.from('profiles').select('id,full_name,email'),
     supabase.from('property_owner_report_settings').select('*'),
     supabase.from('property_owner_report_history').select('*').order('created_at', { ascending: false }).limit(200),
   ]);
 
   const error = propertiesResult.error || managementResult.error || leadsResult.error || appointmentsResult.error
-    || proposalsResult.error || profilesResult.error || settingsResult.error || historyResult.error;
+    || proposalsResult.error || capturesResult.error || profilesResult.error || settingsResult.error || historyResult.error;
   if (error) return { data: null, error };
 
   const profiles = new Map((profilesResult.data || []).map((item) => [item.id, item]));
@@ -56,9 +58,19 @@ export async function getPropertyIndicatorsDataset() {
     const propertyLeads = (leadsResult.data || []).filter((item) => item.property_id === property.id);
     const propertyAppointments = (appointmentsResult.data || []).filter((item) => item.property_id === property.id);
     const propertyProposals = (proposalsResult.data || []).filter((item) => item.property_id === property.id);
+    const propertyCaptures = (capturesResult.data || []).filter((item) => item.converted_property_id === property.id);
     const completedVisits = propertyAppointments.filter((item) => item.status === 'completed');
 
     const feedback = [
+      ...propertyCaptures.filter((item) => item.commercial_notes).map((item) => ({
+        id: 'capture-' + item.id,
+        stage: 'Captação',
+        client: item.owner_name || 'Proprietário',
+        broker: profiles.get(item.assigned_to)?.full_name || 'Não definido',
+        code: 'capture_note',
+        notes: item.commercial_notes,
+        date: item.created_at,
+      })),
       ...propertyLeads.filter((item) => item.property_feedback_code || item.property_feedback_notes).map((item) => ({
         id: 'lead-' + item.id,
         stage: 'Atendimento',
@@ -95,6 +107,7 @@ export async function getPropertyIndicatorsDataset() {
     ].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
     const feedbackCounts = feedback.reduce((acc, item) => {
+      if (item.code === 'capture_note') return acc;
       const key = item.code || 'other';
       acc[key] = (acc[key] || 0) + 1;
       return acc;
@@ -120,6 +133,10 @@ export async function getPropertyIndicatorsDataset() {
         ...item,
         client_name: propertyLeads.find((lead) => lead.id === item.lead_id)?.name || 'Cliente',
         broker_name: profiles.get(item.assigned_to)?.full_name || profiles.get(propertyLeads.find((lead) => lead.id === item.lead_id)?.assigned_to)?.full_name || 'Não definido',
+      })),
+      captures: propertyCaptures.map((item) => ({
+        ...item,
+        broker_name: profiles.get(item.assigned_to)?.full_name || 'Não definido',
       })),
       proposals: propertyProposals.map((item) => ({
         ...item,
@@ -161,4 +178,24 @@ export async function saveProposalFeedback(proposalId, code, notes) {
     feedback_code: code || null,
     feedback_notes: notes?.trim() || null,
   }).eq('id', proposalId).select().single();
+}
+
+export async function sendPropertyOwnerReportNow(propertyId) {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  if (!accessToken) return { data: null, error: new Error('Sessão expirada.') };
+
+  const response = await fetch('/api/property-owner-reports', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ property_id: propertyId }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  return response.ok
+    ? { data, error: null }
+    : { data: null, error: new Error(data.error || 'Não foi possível enviar o relatório.') };
 }
