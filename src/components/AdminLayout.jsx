@@ -14,6 +14,7 @@ const NAV_SECTIONS = [
       { to: '/admin/leads', label: 'Clientes e Leads', permission: 'leads.view' },
       { to: '/admin/funil', label: 'Funil Comercial', permission: 'leads.view' },
       { to: '/admin/imoveis', label: 'Imóveis', permission: 'properties.view' },
+      { to: '/admin/indicadores-imoveis', label: 'Indicadores de Imóveis', permission: 'properties.view' },
       { to: '/admin/captacoes', label: 'Captações', permission: 'captures.view' },
       { to: '/admin/propostas', label: 'Propostas', permission: 'proposals.view' },
       { to: '/admin/negocios', label: 'Negócios Fechados', permission: 'deals.view' },
