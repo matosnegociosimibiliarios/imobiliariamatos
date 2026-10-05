@@ -3,6 +3,126 @@ import { getQuickValuationComparables } from '../../services/quickValuation';
 
 const PROPERTY_TYPES = ['Casa','Apartamento','Terreno','Sítio','Comercial'];
 
+const TECHNICAL_FACTORS = [
+  {
+    key: 'technical_location',
+    label: 'Localização',
+    min: -20,
+    max: 20,
+    justifications: [
+      'Sem diferença relevante',
+      'Avaliando em localização superior à amostra',
+      'Avaliando em localização inferior à amostra',
+      'Melhor acesso / mobilidade / infraestrutura',
+      'Pior acesso / mobilidade / infraestrutura',
+      'Maior valorização ou procura no entorno',
+      'Menor valorização ou procura no entorno',
+      'Outro motivo de localização',
+    ],
+  },
+  {
+    key: 'technical_finish',
+    label: 'Padrão construtivo',
+    min: -20,
+    max: 20,
+    justifications: [
+      'Sem diferença relevante',
+      'Avaliando com padrão construtivo superior',
+      'Avaliando com padrão construtivo inferior',
+      'Acabamentos e materiais superiores',
+      'Acabamentos e materiais inferiores',
+      'Projeto / arquitetura com maior padrão',
+      'Projeto / arquitetura com menor padrão',
+      'Outro motivo de padrão construtivo',
+    ],
+  },
+  {
+    key: 'technical_condition',
+    label: 'Conservação',
+    min: -20,
+    max: 20,
+    justifications: [
+      'Sem diferença relevante',
+      'Avaliando em melhor estado de conservação',
+      'Avaliando em pior estado de conservação',
+      'Reforma recente / manutenção superior',
+      'Necessidade de reforma / manutenção',
+      'Instalações e acabamentos mais conservados',
+      'Instalações e acabamentos mais desgastados',
+      'Outro motivo de conservação',
+    ],
+  },
+  {
+    key: 'technical_garage',
+    label: 'Garagem',
+    min: -15,
+    max: 15,
+    justifications: [
+      'Sem diferença relevante',
+      'Avaliando possui mais vagas',
+      'Avaliando possui menos vagas',
+      'Vagas cobertas / livres / de melhor acesso',
+      'Vagas descobertas / presas / de pior acesso',
+      'Garagem tem alta relevância neste mercado',
+      'Outro motivo relacionado à garagem',
+    ],
+  },
+  {
+    key: 'technical_age',
+    label: 'Idade / depreciação',
+    min: -20,
+    max: 20,
+    justifications: [
+      'Sem diferença relevante',
+      'Avaliando é mais novo que a amostra',
+      'Avaliando é mais antigo que a amostra',
+      'Menor depreciação aparente',
+      'Maior depreciação aparente',
+      'Vida útil remanescente superior',
+      'Vida útil remanescente inferior',
+      'Outro motivo de idade / depreciação',
+    ],
+  },
+  {
+    key: 'technical_other',
+    label: 'Outros',
+    min: -20,
+    max: 20,
+    justifications: [
+      'Sem diferença relevante',
+      'Vista / posição / insolação superior',
+      'Vista / posição / insolação inferior',
+      'Topografia / testada / formato superior',
+      'Topografia / testada / formato inferior',
+      'Elevador / lazer / infraestrutura superior',
+      'Elevador / lazer / infraestrutura inferior',
+      'Outro fator específico do mercado',
+    ],
+  },
+];
+
+const FACTOR_SOURCES = [
+  'Pesquisa de mercado local / amostra comparável',
+  'Negócios efetivamente realizados no CRM',
+  'Anúncios ativos em portais imobiliários',
+  'Vistoria presencial do imóvel',
+  'Documentação técnica / cadastral',
+  'Referência de corretor ou avaliador local',
+  'Estudo / publicação técnica aplicável',
+  'Critério técnico do avaliador',
+];
+
+const DEFAULT_FACTOR_META = Object.fromEntries(
+  TECHNICAL_FACTORS.map((factor) => [
+    factor.key,
+    {
+      justification: 'Sem diferença relevante',
+      source: 'Pesquisa de mercado local / amostra comparável',
+      note: '',
+    },
+  ])
+);
+
 function num(value) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
@@ -48,6 +168,7 @@ export default function AdminQuickValuation(){
     technical_location:'0',technical_finish:'0',technical_condition:'0',technical_garage:'0',technical_age:'0',technical_other:'0',
     evaluator:'',purpose:'Venda',inspection_date:new Date().toISOString().slice(0,10),documents:'',market_notes:'',method_notes:''
   });
+  const [factorMeta,setFactorMeta]=useState(DEFAULT_FACTOR_META);
   const [comparables,setComparables]=useState([]);
   const [selectedIds,setSelectedIds]=useState([]);
   const [manuals,setManuals]=useState([]);
@@ -57,6 +178,26 @@ export default function AdminQuickValuation(){
   const [searched,setSearched]=useState(false);
 
   function update(e){ const {name,value}=e.target; setForm((c)=>({...c,[name]:value})); }
+
+  function updateFactorMeta(key, field, value){
+    setFactorMeta((current)=>({
+      ...current,
+      [key]: {
+        ...current[key],
+        [field]: value,
+      },
+    }));
+  }
+
+  function updateTechnicalFactor(event){
+    const { name, value } = event.target;
+    setForm((current)=>({...current,[name]:value}));
+    if(num(value)===0){
+      updateFactorMeta(name,'justification','Sem diferença relevante');
+    } else if(factorMeta[name]?.justification==='Sem diferença relevante'){
+      updateFactorMeta(name,'justification','');
+    }
+  }
 
   async function searchComparables(e){
     e?.preventDefault();
@@ -127,12 +268,12 @@ export default function AdminQuickValuation(){
         + ({precisa_reforma:-.06,regular:-.025,bom:0,novo:.025}[form.condition]||0)
       : 0;
 
-    const technicalAdjustment = mode==='complete'
+    const technicalAdjustmentRaw = mode==='complete'
       ? ['technical_location','technical_finish','technical_condition','technical_garage','technical_age','technical_other']
           .reduce((sum,key)=>sum+num(form[key])/100,0)
       : 0;
 
-    const adjustment=Math.max(-.25,Math.min(.25,quickAdjustment+technicalAdjustment));
+    const adjustment=Math.max(-.25,Math.min(.25,quickAdjustment+technicalAdjustmentRaw));
     const marketValue=baseValue*(1+adjustment);
     const cv=coefficientVariation(ppms);
 
@@ -155,7 +296,7 @@ export default function AdminQuickValuation(){
     const confidence=confidenceScore>=75?'Alta':confidenceScore>=50?'Média':'Baixa';
 
     return {
-      sample, outliers:filtered.outliers, referencePpm, medianPpm,p25,p75,cv,baseValue,adjustment,marketValue,minimumValue,maximumValue,
+      sample, outliers:filtered.outliers, referencePpm, medianPpm,p25,p75,cv,baseValue,adjustment,technicalAdjustmentRaw,marketValue,minimumValue,maximumValue,
       quickSaleValue,suggestedAskingValue,confidenceScore,confidence,avgSimilarity,closedSales,avgDiscount,sampleRangePct
     };
   },[chosen,form,mode]);
@@ -179,7 +320,19 @@ export default function AdminQuickValuation(){
       lines.push('P25/P75: '+money(calculation.p25)+' / '+money(calculation.p75)+'/m²');
       lines.push('Dispersão (CV): '+decimal(calculation.cv,1)+'%');
       lines.push('Outliers identificados: '+calculation.outliers.length);
-      lines.push('Ajuste técnico total: '+decimal(calculation.adjustment*100,1)+'%');
+      lines.push('Ajuste técnico informado: '+decimal(calculation.technicalAdjustmentRaw*100,1)+'%');
+      lines.push('Ajuste técnico aplicado pelo GOI: '+decimal(calculation.adjustment*100,1)+'%');
+      lines.push('Fatores de homogeneização:');
+      TECHNICAL_FACTORS.forEach((factor)=>{
+        const value=num(form[factor.key]);
+        const meta=factorMeta[factor.key]||{};
+        lines.push(
+          '- '+factor.label+': '+(value>0?'+':'')+decimal(value,1)+'% | '+
+          (meta.justification||'Sem justificativa')+' | Fonte/critério: '+
+          (meta.source||'Não informado')+
+          (meta.note?' | Observação: '+meta.note:'')
+        );
+      });
     }
     try{ await navigator.clipboard.writeText(lines.join('\n')); setMessage('Resumo copiado.'); }
     catch{ setMessage('Não foi possível copiar automaticamente.'); }
@@ -233,14 +386,85 @@ export default function AdminQuickValuation(){
 
       {mode==='complete'&&<>
         <div className="valuation-technical-factors">
-          <div><span className="eyebrow">Fatores de homogeneização</span><h3>Ajustes técnicos (%)</h3><p>Informe apenas diferenças justificadas entre o imóvel avaliando e a amostra. Zero significa sem ajuste.</p></div>
-          <div className="admin-form-grid three">
-            <label>Localização<input type="number" step=".5" min="-20" max="20" name="technical_location" value={form.technical_location} onChange={update}/></label>
-            <label>Padrão construtivo<input type="number" step=".5" min="-20" max="20" name="technical_finish" value={form.technical_finish} onChange={update}/></label>
-            <label>Conservação<input type="number" step=".5" min="-20" max="20" name="technical_condition" value={form.technical_condition} onChange={update}/></label>
-            <label>Garagem<input type="number" step=".5" min="-15" max="15" name="technical_garage" value={form.technical_garage} onChange={update}/></label>
-            <label>Idade / depreciação<input type="number" step=".5" min="-20" max="20" name="technical_age" value={form.technical_age} onChange={update}/></label>
-            <label>Outros<input type="number" step=".5" min="-20" max="20" name="technical_other" value={form.technical_other} onChange={update}/></label>
+          <div className="valuation-factor-heading">
+            <div>
+              <span className="eyebrow">Fatores de homogeneização</span>
+              <h3>Ajustes técnicos (%)</h3>
+              <p>Registre somente diferenças relevantes entre o imóvel avaliando e a amostra. Valor positivo eleva a referência do avaliando; valor negativo reduz. Zero significa sem diferença relevante.</p>
+            </div>
+            <div className="valuation-factor-rule">
+              <strong>Registro técnico</strong>
+              <span>Percentual + justificativa + fonte/critério.</span>
+              <small>Os modelos abaixo agilizam o preenchimento, mas o profissional deve confirmar se representam a realidade da amostra e do mercado local.</small>
+            </div>
+          </div>
+
+          <div className="valuation-factor-list">
+            {TECHNICAL_FACTORS.map((factor)=>{
+              const meta=factorMeta[factor.key]||{};
+              const value=num(form[factor.key]);
+              return <article className="valuation-factor-card" key={factor.key}>
+                <div className="valuation-factor-card-top">
+                  <label>
+                    <strong>{factor.label}</strong>
+                    <span>Ajuste (%)</span>
+                    <input
+                      type="number"
+                      step=".5"
+                      min={factor.min}
+                      max={factor.max}
+                      name={factor.key}
+                      value={form[factor.key]}
+                      onChange={updateTechnicalFactor}
+                    />
+                  </label>
+                  <div className={value===0?'valuation-factor-status neutral':value>0?'valuation-factor-status positive':'valuation-factor-status negative'}>
+                    {value===0?'Sem ajuste':value>0?'+'+decimal(value,1)+'%':decimal(value,1)+'%'}
+                  </div>
+                </div>
+
+                <div className="valuation-factor-fields">
+                  <label>
+                    Justificativa
+                    <select
+                      value={meta.justification||''}
+                      onChange={(event)=>updateFactorMeta(factor.key,'justification',event.target.value)}
+                    >
+                      <option value="">Selecione</option>
+                      {factor.justifications.map((item)=><option key={item} value={item}>{item}</option>)}
+                    </select>
+                  </label>
+
+                  <label>
+                    Fonte / critério
+                    <select
+                      value={meta.source||''}
+                      onChange={(event)=>updateFactorMeta(factor.key,'source',event.target.value)}
+                    >
+                      <option value="">Selecione</option>
+                      {FACTOR_SOURCES.map((item)=><option key={item} value={item}>{item}</option>)}
+                    </select>
+                  </label>
+
+                  <label className="full">
+                    Observação complementar
+                    <input
+                      value={meta.note||''}
+                      onChange={(event)=>updateFactorMeta(factor.key,'note',event.target.value)}
+                      placeholder="Opcional. Ex.: rua mais comercial, acabamento superior, reforma recente..."
+                    />
+                  </label>
+                </div>
+              </article>;
+            })}
+          </div>
+
+          <div className="valuation-factor-total">
+            <div>
+              <span>Ajuste técnico informado</span>
+              <strong>{TECHNICAL_FACTORS.reduce((sum,factor)=>sum+num(form[factor.key]),0)>0?'+':''}{decimal(TECHNICAL_FACTORS.reduce((sum,factor)=>sum+num(form[factor.key]),0),1)}%</strong>
+            </div>
+            <p>O GOI limita o ajuste agregado aplicado ao cálculo a ±25% como controle operacional interno. Isso não substitui a justificativa técnica nem define, por si só, enquadramento normativo.</p>
           </div>
         </div>
         <div className="admin-form-grid two valuation-technical-notes">
@@ -296,7 +520,8 @@ export default function AdminQuickValuation(){
         <article><span>P75</span><strong>{money(calculation.p75)}/m²</strong></article>
         <article><span>Dispersão</span><strong>{decimal(calculation.cv,1)}%</strong></article>
         <article><span>Outliers</span><strong>{calculation.outliers.length}</strong></article>
-        <article><span>Ajuste técnico</span><strong>{calculation.adjustment>0?'+':''}{decimal(calculation.adjustment*100,1)}%</strong></article>
+        <article><span>Ajuste informado</span><strong>{calculation.technicalAdjustmentRaw>0?'+':''}{decimal(calculation.technicalAdjustmentRaw*100,1)}%</strong></article>
+        <article><span>Ajuste aplicado</span><strong>{calculation.adjustment>0?'+':''}{decimal(calculation.adjustment*100,1)}%</strong></article>
       </div>}
 
       <div className="quick-valuation-confidence"><div><span>Confiança da amostra</span><strong>{calculation.confidence}</strong><small>{calculation.confidenceScore}/100</small></div><div className="valuation-progress"><span style={{width:calculation.confidenceScore+'%'}}/></div><p>{calculation.sample.length} comparável(is) válidos · {calculation.closedSales} venda(s) concluída(s) · similaridade média {decimal(calculation.avgSimilarity)}%.</p></div>
@@ -306,7 +531,10 @@ export default function AdminQuickValuation(){
         <p>Dá maior peso a vendas concluídas e imóveis mais semelhantes.</p>
         <p>Combina média ponderada e mediana e identifica possíveis outliers pelo intervalo interquartil.</p>
         <p>A faixa mínima e máxima acompanha a dispersão real da amostra, em vez de usar uma margem fixa.</p>
-        {mode==='complete'&&<p>Os fatores técnicos são informados pelo profissional e ficam limitados para evitar ajustes excessivos.</p>}
+        {mode==='complete'&&<>
+          <p>Os fatores técnicos são informados pelo profissional, com justificativa e fonte/critério registradas para cada ajuste.</p>
+          <p>Os presets são atalhos de preenchimento e não substituem pesquisa de mercado, vistoria, evidência documental ou fundamentação técnica quando exigidas.</p>
+        </>}
       </details>
 
       <div className="valuation-disclaimer">
