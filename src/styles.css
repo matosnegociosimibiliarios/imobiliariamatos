@@ -7187,3 +7187,82 @@ h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
     text-align: left;
   }
 }
+
+
+.valuation-factor-auto {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.valuation-factor-auto > div {
+  display: grid;
+  gap: 4px;
+}
+
+.valuation-factor-auto strong {
+  color: #172033;
+}
+
+.valuation-factor-auto span {
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.valuation-factor-suggestion {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e4e9ef;
+}
+
+.valuation-factor-suggestion.available {
+  background: #f6fbf8;
+  border-color: #ccebd8;
+}
+
+.valuation-factor-suggestion > div {
+  display: grid;
+  gap: 3px;
+}
+
+.valuation-factor-suggestion strong {
+  color: #172033;
+  font-size: 12px;
+}
+
+.valuation-factor-suggestion span,
+.valuation-factor-suggestion small {
+  color: #667085;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.valuation-factor-suggestion small {
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+@media (max-width: 620px) {
+  .valuation-factor-auto,
+  .valuation-factor-suggestion {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .valuation-factor-auto button {
+    width: 100%;
+  }
+}

@@ -41,6 +41,9 @@ const initialForm = {
   suites: '',
   bathrooms: '',
   parking_spaces: '',
+  construction_standard: 'medio',
+  conservation_status: 'bom',
+  construction_year: '',
   furnished: false,
   financing_allowed: false,
   exchange_allowed: false,
@@ -112,6 +115,9 @@ export default function AdminPropertyForm() {
         suites: data.suites ?? '',
         bathrooms: data.bathrooms ?? '',
         parking_spaces: data.parking_spaces ?? '',
+        construction_standard: data.construction_standard || 'medio',
+        conservation_status: data.conservation_status || 'bom',
+        construction_year: data.construction_year ?? '',
         furnished: Boolean(data.furnished),
         financing_allowed: Boolean(data.financing_allowed),
         exchange_allowed: Boolean(data.exchange_allowed),
@@ -208,6 +214,9 @@ export default function AdminPropertyForm() {
         suites: numberOrNull(form.suites),
         bathrooms: numberOrNull(form.bathrooms),
         parking_spaces: numberOrNull(form.parking_spaces),
+        construction_standard: form.construction_standard || null,
+        conservation_status: form.conservation_status || null,
+        construction_year: numberOrNull(form.construction_year),
         furnished: form.furnished,
         financing_allowed: form.financing_allowed,
         exchange_allowed: form.exchange_allowed,
@@ -621,6 +630,39 @@ export default function AdminPropertyForm() {
                 name="parking_spaces"
                 value={form.parking_spaces}
                 onChange={updateField}
+              />
+            </label>
+
+            <label>
+              Padrão construtivo
+              <select name="construction_standard" value={form.construction_standard} onChange={updateField}>
+                <option value="economico">Econômico</option>
+                <option value="medio">Médio</option>
+                <option value="alto">Alto padrão</option>
+                <option value="luxo">Luxo</option>
+              </select>
+            </label>
+
+            <label>
+              Conservação
+              <select name="conservation_status" value={form.conservation_status} onChange={updateField}>
+                <option value="precisa_reforma">Precisa de reforma</option>
+                <option value="regular">Regular</option>
+                <option value="bom">Bom</option>
+                <option value="novo">Novo / excelente</option>
+              </select>
+            </label>
+
+            <label>
+              Ano da construção
+              <input
+                type="number"
+                min="1800"
+                max="2200"
+                name="construction_year"
+                value={form.construction_year}
+                onChange={updateField}
+                placeholder="Ex.: 2018"
               />
             </label>
           </div>
