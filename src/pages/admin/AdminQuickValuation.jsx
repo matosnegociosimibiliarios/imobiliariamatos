@@ -160,13 +160,123 @@ function filterOutliers(items){
   return {items:kept.length>=3?kept:items,outliers:kept.length>=3?items.filter((i)=>!kept.includes(i)):[]};
 }
 
+const STANDARD_SCORE={economico:1,medio:2,alto:3,luxo:4};
+const CONDITION_SCORE={precisa_reforma:1,regular:2,bom:3,novo:4};
+
+function clamp(value,min,max){ return Math.max(min,Math.min(max,value)); }
+function roundHalf(value){ return Math.round(value*2)/2; }
+function mean(values){
+  const list=values.filter((value)=>Number.isFinite(Number(value))).map(Number);
+  return list.length?list.reduce((sum,value)=>sum+value,0)/list.length:0;
+}
+function regressionSlope(items,xGetter,yGetter){
+  const pairs=items.map((item)=>[Number(xGetter(item)),Number(yGetter(item))]).filter(([x,y])=>Number.isFinite(x)&&Number.isFinite(y)&&y>0);
+  if(pairs.length<4) return null;
+  const xs=pairs.map(([x])=>x);
+  if(new Set(xs).size<2) return null;
+  const mx=mean(xs), my=mean(pairs.map(([,y])=>y));
+  const denominator=pairs.reduce((sum,[x])=>sum+Math.pow(x-mx,2),0);
+  if(!denominator) return null;
+  return pairs.reduce((sum,[x,y])=>sum+(x-mx)*(y-my),0)/denominator;
+}
+function technicalSuggestion(sample,form){
+  const base=median(sample.map((item)=>num(item.price_per_m2)).filter(Boolean));
+  const unavailable=(reason)=>({available:false,value:0,reason,confidence:'Baixa'});
+  if(!base) return {
+    technical_location:unavailable('Amostra sem valor por m² suficiente.'),
+    technical_finish:unavailable('Amostra sem valor por m² suficiente.'),
+    technical_condition:unavailable('Amostra sem valor por m² suficiente.'),
+    technical_garage:unavailable('Amostra sem valor por m² suficiente.'),
+    technical_age:unavailable('Amostra sem valor por m² suficiente.'),
+    technical_other:unavailable('Depende de característica específica informada pelo avaliador.'),
+  };
+
+  const sameNeighborhood=sample.filter((item)=>item.same_neighborhood&&num(item.price_per_m2)>0);
+  const otherCity=sample.filter((item)=>item.same_city&&!item.same_neighborhood&&num(item.price_per_m2)>0);
+  let location=unavailable('Para estimar localização automaticamente, use ao menos 2 comparáveis no mesmo bairro e 2 em outros bairros da mesma cidade.');
+  if(sameNeighborhood.length>=2&&otherCity.length>=2){
+    const same=median(sameNeighborhood.map((item)=>num(item.price_per_m2)));
+    const other=median(otherCity.map((item)=>num(item.price_per_m2)));
+    const value=roundHalf(clamp(((same-other)/other)*100,-15,15));
+    location={
+      available:true,value,
+      reason:`Mediana do bairro: ${money(same)}/m² versus ${money(other)}/m² em outros bairros comparáveis.`,
+      confidence:(sameNeighborhood.length+otherCity.length)>=8?'Alta':'Média'
+    };
+  }
+
+  const garageItems=sample.filter((item)=>Number.isFinite(Number(item.parking_spaces))&&num(item.price_per_m2)>0);
+  let garage=unavailable('São necessários ao menos 4 comparáveis com quantidade de vagas variada.');
+  const garageSlope=regressionSlope(garageItems,(item)=>num(item.parking_spaces),(item)=>num(item.price_per_m2));
+  if(garageSlope!==null&&garageItems.length>=4){
+    const avgSpaces=mean(garageItems.map((item)=>num(item.parking_spaces)));
+    const difference=num(form.parking_spaces)-avgSpaces;
+    const value=roundHalf(clamp((difference*garageSlope/base)*100,-10,10));
+    garage={
+      available:true,value,
+      reason:`A amostra tem média de ${decimal(avgSpaces,1)} vaga(s); o avaliando informou ${decimal(num(form.parking_spaces),0)}. Efeito estimado a partir da relação entre vagas e R$/m² da amostra.`,
+      confidence:garageItems.length>=8?'Alta':'Média'
+    };
+  }
+
+  const finishItems=sample.filter((item)=>STANDARD_SCORE[item.construction_standard]&&num(item.price_per_m2)>0);
+  let finish=unavailable('Cadastre padrão construtivo em pelo menos 4 comparáveis para obter sugestão automática.');
+  const finishSlope=regressionSlope(finishItems,(item)=>STANDARD_SCORE[item.construction_standard],(item)=>num(item.price_per_m2));
+  if(finishSlope!==null&&STANDARD_SCORE[form.finish]){
+    const avgScore=mean(finishItems.map((item)=>STANDARD_SCORE[item.construction_standard]));
+    const value=roundHalf(clamp(((STANDARD_SCORE[form.finish]-avgScore)*finishSlope/base)*100,-15,15));
+    finish={
+      available:true,value,
+      reason:`Padrão do avaliando: ${form.finish}. A sugestão compara esse nível com o padrão médio dos ${finishItems.length} comparáveis cadastrados.`,
+      confidence:finishItems.length>=8?'Alta':'Média'
+    };
+  }
+
+  const conditionItems=sample.filter((item)=>CONDITION_SCORE[item.conservation_status]&&num(item.price_per_m2)>0);
+  let condition=unavailable('Cadastre conservação em pelo menos 4 comparáveis para obter sugestão automática.');
+  const conditionSlope=regressionSlope(conditionItems,(item)=>CONDITION_SCORE[item.conservation_status],(item)=>num(item.price_per_m2));
+  if(conditionSlope!==null&&CONDITION_SCORE[form.condition]){
+    const avgScore=mean(conditionItems.map((item)=>CONDITION_SCORE[item.conservation_status]));
+    const value=roundHalf(clamp(((CONDITION_SCORE[form.condition]-avgScore)*conditionSlope/base)*100,-15,15));
+    condition={
+      available:true,value,
+      reason:`Conservação do avaliando: ${form.condition}. A sugestão compara esse estado com a conservação média dos ${conditionItems.length} comparáveis.`,
+      confidence:conditionItems.length>=8?'Alta':'Média'
+    };
+  }
+
+  const currentYear=new Date().getFullYear();
+  const ageItems=sample.filter((item)=>num(item.construction_year)>=1800&&num(item.construction_year)<=currentYear&&num(item.price_per_m2)>0);
+  let age=unavailable('Informe o ano de construção do avaliando e de pelo menos 4 comparáveis.');
+  const ageSlope=regressionSlope(ageItems,(item)=>currentYear-num(item.construction_year),(item)=>num(item.price_per_m2));
+  if(ageSlope!==null&&num(form.construction_year)>=1800&&num(form.construction_year)<=currentYear){
+    const avgAge=mean(ageItems.map((item)=>currentYear-num(item.construction_year)));
+    const targetAge=currentYear-num(form.construction_year);
+    const value=roundHalf(clamp(((targetAge-avgAge)*ageSlope/base)*100,-15,15));
+    age={
+      available:true,value,
+      reason:`Idade aproximada do avaliando: ${targetAge} ano(s); média da amostra: ${decimal(avgAge,1)} ano(s).`,
+      confidence:ageItems.length>=8?'Alta':'Média'
+    };
+  }
+
+  return {
+    technical_location:location,
+    technical_finish:finish,
+    technical_condition:condition,
+    technical_garage:garage,
+    technical_age:age,
+    technical_other:unavailable('Fatores específicos como vista, topografia, elevador ou lazer continuam dependentes de análise profissional.'),
+  };
+}
+
 export default function AdminQuickValuation(){
   const [mode,setMode]=useState('quick');
   const [form,setForm]=useState({
     city:'',neighborhood:'',property_type:'Casa',area:'',land_area:'',bedrooms:'',bathrooms:'',parking_spaces:'',
     finish:'medio',condition:'bom',
     technical_location:'0',technical_finish:'0',technical_condition:'0',technical_garage:'0',technical_age:'0',technical_other:'0',
-    evaluator:'',purpose:'Venda',inspection_date:new Date().toISOString().slice(0,10),documents:'',market_notes:'',method_notes:''
+    construction_year:'',evaluator:'',purpose:'Venda',inspection_date:new Date().toISOString().slice(0,10),documents:'',market_notes:'',method_notes:''
   });
   const [factorMeta,setFactorMeta]=useState(DEFAULT_FACTOR_META);
   const [comparables,setComparables]=useState([]);
@@ -228,6 +338,36 @@ export default function AdminQuickValuation(){
     ...comparables.filter((i)=>selectedIds.includes(i.id)),
     ...manuals
   ],[comparables,selectedIds,manuals]);
+
+  const factorSuggestions=useMemo(()=>technicalSuggestion(chosen,form),[chosen,form]);
+
+  function suggestionJustification(key,value){
+    if(key==='technical_location') return value>0?'Avaliando em localização superior à amostra':value<0?'Avaliando em localização inferior à amostra':'Sem diferença relevante';
+    if(key==='technical_finish') return value>0?'Avaliando com padrão construtivo superior':value<0?'Avaliando com padrão construtivo inferior':'Sem diferença relevante';
+    if(key==='technical_condition') return value>0?'Avaliando em melhor estado de conservação':value<0?'Avaliando em pior estado de conservação':'Sem diferença relevante';
+    if(key==='technical_garage') return value>0?'Avaliando possui mais vagas':value<0?'Avaliando possui menos vagas':'Sem diferença relevante';
+    if(key==='technical_age') return value>0?'Avaliando é mais novo que a amostra':value<0?'Avaliando é mais antigo que a amostra':'Sem diferença relevante';
+    return 'Sem diferença relevante';
+  }
+
+  function applyFactorSuggestions(){
+    const updates={};
+    const nextMeta={...factorMeta};
+    TECHNICAL_FACTORS.forEach((factor)=>{
+      const suggestion=factorSuggestions[factor.key];
+      if(!suggestion?.available) return;
+      updates[factor.key]=String(suggestion.value);
+      nextMeta[factor.key]={
+        ...nextMeta[factor.key],
+        justification:suggestionJustification(factor.key,suggestion.value),
+        source:'Pesquisa de mercado local / amostra comparável',
+        note:'Sugestão GOI: '+suggestion.reason,
+      };
+    });
+    setForm((current)=>({...current,...updates}));
+    setFactorMeta(nextMeta);
+    setMessage(Object.keys(updates).length?'Sugestões da amostra aplicadas. Revise antes de concluir a avaliação.':'A amostra ainda não possui dados suficientes para sugerir os fatores automaticamente.');
+  }
 
   const calculation=useMemo(()=>{
     const subjectArea=num(form.area);
@@ -378,6 +518,11 @@ export default function AdminQuickValuation(){
         <label>Quartos<input name="bedrooms" type="number" min="0" value={form.bedrooms} onChange={update} /></label>
         <label>Banheiros<input name="bathrooms" type="number" min="0" value={form.bathrooms} onChange={update} /></label>
         <label>Vagas<input name="parking_spaces" type="number" min="0" value={form.parking_spaces} onChange={update} /></label>
+        {mode==='complete'&&<>
+          <label>Padrão construtivo<select name="finish" value={form.finish} onChange={update}><option value="economico">Econômico</option><option value="medio">Médio</option><option value="alto">Alto padrão</option><option value="luxo">Luxo</option></select></label>
+          <label>Conservação<select name="condition" value={form.condition} onChange={update}><option value="precisa_reforma">Precisa de reforma</option><option value="regular">Regular</option><option value="bom">Bom</option><option value="novo">Novo / excelente</option></select></label>
+          <label>Ano da construção<input name="construction_year" type="number" min="1800" max="2200" value={form.construction_year} onChange={update} placeholder="Ex.: 2018" /></label>
+        </>}
         {mode==='quick'&&<>
           <label>Padrão<select name="finish" value={form.finish} onChange={update}><option value="economico">Econômico</option><option value="medio">Médio</option><option value="alto">Alto padrão</option><option value="luxo">Luxo</option></select></label>
           <label>Conservação<select name="condition" value={form.condition} onChange={update}><option value="precisa_reforma">Precisa de reforma</option><option value="regular">Regular</option><option value="bom">Bom</option><option value="novo">Novo / excelente</option></select></label>
@@ -399,10 +544,19 @@ export default function AdminQuickValuation(){
             </div>
           </div>
 
+          <div className="valuation-factor-auto">
+            <div>
+              <strong>Sugestão automática pela amostra</strong>
+              <span>O GOI compara os dados disponíveis dos imóveis selecionados e propõe percentuais quando há evidência suficiente.</span>
+            </div>
+            <button type="button" className="admin-link-button" onClick={applyFactorSuggestions} disabled={!chosen.length}>Aplicar sugestões</button>
+          </div>
+
           <div className="valuation-factor-list">
             {TECHNICAL_FACTORS.map((factor)=>{
               const meta=factorMeta[factor.key]||{};
               const value=num(form[factor.key]);
+              const suggestion=factorSuggestions[factor.key];
               return <article className="valuation-factor-card" key={factor.key}>
                 <div className="valuation-factor-card-top">
                   <label>
@@ -421,6 +575,14 @@ export default function AdminQuickValuation(){
                   <div className={value===0?'valuation-factor-status neutral':value>0?'valuation-factor-status positive':'valuation-factor-status negative'}>
                     {value===0?'Sem ajuste':value>0?'+'+decimal(value,1)+'%':decimal(value,1)+'%'}
                   </div>
+                </div>
+
+                <div className={suggestion?.available?'valuation-factor-suggestion available':'valuation-factor-suggestion'}>
+                  <div>
+                    <strong>{suggestion?.available?'Sugestão GOI: '+(suggestion.value>0?'+':'')+decimal(suggestion.value,1)+'%':'Sem sugestão automática'}</strong>
+                    <span>{suggestion?.reason}</span>
+                  </div>
+                  {suggestion?.available&&<small>Confiança: {suggestion.confidence}</small>}
                 </div>
 
                 <div className="valuation-factor-fields">
