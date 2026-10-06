@@ -100,7 +100,6 @@ export default function AdminDashboard() {
           <Link to="/admin/imoveis/novo">Novo imóvel</Link>
           <Link to="/admin/captacoes">Nova captação</Link>
           <div className="home-user-chip"><strong>{access?.full_name || access?.email || 'Usuário'}</strong><small>{access?.role === 'owner' ? 'Proprietário' : access?.role === 'admin' ? 'Administrador' : access?.role === 'broker' ? 'Corretor' : 'Assistente'}</small></div>
-          <Link className="button home-primary-action" to="/admin/avaliar-imovel">Avaliador de imóveis</Link>
           <a href="/" target="_blank" rel="noreferrer">Ver Site Público</a>
           <Link className="home-paid-version" to="/admin/plano">Planos e assinatura</Link>
         </div>
