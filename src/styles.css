@@ -7405,3 +7405,45 @@ h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
     min-height: 0;
   }
 }
+
+
+/* Login: visualização e recuperação de senha */
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 88px !important;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 7px 8px;
+}
+
+.login-forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -5px;
+}
+
+.login-forgot-row a,
+.login-signup-link a {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.login-helper-text {
+  margin: -8px 0 20px;
+  color: var(--muted);
+  line-height: 1.55;
+}
