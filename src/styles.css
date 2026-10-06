@@ -1096,7 +1096,19 @@ button, input, select { font: inherit; }
   }
 
   .admin-sidebar-bottom {
-    display: none;
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 14px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(255,255,255,.12);
+  }
+
+  .admin-sidebar-bottom .admin-install-goi,
+  .admin-sidebar-bottom > button {
+    display: grid;
+    min-height: 46px;
+    align-content: center;
   }
 
   .admin-page {
