@@ -17,9 +17,10 @@ import {
   originLabel,
 } from '../../services/crm';
 import { buildRoutine } from '../../services/routine';
+import { hasSaasFeature } from '../../services/saas';
 
 export default function AdminDashboard() {
-  const { access } = useOutletContext();
+  const { access, entitlement } = useOutletContext();
   const [metrics, setMetrics] = useState(null);
   const [sources, setSources] = useState([]);
   const [lostReasons, setLostReasons] = useState([]);
@@ -142,7 +143,7 @@ export default function AdminDashboard() {
             <section className="admin-panel">
               <div className="panel-title-row"><h2>Acessos rápidos</h2></div>
               <div className="home-shortcuts">
-                <Link to="/admin/leads">Clientes e Leads</Link><Link to="/admin/funil">Funil Comercial</Link><Link to="/admin/mensagens">Instagram</Link><Link to="/admin/whatsapp">WhatsApp</Link><Link to="/admin/propostas">Propostas</Link>{access?.plan_code !== 'starter' && <Link to="/admin/locacoes">Locação</Link>}{access?.plan_code !== 'starter' && <Link to="/admin/financeiro">Financeiro</Link>}<Link to="/admin/gestao">Painel Gerencial</Link>
+                <Link to="/admin/leads">Clientes e Leads</Link><Link to="/admin/funil">Funil Comercial</Link><Link to="/admin/mensagens">Instagram</Link><Link to="/admin/whatsapp">WhatsApp</Link><Link to="/admin/propostas">Propostas</Link>{hasSaasFeature(entitlement,'rentals') && <Link to="/admin/locacoes">Locação</Link>}{hasSaasFeature(entitlement,'finance') && <Link to="/admin/financeiro">Financeiro</Link>}<Link to="/admin/gestao">Painel Gerencial</Link>
               </div>
             </section>
           </div>
