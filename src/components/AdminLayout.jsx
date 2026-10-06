@@ -249,7 +249,7 @@ export default function AdminLayout() {
         </div>
 
         {organizations.length > 1 && (
-          <div style={{ padding: '0 16px 16px' }}>
+          <div className="admin-organization-switcher" style={{ padding: '0 16px 16px' }}>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Empresa ativa</label>
             <select value={access?.organization_id || ''} onChange={handleOrganizationChange} disabled={switchingOrganization} style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,.18)', background: 'rgba(255,255,255,.06)', color: 'inherit' }}>
               {organizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}
