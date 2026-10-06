@@ -7316,3 +7316,92 @@ h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
   border-color: #e1e3e6;
   box-shadow: none;
 }
+
+
+/* Teste gratuito completo e bloqueio após vencimento */
+.admin-subscription-lock {
+  min-height: calc(100vh - 40px);
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.admin-subscription-lock-card {
+  width: min(980px, 100%);
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 22px 60px rgba(0,0,0,.08);
+}
+
+.admin-subscription-lock-card h1 {
+  margin: 10px 0 12px;
+  font-size: clamp(30px, 4vw, 46px);
+  line-height: 1.05;
+}
+
+.admin-subscription-lock-card > p {
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.admin-subscription-lock-plans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.admin-subscription-lock-plans article {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.admin-subscription-lock-plans article.featured {
+  border-color: var(--crm-red);
+  box-shadow: 0 10px 26px rgba(166,3,17,.08);
+}
+
+.admin-subscription-lock-plans h2 {
+  margin: 0;
+}
+
+.admin-subscription-lock-plans strong {
+  font-size: 22px;
+}
+
+.admin-subscription-lock-plans small {
+  min-height: 42px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.admin-subscription-lock-plans .button {
+  margin-top: 6px;
+}
+
+@media (max-width: 760px) {
+  .admin-subscription-lock {
+    min-height: auto;
+    padding: 18px 14px 30px;
+  }
+
+  .admin-subscription-lock-card {
+    padding: 20px;
+  }
+
+  .admin-subscription-lock-plans {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-subscription-lock-plans small {
+    min-height: 0;
+  }
+}
