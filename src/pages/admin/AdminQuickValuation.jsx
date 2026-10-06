@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { getQuickValuationComparables } from '../../services/quickValuation';
+import { hasSaasFeature } from '../../services/saas';
 
 const PROPERTY_TYPES = ['Casa','Apartamento','Terreno','Sítio','Comercial'];
 
@@ -272,8 +273,8 @@ function technicalSuggestion(sample,form){
 }
 
 export default function AdminQuickValuation(){
-  const { access } = useOutletContext();
-  const completeAllowed = access?.plan_code === 'business' || access?.plan_code === 'internal';
+  const { access, entitlement } = useOutletContext();
+  const completeAllowed = access?.plan_code === 'internal' || hasSaasFeature(entitlement, 'valuation_complete');
   const [mode,setMode]=useState('quick');
   const [form,setForm]=useState({
     city:'',neighborhood:'',property_type:'Casa',area:'',land_area:'',bedrooms:'',bathrooms:'',parking_spaces:'',
