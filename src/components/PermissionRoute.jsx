@@ -18,7 +18,7 @@ export function clearPermissionCache() {
   accessCache.at = 0;
 }
 
-export default function PermissionRoute({ permission, children }) {
+export default function PermissionRoute({ permission, feature, children }) {
   const [state, setState] = useState({ loading: true, allowed: false });
 
   useEffect(() => {
@@ -32,13 +32,14 @@ export default function PermissionRoute({ permission, children }) {
         if (permission?.startsWith('rentals.')) planAllowed = hasSaasFeature(entitlement, 'rentals');
         if (permission?.startsWith('financial.')) planAllowed = hasSaasFeature(entitlement, 'finance');
         if (permission === 'integrations.manage') planAllowed = hasSaasFeature(entitlement, 'integrations');
+        if (feature) planAllowed = planAllowed && hasSaasFeature(entitlement, feature);
         if (active) setState({ loading: false, allowed: can(access, permission) && planAllowed });
       } catch {
         if (active) setState({ loading: false, allowed: false });
       }
     })();
     return () => { active = false; };
-  }, [permission]);
+  }, [permission, feature]);
 
   if (state.loading) return <div className="admin-loading">Verificando permissão...</div>;
   if (!state.allowed) {
