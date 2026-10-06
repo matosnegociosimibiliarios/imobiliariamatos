@@ -4,9 +4,51 @@ import { signOut } from '../services/auth';
 import { getUnreadInstagramCount, getUnreadWhatsAppCount } from '../services/admin';
 import { ROLE_LABELS, can, getAccessContext, getUserOrganizations, setActiveOrganization } from '../services/team';
 import { setPublicOrganizationSlug } from '../services/properties';
-import { getSaasEntitlement, hasSaasFeature, isPlatformAdmin } from '../services/saas';
+import { getSaasEntitlement, hasSaasFeature, isActiveTrial, isPlatformAdmin } from '../services/saas';
 import NotificationCenter from './NotificationCenter';
 import InstallGoiButton from './InstallGoiButton';
+
+
+const CHECKOUTS = {
+  starter: 'https://pay.kiwify.com.br/ViNd6ty',
+  professional: 'https://pay.kiwify.com.br/E2TbJyV',
+  business: 'https://pay.kiwify.com.br/GiN0b0j',
+};
+
+function SubscriptionExpired({ entitlement }) {
+  const organizationId = entitlement?.organization_id;
+  const checkout = (code) => CHECKOUTS[code] + (organizationId ? '?sck=' + encodeURIComponent(organizationId) : '');
+
+  return (
+    <div className="admin-subscription-lock">
+      <div className="admin-subscription-lock-card">
+        <span className="eyebrow">Período de teste encerrado</span>
+        <h1>Escolha um plano para continuar usando o GOI.</h1>
+        <p>Seus dados continuam salvos. O acesso à conta permanece disponível, mas as funções do CRM ficam bloqueadas até a ativação de um plano.</p>
+        <div className="admin-subscription-lock-plans">
+          <article>
+            <h2>Essencial</h2>
+            <strong>R$ 49,90/mês</strong>
+            <small>CRM comercial para operação essencial.</small>
+            <a className="button" href={checkout('starter')} target="_blank" rel="noreferrer">Assinar Essencial</a>
+          </article>
+          <article className="featured">
+            <h2>Profissional</h2>
+            <strong>R$ 99,90/mês</strong>
+            <small>Inclui locação, financeiro, integrações, site e avaliador rápido.</small>
+            <a className="button" href={checkout('professional')} target="_blank" rel="noreferrer">Assinar Profissional</a>
+          </article>
+          <article>
+            <h2>Empresarial</h2>
+            <strong>R$ 199,90/mês</strong>
+            <small>Todos os recursos, avaliador completo e limites ampliados.</small>
+            <a className="button" href={checkout('business')} target="_blank" rel="noreferrer">Assinar Empresarial</a>
+          </article>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const NAV_SECTIONS = [
   {
@@ -155,7 +197,7 @@ export default function AdminLayout() {
         return true;
       }),
     })).filter((section) => (section.items || []).length > 0);
-  }, [access]);
+  }, [access, entitlement]);
 
   function sectionIsActive(section) {
     return section.items.some((item) => location.pathname === item.to || location.pathname.startsWith(item.to + '/'));
@@ -170,6 +212,9 @@ export default function AdminLayout() {
     if (!value) return null;
     return value > 99 ? '99+' : value;
   }
+
+  const activeTrial = isActiveTrial(entitlement);
+  const subscriptionLocked = Boolean(entitlement && entitlement.access_allowed === false && entitlement.plan_code !== 'internal');
 
   return (
     <div className="admin-shell" style={{'--agency-primary': access?.primary_color || '#A60311', '--agency-secondary': access?.secondary_color || '#590209', '--accent': access?.primary_color || '#A60311', '--accent-2': access?.secondary_color || '#590209', '--crm-red': access?.primary_color || '#A60311', '--crm-red-dark': access?.secondary_color || '#590209'}}>
@@ -249,8 +294,10 @@ export default function AdminLayout() {
       </aside>
       <main className="admin-main">
         {access && <NotificationCenter access={access} />}
-        {access?.organization_status === 'trial' && access?.trial_ends_at && <div className="admin-trial-banner">Teste gratuito ativo até {new Date(access.trial_ends_at).toLocaleDateString('pt-BR')}. <NavLink to="/admin/plano">Ver planos</NavLink></div>}
-        <Outlet context={{ access }} />
+        {activeTrial && entitlement?.trial_ends_at && <div className="admin-trial-banner">Teste gratuito completo ativo até {new Date(entitlement.trial_ends_at).toLocaleDateString('pt-BR')}. Todas as funções do GOI estão liberadas durante o teste. <NavLink to="/admin/plano">Ver planos</NavLink></div>}
+        {subscriptionLocked
+          ? <SubscriptionExpired entitlement={entitlement} />
+          : <Outlet context={{ access, entitlement }} />}
       </main>
     </div>
   );

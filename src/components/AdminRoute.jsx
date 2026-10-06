@@ -50,9 +50,5 @@ export default function AdminRoute() {
   if (state.error) return <div className="admin-loading">Não foi possível verificar seu acesso agora. Atualize a página em alguns instantes.</div>;
   if (!state.authorized) return <Navigate to="/onboarding" replace />;
 
-  if (state.entitlement && state.entitlement.access_allowed === false && location.pathname !== '/admin/plano') {
-    return <Navigate to="/admin/plano" replace state={{ subscriptionBlocked: true }} />;
-  }
-
   return <Outlet />;
 }
