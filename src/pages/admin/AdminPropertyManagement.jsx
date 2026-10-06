@@ -7,6 +7,7 @@ import {
 } from '../../services/propertyManagement';
 import DocumentManager from '../../components/DocumentManager';
 import ResponsibleSelect from '../../components/ResponsibleSelect';
+import { hasSaasFeature } from '../../services/saas';
 import {
   DEAL_STATUS_LABELS,
   DOCUMENT_STATUS_LABELS,
@@ -61,8 +62,8 @@ function numberOrNull(value) {
 }
 
 export default function AdminPropertyManagement() {
-  const { access } = useOutletContext();
-  const fullValuationAllowed = access?.plan_code === 'business' || access?.plan_code === 'internal';
+  const { access, entitlement } = useOutletContext();
+  const fullValuationAllowed = access?.plan_code === 'internal' || hasSaasFeature(entitlement, 'valuation_complete');
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [form, setForm] = useState({});
