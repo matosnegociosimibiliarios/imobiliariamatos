@@ -11,6 +11,7 @@ import {
   uploadPropertyVideo,
 } from '../../services/admin';
 import { getPublicImageUrl } from '../../services/properties';
+import { hasSaasFeature } from '../../services/saas';
 
 const initialForm = {
   title: '',
@@ -58,8 +59,8 @@ function numberOrNull(value) {
 }
 
 export default function AdminPropertyForm() {
-  const { access } = useOutletContext();
-  const fullValuationAllowed = access?.plan_code === 'business' || access?.plan_code === 'internal';
+  const { access, entitlement } = useOutletContext();
+  const fullValuationAllowed = access?.plan_code === 'internal' || hasSaasFeature(entitlement, 'valuation_complete');
   const { id } = useParams();
   const editing = Boolean(id);
   const navigate = useNavigate();
