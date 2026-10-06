@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { getQuickValuationComparables } from '../../services/quickValuation';
 
 const PROPERTY_TYPES = ['Casa','Apartamento','Terreno','Sítio','Comercial'];
@@ -271,6 +272,8 @@ function technicalSuggestion(sample,form){
 }
 
 export default function AdminQuickValuation(){
+  const { access } = useOutletContext();
+  const completeAllowed = access?.plan_code === 'business' || access?.plan_code === 'internal';
   const [mode,setMode]=useState('quick');
   const [form,setForm]=useState({
     city:'',neighborhood:'',property_type:'Casa',area:'',land_area:'',bedrooms:'',bathrooms:'',parking_spaces:'',
@@ -491,9 +494,15 @@ export default function AdminQuickValuation(){
       <button type="button" className={mode==='quick'?'active':''} onClick={()=>setMode('quick')}>
         <strong>Avaliação rápida</strong><small>Para uso comercial no dia a dia</small>
       </button>
-      <button type="button" className={mode==='complete'?'active':''} onClick={()=>setMode('complete')}>
-        <strong>Avaliação completa</strong><small>Mais dados, fatores e leitura técnica</small>
-      </button>
+      {completeAllowed ? (
+        <button type="button" className={mode==='complete'?'active':''} onClick={()=>setMode('complete')}>
+          <strong>Avaliação completa</strong><small>Mais dados, fatores e leitura técnica</small>
+        </button>
+      ) : (
+        <button type="button" className="locked" disabled title="Disponível no plano Empresarial">
+          <strong>Avaliação completa</strong><small>Disponível no plano Empresarial</small>
+        </button>
+      )}
     </div>
 
     {message&&<div className="admin-message">{message}</div>}

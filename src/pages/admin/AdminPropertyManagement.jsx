@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useOutletContext, useParams } from 'react-router-dom';
 import {
   getPropertyManagementDetail,
   savePropertyManagement,
@@ -61,6 +61,8 @@ function numberOrNull(value) {
 }
 
 export default function AdminPropertyManagement() {
+  const { access } = useOutletContext();
+  const fullValuationAllowed = access?.plan_code === 'business' || access?.plan_code === 'internal';
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [form, setForm] = useState({});
@@ -173,7 +175,7 @@ export default function AdminPropertyManagement() {
         <div className="admin-page-actions property-team-actions">
           <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/editar`}>Cadastro</Link>
           <Link className="admin-link-button active" to={`/admin/imoveis/${property.id}/gestao`}>Gestão</Link>
-          <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>
+          {fullValuationAllowed && <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>}
           <ResponsibleSelect
             table="properties"
             recordId={property.id}
@@ -192,7 +194,7 @@ export default function AdminPropertyManagement() {
       <div className="property-record-tabs">
         <Link to={`/admin/imoveis/${property.id}/editar`}>Cadastro</Link>
         <Link className="active" to={`/admin/imoveis/${property.id}/gestao`}>Gestão</Link>
-        <Link to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>
+        {fullValuationAllowed && <Link to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>}
       </div>
 
       {message && <div className="admin-message">{message}</div>}

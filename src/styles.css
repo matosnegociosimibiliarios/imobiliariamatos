@@ -7266,3 +7266,41 @@ h1,h2,h3,h4,.brand-wordmark{font-family:'Montserrat','Inter',sans-serif}
     width: 100%;
   }
 }
+
+
+/* Instalação direta do GOI */
+.admin-install-goi {
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 10px;
+  background: var(--crm-red, #A60311);
+  color: #fff;
+  cursor: pointer;
+}
+
+.admin-install-goi:hover {
+  background: var(--crm-red-dark, #590209);
+}
+
+.admin-install-goi span {
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.admin-install-goi small {
+  font-size: 10px;
+  opacity: .82;
+}
+
+.valuation-mode-switch button.locked {
+  cursor: not-allowed;
+  opacity: .62;
+  background: #f5f5f6;
+  border-color: #e1e3e6;
+  box-shadow: none;
+}

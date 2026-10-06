@@ -6,6 +6,7 @@ import { ROLE_LABELS, can, getAccessContext, getUserOrganizations, setActiveOrga
 import { setPublicOrganizationSlug } from '../services/properties';
 import { getSaasEntitlement, hasSaasFeature, isPlatformAdmin } from '../services/saas';
 import NotificationCenter from './NotificationCenter';
+import InstallGoiButton from './InstallGoiButton';
 
 const NAV_SECTIONS = [
   {
@@ -197,7 +198,7 @@ export default function AdminLayout() {
             </NavLink>
           )}
 
-          {can(access, 'properties.view') && (
+          {can(access, 'properties.view') && hasSaasFeature(entitlement, 'valuation_quick') && (
             <NavLink to="/admin/avaliar-imovel" className="admin-quick-valuation-link">
               <span>Avaliar imóvel</span>
             </NavLink>
@@ -242,6 +243,7 @@ export default function AdminLayout() {
         </nav>
 
         <div className="admin-sidebar-bottom">
+          <InstallGoiButton />
           <button type="button" onClick={handleLogout}>Sair</button>
         </div>
       </aside>

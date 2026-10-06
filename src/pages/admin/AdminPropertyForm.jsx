@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import {
   createCityIfNeeded,
   createNeighborhoodIfNeeded,
@@ -58,6 +58,8 @@ function numberOrNull(value) {
 }
 
 export default function AdminPropertyForm() {
+  const { access } = useOutletContext();
+  const fullValuationAllowed = access?.plan_code === 'business' || access?.plan_code === 'internal';
   const { id } = useParams();
   const editing = Boolean(id);
   const navigate = useNavigate();
@@ -307,7 +309,7 @@ export default function AdminPropertyForm() {
           {editing && property && (
             <>
               <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/gestao`}>Gestão</Link>
-              <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>
+              {fullValuationAllowed && <Link className="admin-link-button" to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>}
             </>
           )}
           <Link className="admin-link-button" to="/admin/imoveis">Voltar</Link>
@@ -316,7 +318,7 @@ export default function AdminPropertyForm() {
           <div className="property-record-tabs">
             <Link className="active" to={`/admin/imoveis/${property.id}/editar`}>Cadastro</Link>
             <Link to={`/admin/imoveis/${property.id}/gestao`}>Gestão</Link>
-            <Link to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>
+            {fullValuationAllowed && <Link to={`/admin/imoveis/${property.id}/avaliacao`}>Avaliação</Link>}
           </div>
         )}
       </div>

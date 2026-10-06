@@ -18,7 +18,7 @@ const features = [
 ];
 
 const faqItems = [
-  ['Preciso instalar alguma coisa?','Não. O GOI funciona pela internet e pode ser acessado pelo navegador no computador ou celular.'],
+  ['Preciso instalar alguma coisa?','Não é obrigatório. O GOI funciona pelo navegador e também pode ser instalado diretamente no celular ou computador, sem Play Store ou App Store.'],
   ['O teste realmente é gratuito?','Sim. A imobiliária pode testar o sistema por 14 dias antes de contratar um plano.'],
   ['Posso cadastrar minha equipe?','Sim. A quantidade de usuários depende do plano contratado e os acessos podem ser organizados por função e permissão.'],
   ['O site mostra a marca do GOI?','Não como marca principal. O site público utiliza a identidade da própria imobiliária, incluindo nome, logo e informações públicas configuradas por ela.'],
@@ -29,15 +29,15 @@ const faqItems = [
 const plans = [
   {
     name:'Essencial', price:'R$ 49,90', users:'Até 2 usuários', properties:'Até 100 imóveis',
-    items:['CRM comercial','Clientes e leads','Imóveis e captações','Propostas e negócios','Agenda e tarefas','Site imobiliário integrado'],
+    items:['CRM comercial','Clientes e leads','Imóveis e captações','Propostas e negócios','Agenda e tarefas','Sem avaliador de imóveis'],
   },
   {
     name:'Profissional', price:'R$ 99,90', users:'Até 8 usuários', properties:'Até 500 imóveis', featured:true,
-    items:['Tudo do Essencial','Financeiro','Locação','Integrações','Mais capacidade para equipe e carteira'],
+    items:['Tudo do Essencial','Avaliador rápido de imóveis','Financeiro','Locação','Integrações','Site imobiliário integrado'],
   },
   {
     name:'Empresarial', price:'R$ 199,90', users:'Usuários ilimitados', properties:'Imóveis ilimitados',
-    items:['Todos os recursos','Estrutura para operação maior','Limites ampliados','Preparado para domínio personalizado'],
+    items:['Todos os recursos','Avaliador rápido + avaliação completa','Estrutura para operação maior','Limites ampliados','Preparado para domínio personalizado'],
   },
 ];
 
