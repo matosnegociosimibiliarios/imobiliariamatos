@@ -111,6 +111,7 @@ export default function AdminLayout() {
   const [switchingOrganization, setSwitchingOrganization] = useState(false);
   const [platformAdmin, setPlatformAdmin] = useState(false);
   const [entitlement, setEntitlement] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   async function loadContext() {
     const [accessResult, organizationsResult] = await Promise.all([getAccessContext(), getUserOrganizations()]);
@@ -120,6 +121,10 @@ export default function AdminLayout() {
     }
     if (!organizationsResult.error) setOrganizations(organizationsResult.data || []);
   }
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     let active = true;
@@ -218,17 +223,33 @@ export default function AdminLayout() {
 
   return (
     <div className="admin-shell" style={{'--agency-primary': access?.primary_color || '#A60311', '--agency-secondary': access?.secondary_color || '#590209', '--accent': access?.primary_color || '#A60311', '--accent-2': access?.secondary_color || '#590209', '--crm-red': access?.primary_color || '#A60311', '--crm-red-dark': access?.secondary_color || '#590209'}}>
-      <aside className="admin-sidebar">
-        <div className="admin-brand">
-          <img className="admin-brand-logo" src="/goi-logo.svg" alt="GOI" />
-          <div>
-            <strong>GOI</strong>
-            <small>Gerenciador de Operações Imobiliárias</small>
+      <aside className={`admin-sidebar ${mobileMenuOpen ? 'mobile-menu-open' : ''}`}>
+        <div className="admin-brand-row">
+          <div className="admin-brand">
+            <img className="admin-brand-logo" src="/goi-logo.svg" alt="GOI" />
+            <div>
+              <strong>GOI</strong>
+              <small>Gerenciador de Operações Imobiliárias</small>
+            </div>
           </div>
+          <button
+            type="button"
+            className="admin-mobile-menu-toggle"
+            aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((value) => !value)}
+          >
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+
+        <div className="admin-mobile-quick-actions">
+          {can(access, 'leads.view') && <NavLink to="/admin/acoes">Rotina de hoje</NavLink>}
+          {can(access, 'properties.view') && hasSaasFeature(entitlement, 'valuation_quick') && <NavLink to="/admin/avaliar-imovel">Avaliador de imóveis</NavLink>}
         </div>
 
         {organizations.length > 1 && (
-          <div style={{ padding: '0 16px 16px' }}>
+          <div className="admin-organization-switcher" style={{ padding: '0 16px 16px' }}>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Empresa ativa</label>
             <select value={access?.organization_id || ''} onChange={handleOrganizationChange} disabled={switchingOrganization} style={{ width: '100%', padding: '9px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,.18)', background: 'rgba(255,255,255,.06)', color: 'inherit' }}>
               {organizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}
@@ -236,7 +257,9 @@ export default function AdminLayout() {
           </div>
         )}
 
-        <nav className="admin-nav admin-nav-compact" aria-label="Menu administrativo">
+        <nav className="admin-nav admin-nav-compact" aria-label="Menu administrativo" onClick={(event) => {
+          if (event.target.closest('a')) setMobileMenuOpen(false);
+        }}>
           {can(access, 'dashboard.view') && (
             <NavLink to="/admin" end className="admin-home-link">
               <span>Início</span>
