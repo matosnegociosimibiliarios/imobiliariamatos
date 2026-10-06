@@ -9,13 +9,12 @@ function isIos() {
 }
 
 export default function InstallGoiButton() {
-  const [installPrompt, setInstallPrompt] = useState(null);
+  const [installPrompt, setInstallPrompt] = useState(() => window.__goiInstallPrompt || null);
   const [installed, setInstalled] = useState(() => typeof window !== 'undefined' && isStandalone());
 
   useEffect(() => {
-    function handleBeforeInstallPrompt(event) {
-      event.preventDefault();
-      setInstallPrompt(event);
+    function syncPrompt() {
+      setInstallPrompt(window.__goiInstallPrompt || null);
     }
 
     function handleInstalled() {
@@ -23,11 +22,14 @@ export default function InstallGoiButton() {
       setInstallPrompt(null);
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    syncPrompt();
+    window.addEventListener('goi-install-ready', syncPrompt);
+    window.addEventListener('goi-installed', handleInstalled);
     window.addEventListener('appinstalled', handleInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('goi-install-ready', syncPrompt);
+      window.removeEventListener('goi-installed', handleInstalled);
       window.removeEventListener('appinstalled', handleInstalled);
     };
   }, []);
@@ -38,10 +40,12 @@ export default function InstallGoiButton() {
       return;
     }
 
-    if (installPrompt) {
-      installPrompt.prompt();
-      const choice = await installPrompt.userChoice;
+    const promptEvent = installPrompt || window.__goiInstallPrompt;
+    if (promptEvent) {
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
       if (choice?.outcome === 'accepted') setInstalled(true);
+      window.__goiInstallPrompt = null;
       setInstallPrompt(null);
       return;
     }
@@ -51,7 +55,7 @@ export default function InstallGoiButton() {
       return;
     }
 
-    window.alert('No seu navegador, abra o menu e escolha “Instalar GOI” ou “Instalar aplicativo”. O GOI será instalado diretamente, sem Play Store ou App Store.');
+    window.alert('O navegador ainda não liberou o instalador. Atualize esta página uma vez e clique novamente em “Instalar GOI”.');
   }
 
   if (installed) return null;
@@ -59,7 +63,7 @@ export default function InstallGoiButton() {
   return (
     <button type="button" className="admin-install-goi" onClick={install}>
       <span>Instalar GOI</span>
-      <small>Celular ou computador</small>
+      <small>{installPrompt ? 'Instalar agora' : 'Celular ou computador'}</small>
     </button>
   );
 }

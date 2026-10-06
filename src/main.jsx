@@ -6,6 +6,19 @@ import ErrorBoundary from './components/ErrorBoundary';
 import './styles.css';
 import './premium.css';
 
+window.__goiInstallPrompt = window.__goiInstallPrompt || null;
+
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  window.__goiInstallPrompt = event;
+  window.dispatchEvent(new CustomEvent('goi-install-ready'));
+});
+
+window.addEventListener('appinstalled', () => {
+  window.__goiInstallPrompt = null;
+  window.dispatchEvent(new CustomEvent('goi-installed'));
+});
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => undefined);
