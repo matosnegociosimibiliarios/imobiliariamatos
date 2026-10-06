@@ -39,3 +39,16 @@ export async function isCurrentUserAdmin() {
   const profile = await getCurrentProfile();
   return profile?.role === 'admin';
 }
+
+
+export async function requestPasswordReset(email) {
+  if (!supabaseConfigured) throw new Error('Supabase não configurado.');
+  return supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/redefinir-senha`,
+  });
+}
+
+export async function updatePassword(password) {
+  if (!supabaseConfigured) throw new Error('Supabase não configurado.');
+  return supabase.auth.updateUser({ password });
+}

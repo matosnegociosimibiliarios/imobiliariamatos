@@ -9,6 +9,7 @@ export default function Login() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [alreadyLogged, setAlreadyLogged] = useState(false);
@@ -70,14 +71,23 @@ export default function Login() {
 
           <label>
             Senha
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete="current-password"
-            />
+            <div className="password-field">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+              />
+              <button type="button" className="password-toggle" onClick={() => setShowPassword((value) => !value)}>
+                {showPassword ? 'Ocultar' : 'Mostrar'}
+              </button>
+            </div>
           </label>
+
+          <div className="login-forgot-row">
+            <Link to="/esqueci-senha">Esqueci minha senha</Link>
+          </div>
 
           {errorMessage && (
             <div className="admin-error">{errorMessage}</div>
