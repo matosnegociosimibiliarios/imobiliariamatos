@@ -197,7 +197,7 @@ export default function AdminLayout() {
         return true;
       }),
     })).filter((section) => (section.items || []).length > 0);
-  }, [access]);
+  }, [access, entitlement]);
 
   function sectionIsActive(section) {
     return section.items.some((item) => location.pathname === item.to || location.pathname.startsWith(item.to + '/'));
